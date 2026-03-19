@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# gstack local artifacts
+.gstack/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

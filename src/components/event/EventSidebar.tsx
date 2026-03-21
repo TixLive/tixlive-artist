@@ -35,7 +35,7 @@ export default function EventSidebar({
   return (
     <aside className="w-full md:w-[340px] md:flex-shrink-0">
       <div className="md:sticky md:top-20">
-        <div className="rounded-2xl border border-[var(--theme-surface)] bg-[var(--theme-bg)] p-4 shadow-sm md:shadow-lg">
+        <div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] p-4 shadow-sm md:shadow-lg">
           {/* Session picker */}
           {sessions.length > 1 && (
             <div className="mb-4">

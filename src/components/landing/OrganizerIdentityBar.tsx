@@ -67,7 +67,7 @@ export default function OrganizerIdentityBar({ organizer, eventCount }: Organize
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full p-1.5 text-[var(--theme-text-muted)] transition-colors hover:text-[var(--brand-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--theme-text-muted)] transition-colors hover:text-[var(--brand-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                 aria-label={`${organizer.name} on ${platform}`}
               >
                 <Icon icon={SOCIAL_ICONS[platform] || 'mdi:link'} width={18} />

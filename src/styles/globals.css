@@ -12,11 +12,12 @@
 	--theme-text: #111827;
 	--theme-text-muted: #6b7280;
 
-	/* Font families */
-	--font-display: 'Satoshi', var(--font-dm-sans), system-ui, sans-serif;
-	--font-body: var(--font-dm-sans), system-ui, sans-serif;
-	--font-data: var(--font-geist), 'Geist', system-ui, sans-serif;
-	--font-mono: var(--font-geist-mono), 'Geist Mono', ui-monospace, monospace;
+	/* Font families — use hardcoded names here because Next.js font
+	   variables (--font-dm-sans etc.) are scoped to <main>, not :root */
+	--font-display: 'Satoshi', 'DM Sans', system-ui, sans-serif;
+	--font-body: 'DM Sans', system-ui, sans-serif;
+	--font-data: 'Geist', system-ui, sans-serif;
+	--font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
 /* Concert — dark, electric */

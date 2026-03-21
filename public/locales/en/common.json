@@ -1,0 +1,65 @@
+{
+	"header": {
+		"my_tickets": "My Tickets",
+		"search_placeholder": "Search events..."
+	},
+	"footer": {
+		"powered_by": "Powered by"
+	},
+	"events": {
+		"no_upcoming": "No upcoming events",
+		"all_events": "All Events",
+		"sold_out": "Sold Out",
+		"tickets_left": "{{count}} tickets left",
+		"buy_tickets": "Buy Tickets",
+		"show_more": "Show More"
+	},
+	"checkout": {
+		"attendee_details": "Attendee Details",
+		"your_details": "Your details",
+		"first_name": "First name",
+		"last_name": "Last name",
+		"email": "Email",
+		"phone": "Phone",
+		"phone_optional": "Phone (optional)",
+		"promo_code": "Promo Code",
+		"have_discount_code": "Have a discount code?",
+		"apply": "Apply",
+		"back": "Back",
+		"proceed_to_payment": "Proceed to payment",
+		"processing": "Processing...",
+		"pay_with": "Pay with {{provider}}",
+		"secure_payment_note": "You'll be redirected to a secure payment page. Your card details are not stored by us.",
+		"payment_redirect_notice": "You will be redirected to complete payment"
+	},
+	"success": {
+		"payment_successful": "Payment Successful!",
+		"download_tickets": "Download Tickets",
+		"save_to_account": "Save to Your Account",
+		"magic_link_description": "Enter your email to receive a link to access your tickets anytime",
+		"send_link": "Send Link",
+		"check_inbox": "Check your inbox for the access link"
+	},
+	"auth": {
+		"verifying": "Verifying...",
+		"link_expired": "This link has expired",
+		"link_used": "This link has already been used",
+		"invalid_link": "Invalid link",
+		"request_new_link": "Request a new link"
+	},
+	"common": {
+		"sold_out": "Sold Out",
+		"tickets_left": "{{count}} tickets left",
+		"buy_tickets": "Buy Tickets",
+		"share": "Share",
+		"load_more": "Load More"
+	},
+	"tickets": {
+		"my_tickets": "My Tickets",
+		"no_tickets": "No tickets yet",
+		"browse_events": "Browse Events",
+		"view_ticket": "View Ticket",
+		"scan_at_door": "Show this QR code at the door",
+		"download_pdf": "Download PDF"
+	}
+}

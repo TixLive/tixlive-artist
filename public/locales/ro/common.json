@@ -1,0 +1,65 @@
+{
+	"header": {
+		"my_tickets": "Biletele Mele",
+		"search_placeholder": "Cauta evenimente..."
+	},
+	"footer": {
+		"powered_by": "Creat de"
+	},
+	"events": {
+		"no_upcoming": "Nu sunt evenimente viitoare",
+		"all_events": "Toate Evenimentele",
+		"sold_out": "Epuizat",
+		"tickets_left": "{{count}} bilete ramase",
+		"buy_tickets": "Cumpara Bilete",
+		"show_more": "Arata Mai Multe"
+	},
+	"checkout": {
+		"attendee_details": "Detalii Participant",
+		"your_details": "Detaliile tale",
+		"first_name": "Prenume",
+		"last_name": "Nume",
+		"email": "Email",
+		"phone": "Telefon",
+		"phone_optional": "Telefon (optional)",
+		"promo_code": "Cod Promotional",
+		"have_discount_code": "Ai un cod de reducere?",
+		"apply": "Aplica",
+		"back": "Inapoi",
+		"proceed_to_payment": "Continua la plata",
+		"processing": "Se proceseaza...",
+		"pay_with": "Plateste cu {{provider}}",
+		"secure_payment_note": "Vei fi redirectionat catre o pagina de plata securizata. Datele cardului tau nu sunt stocate de noi.",
+		"payment_redirect_notice": "Vei fi redirectionat pentru a finaliza plata"
+	},
+	"success": {
+		"payment_successful": "Plata Reusita!",
+		"download_tickets": "Descarca Biletele",
+		"save_to_account": "Salveaza in Contul Tau",
+		"magic_link_description": "Introdu emailul pentru a primi un link de acces la biletele tale",
+		"send_link": "Trimite Link",
+		"check_inbox": "Verifica inboxul pentru linkul de acces"
+	},
+	"auth": {
+		"verifying": "Se verifica...",
+		"link_expired": "Acest link a expirat",
+		"link_used": "Acest link a fost deja folosit",
+		"invalid_link": "Link invalid",
+		"request_new_link": "Solicita un link nou"
+	},
+	"common": {
+		"sold_out": "Epuizat",
+		"tickets_left": "{{count}} bilete ramase",
+		"buy_tickets": "Cumpara Bilete",
+		"share": "Distribuie",
+		"load_more": "Incarca Mai Multe"
+	},
+	"tickets": {
+		"my_tickets": "Biletele Mele",
+		"no_tickets": "Niciun bilet inca",
+		"browse_events": "Exploreaza Evenimente",
+		"view_ticket": "Vezi Bilet",
+		"scan_at_door": "Arata acest cod QR la intrare",
+		"download_pdf": "Descarca PDF"
+	}
+}

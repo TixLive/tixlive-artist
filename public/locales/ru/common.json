@@ -1,0 +1,65 @@
+{
+	"header": {
+		"my_tickets": "Мои Билеты",
+		"search_placeholder": "Поиск событий..."
+	},
+	"footer": {
+		"powered_by": "Создано"
+	},
+	"events": {
+		"no_upcoming": "Нет предстоящих событий",
+		"all_events": "Все События",
+		"sold_out": "Распродано",
+		"tickets_left": "{{count}} билетов осталось",
+		"buy_tickets": "Купить Билеты",
+		"show_more": "Показать Ещё"
+	},
+	"checkout": {
+		"attendee_details": "Данные Участника",
+		"your_details": "Ваши данные",
+		"first_name": "Имя",
+		"last_name": "Фамилия",
+		"email": "Email",
+		"phone": "Телефон",
+		"phone_optional": "Телефон (необязательно)",
+		"promo_code": "Промокод",
+		"have_discount_code": "Есть код скидки?",
+		"apply": "Применить",
+		"back": "Назад",
+		"proceed_to_payment": "Перейти к оплате",
+		"processing": "Обработка...",
+		"pay_with": "Оплатить через {{provider}}",
+		"secure_payment_note": "Вы будете перенаправлены на защищенную страницу оплаты. Данные вашей карты не сохраняются.",
+		"payment_redirect_notice": "Вы будете перенаправлены для завершения оплаты"
+	},
+	"success": {
+		"payment_successful": "Оплата Успешна!",
+		"download_tickets": "Скачать Билеты",
+		"save_to_account": "Сохранить в Аккаунт",
+		"magic_link_description": "Введите email, чтобы получить ссылку для доступа к вашим билетам",
+		"send_link": "Отправить Ссылку",
+		"check_inbox": "Проверьте почту для ссылки доступа"
+	},
+	"auth": {
+		"verifying": "Проверка...",
+		"link_expired": "Эта ссылка истекла",
+		"link_used": "Эта ссылка уже использована",
+		"invalid_link": "Недействительная ссылка",
+		"request_new_link": "Запросить новую ссылку"
+	},
+	"common": {
+		"sold_out": "Распродано",
+		"tickets_left": "{{count}} билетов осталось",
+		"buy_tickets": "Купить Билеты",
+		"share": "Поделиться",
+		"load_more": "Загрузить Ещё"
+	},
+	"tickets": {
+		"my_tickets": "Мои Билеты",
+		"no_tickets": "Билетов пока нет",
+		"browse_events": "Просмотреть События",
+		"view_ticket": "Посмотреть Билет",
+		"scan_at_door": "Покажите этот QR-код на входе",
+		"download_pdf": "Скачать PDF"
+	}
+}

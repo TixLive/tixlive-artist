@@ -1,0 +1,20 @@
+import { Html, Head, Main, NextScript } from 'next/document';
+
+export default function Document() {
+	return (
+		<Html>
+			<Head>
+				{/* Satoshi from Fontshare — display font for headings */}
+				<link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
+				<link
+					href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
+					rel="stylesheet"
+				/>
+			</Head>
+			<body>
+				<Main />
+				<NextScript />
+			</body>
+		</Html>
+	);
+}

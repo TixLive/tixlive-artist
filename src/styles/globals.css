@@ -1,0 +1,82 @@
+@import 'tailwindcss';
+@plugin './hero.ts';
+
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+/* Default theme tokens */
+:root {
+	--brand-primary: #6366f1;
+	--brand-accent: #8b5cf6;
+	--theme-bg: #ffffff;
+	--theme-surface: #f9fafb;
+	--theme-text: #111827;
+	--theme-text-muted: #6b7280;
+
+	/* Font families */
+	--font-display: 'Satoshi', var(--font-dm-sans), system-ui, sans-serif;
+	--font-body: var(--font-dm-sans), system-ui, sans-serif;
+	--font-data: var(--font-geist), 'Geist', system-ui, sans-serif;
+	--font-mono: var(--font-geist-mono), 'Geist Mono', ui-monospace, monospace;
+}
+
+/* Concert — dark, electric */
+[data-event-type='concert'] {
+	--brand-primary: #8b5cf6;
+	--brand-accent: #ec4899;
+	--theme-bg: #0a0a0a;
+	--theme-surface: #1a1a1a;
+	--theme-text: #f9fafb;
+	--theme-text-muted: #9ca3af;
+}
+
+/* Conference — professional, trust */
+[data-event-type='conference'] {
+	--brand-primary: #1d4ed8;
+	--brand-accent: #0891b2;
+	--theme-bg: #ffffff;
+	--theme-surface: #f8fafc;
+	--theme-text: #0f172a;
+	--theme-text-muted: #64748b;
+}
+
+/* Sports — high energy, bold */
+[data-event-type='sports'] {
+	--brand-primary: #ef4444;
+	--brand-accent: #f97316;
+	--theme-bg: #0f172a;
+	--theme-surface: #1e293b;
+	--theme-text: #f8fafc;
+	--theme-text-muted: #94a3b8;
+}
+
+body {
+	background: var(--theme-bg);
+	color: var(--theme-text);
+	font-family: var(--font-body);
+}
+
+/* Pulse animation for critical urgency badge */
+@keyframes urgency-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.7; }
+}
+
+.animate-urgency-pulse {
+	animation: urgency-pulse 1.5s ease-in-out infinite;
+}
+
+/* Reduced motion: disable all animations */
+@media (prefers-reduced-motion: reduce) {
+	.animate-urgency-pulse {
+		animation: none;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

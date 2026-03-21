@@ -43,7 +43,7 @@ export default function PriceBreakdown({ items, discount, currency }: PriceBreak
         </div>
       )}
 
-      <div className="border-t border-gray-200 pt-2">
+      <div className="border-t pt-2" style={{ borderColor: 'color-mix(in srgb, var(--theme-text) 15%, transparent)' }}>
         <div className="flex items-center justify-between">
           <span className="text-[1.125rem] font-semibold" style={{ color: 'var(--theme-text)' }}>Total</span>
           <span className="text-[1.125rem] font-bold" style={{ color: 'var(--theme-text)' }}>

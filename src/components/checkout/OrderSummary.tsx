@@ -35,8 +35,8 @@ export default function OrderSummary({ event, sessionDate, cart }: OrderSummaryP
             sizes="80px"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400">
-            <span className="text-[0.75rem] font-medium text-gray-600">
+          <div className="flex h-full w-full items-center justify-center" style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--theme-text) 15%, transparent), color-mix(in srgb, var(--theme-text) 30%, transparent))' }}>
+            <span className="text-[0.75rem] font-medium text-[var(--theme-text-muted)]">
               {event.title.charAt(0)}
             </span>
           </div>
@@ -51,7 +51,7 @@ export default function OrderSummary({ event, sessionDate, cart }: OrderSummaryP
         <div className="mt-3 space-y-1">
           {cart.map((item) => (
             <div key={item.ticket_type_id} className="flex items-center justify-between text-[0.875rem]">
-              <span className="text-gray-700">
+              <span style={{ color: 'var(--theme-text-muted)' }}>
                 {item.quantity}x {item.ticket_type_name}
               </span>
               <span className="font-medium" style={{ color: 'var(--theme-text)' }}>

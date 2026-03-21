@@ -9,13 +9,14 @@ interface EventGridProps {
   onLoadMore: () => void;
   loading?: boolean;
   organizerBio?: string;
+  categoryLabel?: string;
 }
 
-export default function EventGrid({ events, total, onLoadMore, loading, organizerBio }: EventGridProps) {
+export default function EventGrid({ events, total, onLoadMore, loading, organizerBio, categoryLabel }: EventGridProps) {
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-        <Icon icon="mdi:calendar-blank-outline" className="mb-4 h-12 w-12 text-gray-300" />
+        <Icon icon="mdi:calendar-blank-outline" className="mb-4 h-12 w-12 text-[var(--theme-text-muted)]" />
         <h3 className="font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">No upcoming events</h3>
         {organizerBio && (
           <p className="mt-3 max-w-md text-[0.875rem] text-[var(--theme-text-muted)]">{organizerBio}</p>
@@ -29,7 +30,7 @@ export default function EventGrid({ events, total, onLoadMore, loading, organize
       {/* Section label */}
       <div className="mb-4 flex items-center justify-between px-4 sm:px-6">
         <h2 className="font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
-          All Events <span className="text-[0.875rem] font-normal text-[var(--theme-text-muted)]">({total})</span>
+          {categoryLabel && categoryLabel !== 'All' ? `${categoryLabel} Events` : 'All Events'} <span className="text-[0.875rem] font-normal text-[var(--theme-text-muted)]">({total})</span>
         </h2>
       </div>
 

@@ -76,6 +76,7 @@ export default function Home({ organizer, events: initialEvents, total: initialT
             onLoadMore={handleLoadMore}
             loading={loadingMore}
             organizerBio={organizer.bio ?? undefined}
+            categoryLabel={category}
           />
         </section>
       </Layout>

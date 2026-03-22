@@ -31,7 +31,7 @@ export default function EventHero({ event }: EventHeroProps) {
             aria-hidden="true"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-700" />
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-600 to-gray-400" />
         )}
 
         {/* Sharp poster */}
@@ -44,11 +44,11 @@ export default function EventHero({ event }: EventHeroProps) {
             priority
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-300 to-gray-500" />
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400" />
         )}
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
 
         {/* Share button — floating on mobile */}
         <div className="absolute right-4 top-4 z-10 md:hidden">

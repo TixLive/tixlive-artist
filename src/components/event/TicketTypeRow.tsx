@@ -18,7 +18,7 @@ export default function TicketTypeRow({ ticket, quantity, onQuantityChange }: Ti
 
   return (
     <div
-      className={`rounded-xl border border-gray-100 p-4 transition ${
+      className={`rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] p-4 transition ${
         isSoldOut ? 'opacity-60' : ''
       }`}
       style={{ backgroundColor: 'var(--theme-surface)' }}
@@ -54,13 +54,13 @@ export default function TicketTypeRow({ ticket, quantity, onQuantityChange }: Ti
       {/* Desktop layout */}
       <div className="hidden items-center gap-4 md:flex">
         <div className="min-w-0 flex-1">
-          <h4 className="text-[1.125rem] font-semibold text-gray-900">{ticket.name}</h4>
+          <h4 className="text-[1.125rem] font-semibold" style={{ color: 'var(--theme-text)' }}>{ticket.name}</h4>
           {ticket.description && (
-            <p className="mt-0.5 text-[0.75rem] text-gray-500">{ticket.description}</p>
+            <p className="mt-0.5 text-[0.75rem]" style={{ color: 'var(--theme-text-muted)' }}>{ticket.description}</p>
           )}
           <CapacityBadge remainingCapacity={ticket.remaining_capacity} />
         </div>
-        <span className="shrink-0 text-[1.125rem] font-bold text-gray-900">
+        <span className="shrink-0 text-[1.125rem] font-bold" style={{ color: 'var(--theme-text)' }}>
           {ticket.price} {ticket.currency}
         </span>
         {isSoldOut ? (
@@ -93,23 +93,25 @@ function QuantityStepper({
 }) {
   return (
     <div
-      className="inline-flex items-center rounded-lg border border-gray-200"
+      className="inline-flex items-center rounded-lg border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)]"
       role="group"
       aria-label={`Quantity for ${ticketName}`}
     >
       <button
-        className="flex h-11 w-11 items-center justify-center text-gray-500 transition hover:text-gray-900 disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
+        className="flex h-11 w-11 items-center justify-center transition disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
+        style={{ color: 'var(--theme-text-muted)' }}
         onClick={() => onChange(Math.max(0, quantity - 1))}
         disabled={quantity === 0}
         aria-label={`Decrease quantity for ${ticketName}`}
       >
         <Icon icon="mdi:minus" width={20} />
       </button>
-      <span className="min-w-[40px] text-center text-[0.875rem] font-semibold tabular-nums">
+      <span className="min-w-[40px] text-center text-[0.875rem] font-semibold tabular-nums" style={{ color: 'var(--theme-text)' }}>
         {quantity}
       </span>
       <button
-        className="flex h-11 w-11 items-center justify-center text-gray-500 transition hover:text-gray-900 disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
+        className="flex h-11 w-11 items-center justify-center transition disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
+        style={{ color: 'var(--theme-text-muted)' }}
         onClick={() => onChange(Math.min(maxQty, quantity + 1))}
         disabled={quantity >= maxQty}
         aria-label={`Increase quantity for ${ticketName}`}

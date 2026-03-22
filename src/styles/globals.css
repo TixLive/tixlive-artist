@@ -20,14 +20,14 @@
 	--font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
-/* Concert — dark, electric */
+/* Concert — purple + pink accents on light base */
 [data-event-type='concert'] {
 	--brand-primary: #8b5cf6;
 	--brand-accent: #ec4899;
-	--theme-bg: #0a0a0a;
-	--theme-surface: #1a1a1a;
-	--theme-text: #f9fafb;
-	--theme-text-muted: #9ca3af;
+	--theme-bg: #ffffff;
+	--theme-surface: #f9fafb;
+	--theme-text: #111827;
+	--theme-text-muted: #6b7280;
 }
 
 /* Conference — professional, trust */
@@ -40,14 +40,14 @@
 	--theme-text-muted: #64748b;
 }
 
-/* Sports — high energy, bold */
+/* Sports — red + orange accents on light base */
 [data-event-type='sports'] {
 	--brand-primary: #ef4444;
 	--brand-accent: #f97316;
-	--theme-bg: #0f172a;
-	--theme-surface: #1e293b;
-	--theme-text: #f8fafc;
-	--theme-text-muted: #94a3b8;
+	--theme-bg: #ffffff;
+	--theme-surface: #f8fafc;
+	--theme-text: #0f172a;
+	--theme-text-muted: #64748b;
 }
 
 body {

@@ -1,10 +1,11 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
+import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { IOrganizer, IEventDetail, ICartItem } from '@/types';
 import { getSite, getEvent } from '@/lib/api';
@@ -13,6 +14,8 @@ import EventHero from '@/components/event/EventHero';
 import EventSidebar from '@/components/event/EventSidebar';
 import StickyBuyBar from '@/components/event/StickyBuyBar';
 import KeyFactsStrip from '@/components/event/KeyFactsStrip';
+import SessionPicker from '@/components/event/SessionPicker';
+import TicketTypeRow from '@/components/event/TicketTypeRow';
 
 interface EventDetailProps {
   event: IEventDetail;
@@ -49,6 +52,24 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
   }, [ticketTypes, quantities]);
 
   const currency = ticketTypes[0]?.currency ?? event.currency ?? 'MDL';
+  const ticketsRef = useRef<HTMLDivElement>(null);
+
+  const totalQuantity = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    [cartItems]
+  );
+  const totalPrice = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [cartItems]
+  );
+  const priceFrom = useMemo(
+    () => ticketTypes.length > 0 ? Math.min(...ticketTypes.map((tt) => tt.price)) : 0,
+    [ticketTypes]
+  );
+
+  const scrollToTickets = useCallback(() => {
+    ticketsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   const handleQuantityChange = useCallback((ticketTypeId: number, qty: number) => {
     setQuantities((prev) => ({ ...prev, [ticketTypeId]: qty }));
@@ -161,6 +182,74 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
               </section>
             )}
 
+            {/* Tickets */}
+            <section className="mt-8" ref={ticketsRef}>
+              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+                Tickets
+              </h2>
+
+              {(event.sessions ?? []).length > 1 && (
+                <div className="mb-4">
+                  <SessionPicker
+                    sessions={event.sessions ?? []}
+                    activeSessionId={activeSessionId}
+                    onSelect={(id) => {
+                      setActiveSessionId(id);
+                      setQuantities({});
+                    }}
+                  />
+                </div>
+              )}
+
+              {!isEventSoldOut ? (
+                <>
+                  <div className="flex flex-col gap-2">
+                    {ticketTypes.map((ticket) => (
+                      <TicketTypeRow
+                        key={ticket.id}
+                        ticket={ticket}
+                        quantity={quantities[ticket.id] ?? 0}
+                        onQuantityChange={handleQuantityChange}
+                      />
+                    ))}
+                  </div>
+
+                  {totalQuantity > 0 && (
+                    <div className="mt-4 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-[0.875rem] text-[var(--theme-text-muted)]">
+                          {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
+                        </span>
+                        <span className="font-[family-name:var(--font-data)] text-[1.25rem] font-bold text-[var(--theme-text)]">
+                          {totalPrice} {currency}
+                        </span>
+                      </div>
+                      <Button
+                        variant="solid"
+                        size="lg"
+                        className="w-full rounded-full font-[family-name:var(--font-display)] font-semibold text-white"
+                        style={{ backgroundColor: 'var(--brand-primary)' }}
+                        onPress={handleBuy}
+                      >
+                        Buy Tickets
+                        <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
+                      </Button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] py-6 text-center">
+                  <Icon icon="mdi:alert-circle" className="mx-auto mb-2 text-red-500" width={32} />
+                  <p className="font-[family-name:var(--font-display)] text-[1rem] font-semibold text-red-600">
+                    Sold Out
+                  </p>
+                  <p className="mt-1 text-[0.8125rem] text-[var(--theme-text-muted)]">
+                    This event is no longer available
+                  </p>
+                </div>
+              )}
+            </section>
+
             {/* Venue */}
             {event.venue_name && (
               <section className="mt-8">
@@ -215,21 +304,15 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             </section>
           </div>
 
-          {/* Right column — sidebar (mobile: shown inline, desktop: sticky) */}
+          {/* Right column — sticky CTA card (desktop only) */}
           <EventSidebar
-            sessions={event.sessions ?? []}
-            activeSessionId={activeSessionId}
-            onSessionSelect={(id) => {
-              setActiveSessionId(id);
-              setQuantities({});
-            }}
-            ticketTypes={ticketTypes}
-            quantities={quantities}
-            onQuantityChange={handleQuantityChange}
-            cartItems={cartItems}
+            priceFrom={priceFrom}
             currency={currency}
+            event={event}
+            totalQuantity={totalQuantity}
+            totalPrice={totalPrice}
+            onScrollToTickets={scrollToTickets}
             onBuy={handleBuy}
-            isEventSoldOut={isEventSoldOut}
           />
         </div>
 

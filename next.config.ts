@@ -6,7 +6,10 @@ const nextConfig: NextConfig = {
 		locales: ['en', 'ro', 'ru'],
 	},
 	images: {
-		remotePatterns: [{ protocol: 'https', hostname: '**' }],
+		remotePatterns: [
+			{ protocol: 'https', hostname: '**' },
+			{ protocol: 'http', hostname: 'localhost' },
+		],
 	},
 };
 

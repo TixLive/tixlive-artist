@@ -8,8 +8,14 @@ const nextConfig: NextConfig = {
 	images: {
 		remotePatterns: [
 			{ protocol: 'https', hostname: '**' },
-			{ protocol: 'http', hostname: 'localhost' },
+			{
+				protocol: 'http',
+				hostname: 'localhost',
+				port: process.env.NEXT_PUBLIC_CDN_LOCAL_PORT,
+				pathname: '/**',
+			},
 		],
+		dangerouslyAllowLocalIP: process.env.NODE_ENV === 'development',
 	},
 };
 

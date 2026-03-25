@@ -16,6 +16,7 @@ import StickyBuyBar from '@/components/event/StickyBuyBar';
 import KeyFactsStrip from '@/components/event/KeyFactsStrip';
 import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
+import AddressMap from '@/components/common/AddressMap';
 
 interface EventDetailProps {
   event: IEventDetail;
@@ -265,20 +266,9 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                     )}
                   </div>
                 </div>
-                {/* Google Maps embed */}
-                {event.google_place_id && process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ? (
-                  <iframe
-                    className="mt-3 w-full rounded-xl"
-                    height={200}
-                    style={{ height: '200px' }}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&q=place_id:${event.google_place_id}&zoom=15`}
-                  />
-                ) : (
-                  <div className="mt-3 flex h-[200px] items-center justify-center rounded-xl bg-[var(--theme-surface)] text-[var(--theme-text-muted)]">
-                    <Icon icon="mdi:map" width={40} />
+                {event.google_place_id && (
+                  <div className="mt-3">
+                    <AddressMap googlePlaceId={event.google_place_id} />
                   </div>
                 )}
               </section>

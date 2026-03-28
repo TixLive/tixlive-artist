@@ -17,9 +17,10 @@
  * Later: "click @e3" → look up Locator → locator.click()
  */
 
-import type { Page, Locator } from 'playwright';
+import type { Page, Frame, Locator } from 'playwright';
 import type { BrowserManager, RefEntry } from './browser-manager';
 import * as Diff from 'diff';
+import { TEMP_DIR, isPathWithin } from './platform';
 
 // Roles considered "interactive" for the -i flag
 const INTERACTIVE_ROLES = new Set([
@@ -61,7 +62,7 @@ export const SNAPSHOT_FLAGS: Array<{
   { short: '-s', long: '--selector', description: 'Scope to CSS selector', takesValue: true, valueHint: '<sel>', optionKey: 'selector' },
   { short: '-D', long: '--diff', description: 'Unified diff against previous snapshot (first call stores baseline)', optionKey: 'diff' },
   { short: '-a', long: '--annotate', description: 'Annotated screenshot with red overlay boxes and ref labels', optionKey: 'annotate' },
-  { short: '-o', long: '--output', description: 'Output path for annotated screenshot (default: /tmp/browse-annotated.png)', takesValue: true, valueHint: '<path>', optionKey: 'outputPath' },
+  { short: '-o', long: '--output', description: 'Output path for annotated screenshot (default: <temp>/browse-annotated.png)', takesValue: true, valueHint: '<path>', optionKey: 'outputPath' },
   { short: '-C', long: '--cursor-interactive', description: 'Cursor-interactive elements (@c refs — divs with pointer, onclick)', optionKey: 'cursorInteractive' },
 ];
 
@@ -135,15 +136,18 @@ export async function handleSnapshot(
 ): Promise<string> {
   const opts = parseSnapshotArgs(args);
   const page = bm.getPage();
+  // Frame-aware target for accessibility tree
+  const target = bm.getActiveFrameOrPage();
+  const inFrame = bm.getFrame() !== null;
 
   // Get accessibility tree via ariaSnapshot
   let rootLocator: Locator;
   if (opts.selector) {
-    rootLocator = page.locator(opts.selector);
+    rootLocator = target.locator(opts.selector);
     const count = await rootLocator.count();
     if (count === 0) throw new Error(`Selector not found: ${opts.selector}`);
   } else {
-    rootLocator = page.locator('body');
+    rootLocator = target.locator('body');
   }
 
   const ariaText = await rootLocator.ariaSnapshot();
@@ -204,11 +208,11 @@ export async function handleSnapshot(
 
     let locator: Locator;
     if (opts.selector) {
-      locator = page.locator(opts.selector).getByRole(node.role as any, {
+      locator = target.locator(opts.selector).getByRole(node.role as any, {
         name: node.name || undefined,
       });
     } else {
-      locator = page.getByRole(node.role as any, {
+      locator = target.getByRole(node.role as any, {
         name: node.name || undefined,
       });
     }
@@ -232,7 +236,7 @@ export async function handleSnapshot(
   // ─── Cursor-interactive scan (-C) ─────────────────────────
   if (opts.cursorInteractive) {
     try {
-      const cursorElements = await page.evaluate(() => {
+      const cursorElements = await target.evaluate(() => {
         const STANDARD_INTERACTIVE = new Set([
           'A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY', 'DETAILS',
         ]);
@@ -286,7 +290,7 @@ export async function handleSnapshot(
         let cRefCounter = 1;
         for (const elem of cursorElements) {
           const ref = `c${cRefCounter++}`;
-          const locator = page.locator(elem.selector);
+          const locator = target.locator(elem.selector);
           refMap.set(ref, { locator, role: 'cursor-interactive', name: elem.text });
           output.push(`@${ref} [${elem.reason}] "${elem.text}"`);
         }
@@ -308,11 +312,11 @@ export async function handleSnapshot(
 
   // ─── Annotated screenshot (-a) ────────────────────────────
   if (opts.annotate) {
-    const screenshotPath = opts.outputPath || '/tmp/browse-annotated.png';
+    const screenshotPath = opts.outputPath || `${TEMP_DIR}/browse-annotated.png`;
     // Validate output path (consistent with screenshot/pdf/responsive)
     const resolvedPath = require('path').resolve(screenshotPath);
-    const safeDirs = ['/tmp', process.cwd()];
-    if (!safeDirs.some((dir: string) => resolvedPath === dir || resolvedPath.startsWith(dir + '/'))) {
+    const safeDirs = [TEMP_DIR, process.cwd()];
+    if (!safeDirs.some((dir: string) => isPathWithin(resolvedPath, dir))) {
       throw new Error(`Path must be within: ${safeDirs.join(', ')}`);
     }
     try {
@@ -392,6 +396,12 @@ export async function handleSnapshot(
 
   // Store for future diffs
   bm.setLastSnapshot(snapshotText);
+
+  // Add frame context header when operating inside an iframe
+  if (inFrame) {
+    const frameUrl = bm.getFrame()?.url() ?? 'unknown';
+    output.unshift(`[Context: iframe src="${frameUrl}"]`);
+  }
 
   return output.join('\n');
 }

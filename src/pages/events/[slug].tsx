@@ -7,7 +7,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { IOrganizer, IEventDetail, ICartItem } from '@/types';
+import { IOrganizer, IEventDetail, ICartItem, ITicketAddon } from '@/types';
 import { getSite, getEvent } from '@/lib/api';
 import Layout from '@/components/layout/Layout';
 import EventHero from '@/components/event/EventHero';
@@ -16,6 +16,7 @@ import StickyBuyBar from '@/components/event/StickyBuyBar';
 import KeyFactsStrip from '@/components/event/KeyFactsStrip';
 import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
+import AddonRow from '@/components/event/AddonRow';
 import AddressMap from '@/components/common/AddressMap';
 import LineupSection from '@/components/event/sections/LineupSection';
 import TeamsSection from '@/components/event/sections/TeamsSection';
@@ -45,9 +46,11 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
     event.sessions?.[0]?.id ?? 0
   );
   const [quantities, setQuantities] = useState<Record<number, number>>({});
+  const [addonQuantities, setAddonQuantities] = useState<Record<number, number>>({});
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   const ticketTypes = event.ticket_types ?? [];
+  const addons = event.ticket_addons ?? [];
 
   const isEventSoldOut = useMemo(() => {
     return ticketTypes.every((tt) => tt.remaining_capacity === 0);
@@ -72,9 +75,18 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
     () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
     [cartItems]
   );
+  const addonTotal = useMemo(() => {
+    return addons.reduce((sum, addon) => {
+      const qty = addonQuantities[addon.id] ?? 0;
+      if (qty === 0) return sum;
+      const multiplier = addon.per_ticket ? totalQuantity : 1;
+      return sum + addon.price * qty * multiplier;
+    }, 0);
+  }, [addons, addonQuantities, totalQuantity]);
+
   const totalPrice = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [cartItems]
+    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) + addonTotal,
+    [cartItems, addonTotal]
   );
   const priceFrom = useMemo(
     () => ticketTypes.length > 0 ? Math.min(...ticketTypes.map((tt) => tt.price)) : 0,
@@ -89,6 +101,10 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
     setQuantities((prev) => ({ ...prev, [ticketTypeId]: qty }));
   }, []);
 
+  const handleAddonQuantityChange = useCallback((addonId: number, qty: number) => {
+    setAddonQuantities((prev) => ({ ...prev, [addonId]: qty }));
+  }, []);
+
   const handleBuy = useCallback(() => {
     if (cartItems.length === 0) return;
     // POST redirect to avoid URL length limits with large carts
@@ -97,10 +113,15 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
     form.action = '/checkout';
     form.style.display = 'none';
 
+    const addonItems = addons
+      .filter((a) => (addonQuantities[a.id] ?? 0) > 0)
+      .map((a) => ({ addon_id: a.id, quantity: addonQuantities[a.id] }));
+
     const fields = {
       event: event.slug,
       session: String(activeSessionId),
       cart: JSON.stringify(cartItems),
+      ...(addonItems.length > 0 && { addons: JSON.stringify(addonItems) }),
     };
 
     for (const [key, value] of Object.entries(fields)) {
@@ -196,6 +217,94 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
               </section>
             )}
 
+            {/* Tickets */}
+            <section className="mt-8" ref={ticketsRef}>
+              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+                Tickets
+              </h2>
+
+              {(event.sessions ?? []).length > 1 && (
+                <div className="mb-4">
+                  <SessionPicker
+                    sessions={event.sessions ?? []}
+                    activeSessionId={activeSessionId}
+                    onSelect={(id) => {
+                      setActiveSessionId(id);
+                      setQuantities({});
+                    }}
+                  />
+                </div>
+              )}
+
+              {!isEventSoldOut ? (
+                <>
+                  <div className="flex flex-col gap-2">
+                    {ticketTypes.map((ticket) => (
+                      <TicketTypeRow
+                        key={ticket.id}
+                        ticket={ticket}
+                        quantity={quantities[ticket.id] ?? 0}
+                        onQuantityChange={handleQuantityChange}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Addons */}
+                  {addons.length > 0 && totalQuantity > 0 && (
+                    <div className="mt-4">
+                      <h3 className="mb-2 font-[family-name:var(--font-display)] text-[1rem] font-semibold text-[var(--theme-text)]">
+                        Add-ons
+                      </h3>
+                      <div className="flex flex-col gap-2">
+                        {addons.map((addon) => (
+                          <AddonRow
+                            key={addon.id}
+                            addon={addon}
+                            quantity={addonQuantities[addon.id] ?? 0}
+                            onQuantityChange={handleAddonQuantityChange}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {totalQuantity > 0 && (
+                    <div className="mt-4 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-[0.875rem] text-[var(--theme-text-muted)]">
+                          {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
+                          {addonTotal > 0 && ' + add-ons'}
+                        </span>
+                        <span className="font-[family-name:var(--font-data)] text-[1.25rem] font-bold text-[var(--theme-text)]">
+                          {totalPrice} {currency}
+                        </span>
+                      </div>
+                      <Button
+                        variant="solid"
+                        size="lg"
+                        className="w-full rounded-full font-[family-name:var(--font-display)] font-semibold text-white"
+                        style={{ backgroundColor: 'var(--brand-primary)' }}
+                        onPress={handleBuy}
+                      >
+                        Buy Tickets
+                        <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
+                      </Button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] py-6 text-center">
+                  <Icon icon="mdi:alert-circle" className="mx-auto mb-2 text-red-500" width={32} />
+                  <p className="font-[family-name:var(--font-display)] text-[1rem] font-semibold text-red-600">
+                    Sold Out
+                  </p>
+                  <p className="mt-1 text-[0.8125rem] text-[var(--theme-text-muted)]">
+                    This event is no longer available
+                  </p>
+                </div>
+              )}
+            </section>
+
             {/* Event-type-specific sections */}
             {event.active_sections && event.page_content && (
               <>
@@ -238,74 +347,6 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                 })}
               </>
             )}
-
-            {/* Tickets */}
-            <section className="mt-8" ref={ticketsRef}>
-              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
-                Tickets
-              </h2>
-
-              {(event.sessions ?? []).length > 1 && (
-                <div className="mb-4">
-                  <SessionPicker
-                    sessions={event.sessions ?? []}
-                    activeSessionId={activeSessionId}
-                    onSelect={(id) => {
-                      setActiveSessionId(id);
-                      setQuantities({});
-                    }}
-                  />
-                </div>
-              )}
-
-              {!isEventSoldOut ? (
-                <>
-                  <div className="flex flex-col gap-2">
-                    {ticketTypes.map((ticket) => (
-                      <TicketTypeRow
-                        key={ticket.id}
-                        ticket={ticket}
-                        quantity={quantities[ticket.id] ?? 0}
-                        onQuantityChange={handleQuantityChange}
-                      />
-                    ))}
-                  </div>
-
-                  {totalQuantity > 0 && (
-                    <div className="mt-4 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] p-4">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="text-[0.875rem] text-[var(--theme-text-muted)]">
-                          {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
-                        </span>
-                        <span className="font-[family-name:var(--font-data)] text-[1.25rem] font-bold text-[var(--theme-text)]">
-                          {totalPrice} {currency}
-                        </span>
-                      </div>
-                      <Button
-                        variant="solid"
-                        size="lg"
-                        className="w-full rounded-full font-[family-name:var(--font-display)] font-semibold text-white"
-                        style={{ backgroundColor: 'var(--brand-primary)' }}
-                        onPress={handleBuy}
-                      >
-                        Buy Tickets
-                        <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-                      </Button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] py-6 text-center">
-                  <Icon icon="mdi:alert-circle" className="mx-auto mb-2 text-red-500" width={32} />
-                  <p className="font-[family-name:var(--font-display)] text-[1rem] font-semibold text-red-600">
-                    Sold Out
-                  </p>
-                  <p className="mt-1 text-[0.8125rem] text-[var(--theme-text-muted)]">
-                    This event is no longer available
-                  </p>
-                </div>
-              )}
-            </section>
 
             {/* Venue */}
             {event.venue_name && (

@@ -183,6 +183,11 @@ export const mockEventDetail: IEventDetail = {
 			logo_url: null,
 		},
 	],
+	ticket_addons: [
+		{ id: 1, name: 'Parking Pass', description: 'Reserved parking spot near the venue entrance', price: 50, max_quantity: 1, per_ticket: false, color: null, sort_order: 1 },
+		{ id: 2, name: 'Festival T-Shirt', description: 'Limited edition Electric Summer Festival merch', price: 120, max_quantity: 5, per_ticket: false, color: null, sort_order: 2 },
+		{ id: 3, name: 'Meal Voucher', description: 'Redeemable at any food truck on site', price: 80, max_quantity: null, per_ticket: true, color: null, sort_order: 3 },
+	],
 	active_sections: ['lineup', 'sponsors', 'program', 'rules', 'faq', 'video', 'travel'],
 	page_content: {
 		lineup: [

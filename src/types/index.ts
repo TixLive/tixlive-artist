@@ -126,6 +126,17 @@ export interface IPackingItem {
 	sort_order: number;
 }
 
+export interface ITicketAddon {
+	id: number;
+	name: string;
+	description: string | null;
+	price: number;
+	max_quantity: number | null;
+	per_ticket: boolean;
+	color: string | null;
+	sort_order: number;
+}
+
 export interface IPageContent {
 	lineup?: IArtist[];
 	speakers?: ISpeaker[];
@@ -154,6 +165,7 @@ export interface IEventDetail extends IEventListItem {
 	sessions: IEventSession[];
 	ticket_types: ITicketType[];
 	available_payment_methods: IAvailablePaymentMethod[];
+	ticket_addons?: ITicketAddon[];
 	active_sections?: string[];
 	page_content?: IPageContent;
 }

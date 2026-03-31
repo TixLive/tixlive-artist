@@ -43,7 +43,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json(data);
+      return res.status(response.status).json({
+        error: data.message ?? data.error ?? 'Order failed',
+        code: data.message ?? data.code,
+      });
     }
 
     return res.status(200).json(data);

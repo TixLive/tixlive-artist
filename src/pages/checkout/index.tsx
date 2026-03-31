@@ -99,9 +99,11 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
       const response = await res.json();
 
       if (!res.ok) {
-        const code = response.code ?? response.error ?? '';
-        if (code === 'SOLD_OUT' || String(code).toLowerCase().includes('sold out')) {
+        const code = String(response.code ?? '');
+        if (code.includes('SOLD_OUT') || code.includes('NO_AVAILABLE_TICKETS')) {
           setSubmitError(t('checkout.error_sold_out'));
+        } else if (code.includes('PAYMENT_METHOD')) {
+          setSubmitError(t('checkout.error_payment_method'));
         } else if (res.status === 400) {
           setSubmitError(t('checkout.error_invalid_order'));
         } else if (res.status >= 500) {

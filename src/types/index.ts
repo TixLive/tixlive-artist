@@ -47,12 +47,115 @@ export interface IAvailablePaymentMethod {
 	logo_url: string | null;
 }
 
+// --- Page content sub-types (event-type-specific sections) ---
+
+export interface IArtist {
+	id: number;
+	name: string;
+	role: string | null;
+	category: string | null;
+	image_url: string | null;
+	sort_order: number;
+}
+
+export interface ITeam {
+	id: number;
+	name: string;
+	subtitle: string | null;
+	logo_url: string | null;
+	sort_order: number;
+}
+
+export interface ISpeaker {
+	id: number;
+	name: string;
+	title: string | null;
+	company: string | null;
+	bio: string | null;
+	image_url: string | null;
+	sort_order: number;
+}
+
+export interface ISponsor {
+	id: number;
+	name: string;
+	category: string | null;
+	type: string | null;
+	logo_url: string | null;
+	website_url: string | null;
+	sort_order: number;
+}
+
+export interface IAgendaItem {
+	id: number;
+	title: string;
+	start_time: string | null;
+	description: string | null;
+	sort_order: number;
+}
+
+export interface IRule {
+	id: number;
+	type: 'allowed' | 'forbidden';
+	text: string;
+	sort_order: number;
+}
+
+export interface IFaq {
+	id: number;
+	question: string;
+	answer: string;
+	sort_order: number;
+}
+
+export interface ITravelRec {
+	id: number;
+	type: 'hotel' | 'restaurant' | 'flight' | 'transport' | 'other';
+	name: string;
+	address: string | null;
+	price_range: string | null;
+	url: string | null;
+	description: string | null;
+	sort_order: number;
+}
+
+export interface IPackingItem {
+	id: number;
+	type: 'essential' | 'recommended';
+	text: string;
+	sort_order: number;
+}
+
+export interface IPageContent {
+	lineup?: IArtist[];
+	speakers?: ISpeaker[];
+	program?: IAgendaItem[];
+	teams?: ITeam[];
+	sponsors?: ISponsor[];
+	rules?: IRule[];
+	faq?: IFaq[];
+	travel?: ITravelRec[];
+	packing?: IPackingItem[];
+	video_url?: string;
+	aftermovie_url?: string;
+	dress_code_type?: string;
+	dress_code_recommended?: string;
+	dress_code_forbidden?: string;
+	special_message?: string;
+	camping_checkin?: string;
+	camping_checkout?: string;
+	camping_showers?: string;
+	camping_electricity?: string;
+}
+
 export interface IEventDetail extends IEventListItem {
 	description: string;
 	google_place_id: string | null;
 	sessions: IEventSession[];
 	ticket_types: ITicketType[];
 	available_payment_methods: IAvailablePaymentMethod[];
+	active_sections?: string[];
+	page_content?: IPageContent;
 }
 
 export interface ICartItem {

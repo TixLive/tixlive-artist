@@ -17,6 +17,19 @@ import KeyFactsStrip from '@/components/event/KeyFactsStrip';
 import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
 import AddressMap from '@/components/common/AddressMap';
+import LineupSection from '@/components/event/sections/LineupSection';
+import TeamsSection from '@/components/event/sections/TeamsSection';
+import SpeakersSection from '@/components/event/sections/SpeakersSection';
+import SponsorsSection from '@/components/event/sections/SponsorsSection';
+import ProgramSection from '@/components/event/sections/ProgramSection';
+import RulesSection from '@/components/event/sections/RulesSection';
+import FaqSection from '@/components/event/sections/FaqSection';
+import TravelSection from '@/components/event/sections/TravelSection';
+import PackingSection from '@/components/event/sections/PackingSection';
+import DressCodeSection from '@/components/event/sections/DressCodeSection';
+import CampingInfoSection from '@/components/event/sections/CampingInfoSection';
+import SpecialMessageSection from '@/components/event/sections/SpecialMessageSection';
+import VideoSection from '@/components/event/sections/VideoSection';
 
 interface EventDetailProps {
   event: IEventDetail;
@@ -181,6 +194,49 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                   )}
                 </div>
               </section>
+            )}
+
+            {/* Event-type-specific sections */}
+            {event.active_sections && event.page_content && (
+              <>
+                {event.active_sections.map((section) => {
+                  const pc = event.page_content!;
+                  switch (section) {
+                    case 'lineup':
+                      return pc.lineup?.length ? <LineupSection key={section} artists={pc.lineup} /> : null;
+                    case 'teams':
+                      return pc.teams?.length ? <TeamsSection key={section} teams={pc.teams} /> : null;
+                    case 'speakers':
+                      return pc.speakers?.length ? <SpeakersSection key={section} speakers={pc.speakers} /> : null;
+                    case 'sponsors':
+                      return pc.sponsors?.length ? <SponsorsSection key={section} sponsors={pc.sponsors} /> : null;
+                    case 'program':
+                      return pc.program?.length ? <ProgramSection key={section} items={pc.program} /> : null;
+                    case 'rules':
+                      return pc.rules?.length ? <RulesSection key={section} rules={pc.rules} /> : null;
+                    case 'faq':
+                      return pc.faq?.length ? <FaqSection key={section} items={pc.faq} /> : null;
+                    case 'video':
+                      return pc.video_url ? <VideoSection key={section} videoUrl={pc.video_url} aftermovieUrl={pc.aftermovie_url} /> : null;
+                    case 'travel':
+                      return pc.travel?.length ? <TravelSection key={section} recommendations={pc.travel} /> : null;
+                    case 'packing':
+                      return pc.packing?.length ? <PackingSection key={section} items={pc.packing} /> : null;
+                    case 'dress_code':
+                      return (pc.dress_code_type || pc.dress_code_recommended || pc.dress_code_forbidden)
+                        ? <DressCodeSection key={section} type={pc.dress_code_type} recommended={pc.dress_code_recommended} forbidden={pc.dress_code_forbidden} />
+                        : null;
+                    case 'camping_info':
+                      return (pc.camping_checkin || pc.camping_checkout || pc.camping_showers || pc.camping_electricity)
+                        ? <CampingInfoSection key={section} checkin={pc.camping_checkin} checkout={pc.camping_checkout} showers={pc.camping_showers} electricity={pc.camping_electricity} />
+                        : null;
+                    case 'special_message':
+                      return pc.special_message ? <SpecialMessageSection key={section} message={pc.special_message} /> : null;
+                    default:
+                      return null;
+                  }
+                })}
+              </>
             )}
 
             {/* Tickets */}

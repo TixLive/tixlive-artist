@@ -1,13 +1,14 @@
 import Image from 'next/image';
-import { IEventDetail, ICartItem } from '@/types';
+import { IEventDetail, ICartItem, IAddonCartItem } from '@/types';
 
 interface OrderSummaryProps {
   event: IEventDetail;
   sessionDate: string;
   cart: ICartItem[];
+  addonCart?: IAddonCartItem[];
 }
 
-export default function OrderSummary({ event, sessionDate, cart }: OrderSummaryProps) {
+export default function OrderSummary({ event, sessionDate, cart, addonCart }: OrderSummaryProps) {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -59,6 +60,23 @@ export default function OrderSummary({ event, sessionDate, cart }: OrderSummaryP
               </span>
             </div>
           ))}
+          {addonCart && addonCart.length > 0 && (
+            <>
+              {addonCart.map((addon) => (
+                <div key={addon.addon_id} className="flex items-center justify-between text-[0.875rem]">
+                  <span style={{ color: 'var(--theme-text-muted)' }}>
+                    {addon.quantity}x {addon.addon_name}
+                    {addon.per_ticket && (
+                      <span className="ml-1 text-[0.75rem] opacity-70">(per ticket)</span>
+                    )}
+                  </span>
+                  <span className="font-medium" style={{ color: 'var(--theme-text)' }}>
+                    +{(addon.price * addon.quantity).toFixed(2)} {addon.currency}
+                  </span>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </div>
     </div>

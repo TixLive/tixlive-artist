@@ -6,7 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { session_id, payment_method_id, email, first_name, last_name, phone, cart, promo_code, locale } = req.body;
+    const { session_id, payment_method_id, email, first_name, last_name, phone, cart, addons, promo_code, locale } = req.body;
 
     if (!session_id || !payment_method_id || !email || !first_name || !last_name || !Array.isArray(cart) || cart.length === 0) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -34,6 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         last_name,
         phone,
         cart,
+        addons,
         promo_code,
         locale,
       }),

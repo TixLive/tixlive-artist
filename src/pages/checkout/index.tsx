@@ -16,7 +16,7 @@ import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 import PaymentDetailsSlot from '@/components/checkout/PaymentDetailsSlot';
 import PriceBreakdown from '@/components/checkout/PriceBreakdown';
 import { getSite, getEvent } from '@/lib/api';
-import { IOrganizer, IEventDetail, ICartItem, IAvailablePaymentMethod } from '@/types';
+import { IOrganizer, IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod } from '@/types';
 
 const checkoutSchema = z.object({
   first_name: z.string().min(1, 'Required'),
@@ -32,12 +32,13 @@ interface CheckoutPageProps {
   event: IEventDetail;
   session: { id: number; date: string };
   cart: ICartItem[];
+  addonCart: IAddonCartItem[];
   brandPrimary: string;
   brandAccent: string;
   eventType: string;
 }
 
-export default function CheckoutPage({ organizer, event, session, cart }: CheckoutPageProps) {
+export default function CheckoutPage({ organizer, event, session, cart, addonCart }: CheckoutPageProps) {
   const { t } = useTranslation('common');
   const router = useRouter();
 
@@ -83,6 +84,9 @@ export default function CheckoutPage({ organizer, event, session, cart }: Checko
           ticket_package_id: item.ticket_type_id,
           quantity: item.quantity,
         })),
+        ...(addonCart.length > 0 && {
+          addons: addonCart.map((a) => ({ addon_id: a.addon_id, quantity: a.quantity })),
+        }),
         promo_code: promoCode || undefined,
         locale: router.locale ?? 'en',
       };
@@ -137,7 +141,7 @@ export default function CheckoutPage({ organizer, event, session, cart }: Checko
                 <div className="space-y-6">
                   {/* Mobile order summary (above form) */}
                   <div className="md:hidden">
-                    <OrderSummary event={event} sessionDate={session.date} cart={cart} />
+                    <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} />
                   </div>
 
                   {/* Attendee details */}
@@ -247,11 +251,13 @@ export default function CheckoutPage({ organizer, event, session, cart }: Checko
           {/* Right column — sticky order summary (desktop only) */}
           <aside className="hidden w-[340px] flex-shrink-0 md:block">
             <div className="sticky top-20">
-              <OrderSummary event={event} sessionDate={session.date} cart={cart} />
+              <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} />
 
               <div className="mt-4 rounded-xl border border-[var(--theme-surface)] p-4">
                 <PriceBreakdown
                   items={cart}
+                  addonItems={addonCart}
+                  totalTicketQty={cart.reduce((s, i) => s + i.quantity, 0)}
                   discount={discount}
                   currency={cart[0]?.currency ?? 'USD'}
                 />
@@ -270,11 +276,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query, local
     let eventSlug: string | undefined;
     let sessionId: string | undefined;
     let cartJson: string | undefined;
+    let addonsJson: string | undefined;
 
     if (req.method === 'POST') {
-      // HTML form POST sends application/x-www-form-urlencoded
-      // Next.js parses this into query params automatically
-      // Read raw body and parse as URL-encoded form data
       const chunks: Buffer[] = [];
       for await (const chunk of req) {
         chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
@@ -284,10 +288,12 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query, local
       eventSlug = params.get('event') ?? undefined;
       sessionId = params.get('session') ?? undefined;
       cartJson = params.get('cart') ?? undefined;
+      addonsJson = params.get('addons') ?? undefined;
     } else {
       eventSlug = query.event as string;
       sessionId = query.session as string;
       cartJson = query.cart as string;
+      addonsJson = query.addons as string;
     }
 
     if (!eventSlug || !cartJson) {
@@ -311,6 +317,15 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query, local
       return { redirect: { destination: '/', permanent: false } };
     }
 
+    let addonCart: IAddonCartItem[] = [];
+    if (addonsJson) {
+      try {
+        addonCart = typeof addonsJson === 'string' ? JSON.parse(addonsJson) : addonsJson;
+      } catch {
+        addonCart = [];
+      }
+    }
+
     // Find the selected session
     const session = event.sessions?.find((s: { id: number }) => String(s.id) === sessionId) ?? event.sessions?.[0];
 
@@ -320,6 +335,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query, local
         event,
         session: session ? { id: session.id, date: session.date } : { id: 0, date: '' },
         cart,
+        addonCart,
         brandPrimary: site.brand_primary_color ?? '#6366f1',
         brandAccent: site.brand_accent_color ?? '#818cf8',
         eventType: event.event_type ?? 'general',

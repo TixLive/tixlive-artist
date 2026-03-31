@@ -178,6 +178,15 @@ export interface ICartItem {
 	currency: string;
 }
 
+export interface IAddonCartItem {
+	addon_id: number;
+	addon_name: string;
+	price: number;
+	quantity: number;
+	per_ticket: boolean;
+	currency: string;
+}
+
 export interface IOrderBuyBody {
 	session_id: number;
 	payment_method_id: number;
@@ -186,6 +195,7 @@ export interface IOrderBuyBody {
 	last_name: string;
 	phone?: string;
 	cart: Array<{ ticket_package_id: number; quantity: number }>;
+	addons?: Array<{ addon_id: number; quantity: number }>;
 	promo_code?: string;
 	locale: string;
 }

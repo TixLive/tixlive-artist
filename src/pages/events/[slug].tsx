@@ -115,7 +115,14 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
     const addonItems = addons
       .filter((a) => (addonQuantities[a.id] ?? 0) > 0)
-      .map((a) => ({ addon_id: a.id, quantity: addonQuantities[a.id] }));
+      .map((a) => ({
+        addon_id: a.id,
+        addon_name: a.name,
+        price: a.price,
+        quantity: addonQuantities[a.id],
+        per_ticket: a.per_ticket,
+        currency,
+      }));
 
     const fields = {
       event: event.slug,

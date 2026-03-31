@@ -30,7 +30,11 @@
 		"processing": "Se proceseaza...",
 		"pay_with": "Plateste cu {{provider}}",
 		"secure_payment_note": "Vei fi redirectionat catre o pagina de plata securizata. Datele cardului tau nu sunt stocate de noi.",
-		"payment_redirect_notice": "Vei fi redirectionat pentru a finaliza plata"
+		"payment_redirect_notice": "Vei fi redirectionat pentru a finaliza plata",
+		"error_sold_out": "Ne pare rau, aceste bilete tocmai s-au epuizat. Te rugam sa te intorci si sa incerci alte bilete.",
+		"error_invalid_order": "Ceva nu este in regula cu comanda ta. Te rugam sa te intorci si sa incerci din nou.",
+		"error_server": "Sistemul nostru de plati este temporar indisponibil. Te rugam sa incerci din nou intr-un moment.",
+		"error_generic": "Ceva nu a mers bine. Te rugam sa incerci din nou."
 	},
 	"success": {
 		"payment_successful": "Plata Reusita!",

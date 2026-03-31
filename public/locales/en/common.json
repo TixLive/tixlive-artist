@@ -30,7 +30,11 @@
 		"processing": "Processing...",
 		"pay_with": "Pay with {{provider}}",
 		"secure_payment_note": "You'll be redirected to a secure payment page. Your card details are not stored by us.",
-		"payment_redirect_notice": "You will be redirected to complete payment"
+		"payment_redirect_notice": "You will be redirected to complete payment",
+		"error_sold_out": "Sorry, these tickets just sold out. Please go back and try different tickets.",
+		"error_invalid_order": "Something is wrong with your order. Please go back and try again.",
+		"error_server": "Our payment system is temporarily unavailable. Please try again in a moment.",
+		"error_generic": "Something went wrong. Please try again."
 	},
 	"success": {
 		"payment_successful": "Payment Successful!",

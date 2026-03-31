@@ -3,6 +3,7 @@ import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input } from '@heroui/react';
 import { Icon } from '@iconify/react';
@@ -19,9 +20,9 @@ import { getSite, getEvent } from '@/lib/api';
 import { IOrganizer, IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod } from '@/types';
 
 const checkoutSchema = z.object({
-  first_name: z.string().min(1, 'Required'),
-  last_name: z.string().min(1, 'Required'),
-  email: z.string().email('Invalid email'),
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   phone: z.string().optional(),
 });
 
@@ -52,6 +53,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
   const selectedMethod = paymentMethods.find((m) => m.id === selectedPaymentId) ?? paymentMethods[0];
 
   const methods = useForm<CheckoutFormValues>({
+    resolver: zodResolver(checkoutSchema),
     defaultValues: {
       first_name: '',
       last_name: '',
@@ -71,15 +73,13 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
     setSubmitError('');
 
     try {
-      const parsed = checkoutSchema.parse(values);
-
       const body = {
         session_id: session.id,
         payment_method_id: selectedPaymentId,
-        email: parsed.email,
-        first_name: parsed.first_name,
-        last_name: parsed.last_name,
-        phone: parsed.phone ?? '',
+        email: values.email,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        phone: values.phone ?? '',
         cart: cart.map((item) => ({
           ticket_package_id: item.ticket_type_id,
           quantity: item.quantity,
@@ -97,16 +97,31 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
         body: JSON.stringify(body),
       });
       const response = await res.json();
-      if (!res.ok) throw new Error(response.error ?? 'Order failed');
-      if (!response.payment_url) throw new Error('No payment URL received. Please try again.');
-      window.location.href = response.payment_url;
-    } catch (err: unknown) {
-      const error = err as { message?: string; code?: string };
-      if (error.code === 'SOLD_OUT' || error.message?.includes('sold out')) {
-        setSubmitError('Sorry, tickets just sold out.');
-      } else {
-        setSubmitError(error.message ?? 'Something went wrong. Please try again.');
+
+      if (!res.ok) {
+        const code = response.code ?? response.error ?? '';
+        if (code === 'SOLD_OUT' || String(code).toLowerCase().includes('sold out')) {
+          setSubmitError(t('checkout.error_sold_out'));
+        } else if (res.status === 400) {
+          setSubmitError(t('checkout.error_invalid_order'));
+        } else if (res.status >= 500) {
+          setSubmitError(t('checkout.error_server'));
+        } else {
+          setSubmitError(t('checkout.error_generic'));
+        }
+        setSubmitting(false);
+        return;
       }
+
+      if (!response.payment_url) {
+        setSubmitError(t('checkout.error_generic'));
+        setSubmitting(false);
+        return;
+      }
+
+      window.location.href = response.payment_url;
+    } catch {
+      setSubmitError(t('checkout.error_generic'));
       setSubmitting(false);
     }
   };

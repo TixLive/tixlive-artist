@@ -141,7 +141,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
     document.body.appendChild(form);
     form.submit();
-  }, [cartItems, event.slug, activeSessionId]);
+  }, [cartItems, event.slug, activeSessionId, addons, addonQuantities, currency]);
 
   // JSON-LD structured data
   const jsonLd = {

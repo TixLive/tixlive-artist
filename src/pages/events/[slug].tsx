@@ -198,18 +198,18 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
         <KeyFactsStrip event={event} />
 
         {/* Two-column layout: content left, sidebar right */}
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 md:flex md:gap-8">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:flex md:gap-10">
           {/* Left column — content */}
           <div className="min-w-0 flex-1">
             {/* Description */}
             {event.description && (
               <section id="about">
-                <h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
+                <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
                   About Event
                 </h2>
                 <div className="relative">
                   <p
-                    className={`text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)] ${
+                    className={`text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)] ${
                       !descriptionExpanded ? 'line-clamp-3' : ''
                     }`}
                   >
@@ -217,7 +217,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                   </p>
                   {!descriptionExpanded && event.description.length > 200 && (
                     <button
-                      className="mt-1 text-[0.875rem] font-medium text-[var(--brand-primary)] focus-visible:ring-2 focus-visible:ring-offset-2"
+                      className="mt-1.5 text-[0.875rem] font-medium text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] focus-visible:ring-2 focus-visible:ring-offset-2"
                       onClick={() => setDescriptionExpanded(true)}
                     >
                       Show more
@@ -228,9 +228,9 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             )}
 
             {/* Tickets */}
-            <section className="mt-8" id="tickets" ref={ticketsRef}>
-              <div className="mb-1 flex items-baseline justify-between">
-                <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
+            <section className="mt-10" id="tickets" ref={ticketsRef}>
+              <div className="mb-2 flex items-baseline justify-between">
+                <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
                   Order Tickets
                 </h2>
                 {priceFrom > 0 && (
@@ -255,7 +255,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
               {!isEventSoldOut ? (
                 <>
-                  <div className="mt-3 flex flex-col gap-2">
+                  <div className="mt-3 flex flex-col gap-3">
                     {ticketTypes.map((ticket) => (
                       <TicketTypeRow
                         key={ticket.id}
@@ -268,8 +268,8 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
                   {/* Cart summary */}
                   {totalQuantity > 0 && (
-                    <div className="mt-4 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-surface)] p-4">
-                      <div className="space-y-1.5 text-[0.8125rem]">
+                    <div className="mt-5 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
+                      <div className="space-y-2 text-[0.8125rem]">
                         {cartItems.map(item => (
                           <div key={item.ticket_type_id} className="flex items-center justify-between">
                             <span className="text-[var(--theme-text)]">
@@ -288,8 +288,8 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                             </span>
                           </div>
                         )}
-                        <div className="flex items-center justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] pt-2">
-                          <span className="font-semibold text-[var(--theme-text)]">Total</span>
+                        <div className="flex items-center justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-3">
+                          <span className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">Total</span>
                           <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
                             {totalPrice} {currency}
                           </span>
@@ -298,7 +298,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                       <Button
                         variant="solid"
                         size="lg"
-                        className="mt-3 w-full rounded-xl font-[family-name:var(--font-display)] font-semibold text-white"
+                        className="mt-4 w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
                         style={{ backgroundColor: 'var(--brand-primary)' }}
                         onPress={handleBuy}
                       >
@@ -309,9 +309,9 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                   )}
                 </>
               ) : (
-                <div className="mt-3 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] py-6 text-center">
-                  <Icon icon="mdi:alert-circle" className="mx-auto mb-2 text-red-500" width={32} />
-                  <p className="font-[family-name:var(--font-display)] text-[1rem] font-semibold text-red-600">
+                <div className="mt-3 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-8 text-center">
+                  <Icon icon="mdi:alert-circle" className="mx-auto mb-2 text-[#DC2626]" width={32} />
+                  <p className="font-[family-name:var(--font-display)] text-[1rem] font-[700] text-[#DC2626]">
                     Sold Out
                   </p>
                   <p className="mt-1 text-[0.8125rem] text-[var(--theme-text-muted)]">
@@ -323,17 +323,17 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
             {/* Add-ons ("Enhance Your Experience") */}
             {addons.length > 0 && totalQuantity > 0 && (
-              <section className="mt-8">
+              <section className="mt-10">
                 <div className="mb-1 flex items-center gap-2">
-                  <Icon icon="mdi:auto-awesome" width={20} className="text-[var(--brand-primary)]" />
-                  <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
+                  <Icon icon="mdi:auto-awesome" width={20} className="text-[var(--brand-accent)]" />
+                  <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
                     Enhance Your Experience
                   </h2>
                 </div>
                 <p className="mb-3 text-[0.75rem] text-[var(--theme-text-muted)]">
                   Price per ticket · Applied to all tickets in your cart.
                 </p>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3">
                   {addons.map((addon) => (
                     <AddonRow
                       key={addon.id}
@@ -347,32 +347,32 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             )}
 
             {/* Promo code */}
-            <div className="mt-8 flex items-center gap-2">
+            <div className="mt-10 flex items-center gap-2">
               <Icon icon="mdi:tag-outline" width={18} className="shrink-0 text-[var(--theme-text-muted)]" />
               <input
                 type="text"
                 placeholder="Cod promoțional"
-                className="h-10 flex-1 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-transparent px-3 text-[0.875rem] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] focus:border-[var(--brand-primary)] focus:outline-none"
+                className="h-10 flex-1 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-3 text-[0.875rem] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] transition-colors duration-200 focus:border-[var(--brand-accent)] focus:outline-none"
               />
-              <button className="h-10 shrink-0 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] px-4 text-[0.8125rem] font-medium text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-surface)]">
+              <button className="h-10 shrink-0 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] px-4 font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)] transition-colors duration-200 hover:bg-[var(--theme-surface)]">
                 Aplică
               </button>
             </div>
 
             {/* Trust indicators */}
-            <div className="mt-8 flex items-start justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-8">
+            <div className="mt-10 flex items-start justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-10">
               <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
-                <Icon icon="mdi:shield-check-outline" width={28} className="text-[color-mix(in_srgb,var(--theme-text)_30%,transparent)]" />
+                <Icon icon="mdi:shield-check-outline" width={24} className="text-[var(--theme-text-muted)]" />
                 <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Plată securizată</span>
                 <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">SSL 256-bit</span>
               </div>
               <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
-                <Icon icon="mdi:flash-outline" width={28} className="text-[color-mix(in_srgb,var(--theme-text)_30%,transparent)]" />
+                <Icon icon="mdi:flash-outline" width={24} className="text-[var(--theme-text-muted)]" />
                 <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Bilet instant</span>
                 <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">Email & telefon</span>
               </div>
               <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
-                <Icon icon="mdi:check-decagram-outline" width={28} className="text-[color-mix(in_srgb,var(--theme-text)_30%,transparent)]" />
+                <Icon icon="mdi:check-decagram-outline" width={24} className="text-[var(--theme-text-muted)]" />
                 <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Garanție 100%</span>
                 <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">Rambursare ușoară</span>
               </div>
@@ -423,8 +423,8 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
             {/* Venue */}
             {event.venue_name && (
-              <section className="mt-8" id="info">
-                <h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
+              <section className="mt-10" id="info">
+                <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
                   Venue
                 </h2>
                 <div className="flex items-start gap-3">
@@ -445,13 +445,13 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             )}
 
             {/* Organizer card */}
-            <section className="mb-8 mt-8">
-              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
+            <section className="mb-10 mt-10">
+              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
                 Organizer
               </h2>
               <Link
                 href="/"
-                className="flex items-center gap-3 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] p-4 transition hover:bg-[var(--theme-surface)]"
+                className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] p-5 transition-colors duration-200 hover:bg-[var(--theme-surface)]"
               >
                 {organizer.logo_url ? (
                   <Image
@@ -459,15 +459,15 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                     alt={organizer.name}
                     width={48}
                     height={48}
-                    className="rounded-full object-cover"
+                    className="rounded-xl object-cover"
                   />
                 ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--theme-surface)] font-[family-name:var(--font-display)] text-[1.125rem] font-bold text-[var(--theme-text-muted)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--theme-surface)] font-[family-name:var(--font-display)] text-[1.125rem] font-[800] text-[var(--theme-text-muted)]">
                     {organizer.name.charAt(0)}
                   </div>
                 )}
                 <div>
-                  <p className="font-[family-name:var(--font-display)] text-[0.875rem] font-semibold text-[var(--theme-text)]">
+                  <p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
                     {organizer.name}
                   </p>
                   <p className="text-[0.75rem] text-[var(--theme-text-muted)]">View all events</p>

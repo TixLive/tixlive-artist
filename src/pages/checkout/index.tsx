@@ -138,19 +138,19 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
         <title>Checkout - {event.title}</title>
       </Head>
 
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         {/* Back link */}
         <Button
           variant="light"
           onPress={() => router.back()}
-          className="mb-6 inline-flex items-center gap-1 text-[0.875rem] text-[var(--theme-text-muted)]"
+          className="mb-8 inline-flex items-center gap-1 text-[0.875rem] text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
         >
           <Icon icon="mdi:arrow-left" width={18} />
           {t('checkout.back')}
         </Button>
 
         {/* Two-column layout: form left, summary right */}
-        <div className="md:flex md:gap-8">
+        <div className="md:flex md:gap-10">
           {/* Left column — form */}
           <div className="min-w-0 flex-1">
             <FormProvider {...methods}>
@@ -163,7 +163,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
 
                   {/* Attendee details */}
                   <section className="space-y-4">
-                    <h3 className="font-[family-name:var(--font-display)] text-[1.125rem] font-semibold text-[var(--theme-text)]">
+                    <h3 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] text-[var(--theme-text)]">
                       {t('checkout.your_details')}
                     </h3>
 
@@ -237,7 +237,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
 
                   {/* Error */}
                   {submitError && (
-                    <div className="rounded-xl bg-red-50 p-3 text-center text-[0.875rem] text-red-600">
+                    <div className="rounded-2xl bg-[#DC2626]/8 p-4 text-center text-[0.875rem] text-[#DC2626]">
                       {submitError}
                     </div>
                   )}
@@ -246,7 +246,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
                   <div className="space-y-3">
                     <Button
                       type="submit"
-                      className="w-full rounded-full font-[family-name:var(--font-display)] font-semibold text-white"
+                      className="w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
                       style={{ backgroundColor: 'var(--brand-primary)' }}
                       size="lg"
                       isLoading={submitting}
@@ -266,11 +266,11 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
           </div>
 
           {/* Right column — sticky order summary (desktop only) */}
-          <aside className="hidden w-[340px] flex-shrink-0 md:block">
-            <div className="sticky top-20">
+          <aside className="hidden w-[360px] flex-shrink-0 md:block">
+            <div className="sticky top-24">
               <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} />
 
-              <div className="mt-4 rounded-xl border border-[var(--theme-surface)] p-4">
+              <div className="mt-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
                 <PriceBreakdown
                   items={cart}
                   addonItems={addonCart}

@@ -110,37 +110,33 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
         <title>Payment Successful!</title>
       </Head>
 
-      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-20">
         {/* 1. Checkmark animation */}
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="animate-checkmark mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-            <Icon icon="mdi:check-bold" width={40} className="text-green-500" />
+        <div className="mb-10 flex flex-col items-center text-center">
+          <div className="animate-checkmark mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#16A34A]/10">
+            <Icon icon="mdi:check-bold" width={40} className="text-[#16A34A]" />
           </div>
-          <h1
-            className="text-[1.5rem] font-bold sm:text-[2rem]"
-            style={{ color: 'var(--brand-primary)' }}
-          >
+          <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[900] tracking-tight text-[var(--theme-text)] sm:text-[2.25rem]">
             Payment successful!
           </h1>
-          <p className="mt-2 text-[0.875rem]" style={{ color: 'var(--theme-text-muted)' }}>
+          <p className="mt-2 text-[0.9375rem] text-[var(--theme-text-muted)]">
             Your tickets are confirmed. Check your email for details.
           </p>
         </div>
 
         {/* 2. Order details */}
         {loading ? (
-          <div className="space-y-4 rounded-xl p-6" style={{ backgroundColor: 'var(--theme-surface)' }}>
+          <div className="space-y-4 rounded-2xl bg-[var(--theme-surface)] p-6">
             <Skeleton className="h-6 w-3/4 rounded-lg" />
             <Skeleton className="h-4 w-1/2 rounded-lg" />
             <Skeleton className="h-4 w-2/3 rounded-lg" />
           </div>
         ) : notFound ? (
-          <div className="rounded-xl p-6 text-center" style={{ backgroundColor: 'var(--theme-surface)' }}>
-            <p className="text-[0.875rem]" style={{ color: 'var(--theme-text-muted)' }}>Order not found</p>
+          <div className="rounded-2xl bg-[var(--theme-surface)] p-6 text-center">
+            <p className="text-[0.875rem] text-[var(--theme-text-muted)]">Order not found</p>
             <Link
               href="/"
-              className="mt-2 inline-block text-[0.875rem] font-medium underline"
-              style={{ color: 'var(--brand-primary)' }}
+              className="mt-2 inline-block text-[0.875rem] font-medium text-[var(--brand-accent)] underline underline-offset-2"
             >
               Contact the organizer
             </Link>
@@ -148,10 +144,10 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
         ) : order ? (
           <div className="space-y-6">
             {/* Order summary */}
-            <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--theme-surface)' }}>
-              <h2 className="text-[1.125rem] font-semibold" style={{ color: 'var(--theme-text)' }}>{order.event_title}</h2>
+            <div className="rounded-2xl bg-[var(--theme-surface)] p-6">
+              <h2 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] text-[var(--theme-text)]">{order.event_title}</h2>
               {order.session_date && (
-                <p className="mt-1 text-[0.875rem]" style={{ color: 'var(--theme-text-muted)' }}>
+                <p className="mt-1 font-[family-name:var(--font-data)] text-[0.875rem] text-[var(--theme-text-muted)]">
                   {new Date(order.session_date).toLocaleDateString('en-US', {
                     weekday: 'long',
                     month: 'long',
@@ -163,7 +159,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
               {order.items && order.items.length > 0 && (
                 <div className="mt-3 space-y-1">
                   {order.items.map((item, i) => (
-                    <p key={i} className="text-[0.875rem] text-gray-700">
+                    <p key={i} className="text-[0.875rem] text-[var(--theme-text-muted)]">
                       {item.quantity}x {item.name}
                     </p>
                   ))}
@@ -175,7 +171,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
             {order.pdf_url && (
               <a href={order.pdf_url} download>
                 <Button
-                  className="w-full rounded-full text-white font-semibold"
+                  className="w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
                   style={{ backgroundColor: 'var(--brand-primary)' }}
                   size="lg"
                 >
@@ -186,17 +182,18 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
             )}
 
             {/* 4. Magic link section */}
-            <div className="rounded-xl border border-gray-200 p-6">
-              <h3 className="text-[1.125rem] font-semibold" style={{ color: 'var(--theme-text)' }}>
+            <div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] p-6">
+              <h3 className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">
                 Save tickets to your account
               </h3>
-              <p className="mt-1 text-[0.875rem]" style={{ color: 'var(--theme-text-muted)' }}>
+              <p className="mt-1 text-[0.875rem] text-[var(--theme-text-muted)]">
                 Access your tickets anytime from any device. Enter your email and we&apos;ll send a link.
               </p>
 
               {linkSent ? (
-                <div className="mt-4 rounded-xl bg-green-50 p-3 text-[0.875rem] text-green-700">
-                  ✓ Check your inbox! We sent a link to {magicEmail}. It expires in 24 hours.
+                <div className="mt-4 rounded-xl bg-[#16A34A]/8 p-4 text-[0.875rem] text-[#16A34A]">
+                  <Icon icon="mdi:check" className="mr-1 inline" width={16} />
+                  Check your inbox! We sent a link to {magicEmail}. It expires in 24 hours.
                 </div>
               ) : (
                 <div className="mt-4 flex gap-2">
@@ -210,7 +207,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
                   />
                   <Button
                     variant="flat"
-                    className="shrink-0 rounded-xl"
+                    className="shrink-0 rounded-xl font-[family-name:var(--font-display)] font-[700]"
                     onPress={handleSendMagicLink}
                     isLoading={sendingLink}
                     isDisabled={!magicEmail.trim()}
@@ -221,8 +218,8 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
               )}
 
               {linkError && (
-                <p className="mt-2 text-[0.875rem] text-red-500">
-                  ✕ {linkError}
+                <p className="mt-2 text-[0.875rem] text-[#DC2626]">
+                  {linkError}
                   <button
                     type="button"
                     onClick={handleSendMagicLink}
@@ -237,8 +234,8 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
             {/* 5. Share */}
             <div className="flex justify-center">
               <Button
-                variant="ghost"
-                className="rounded-full"
+                variant="bordered"
+                className="rounded-xl border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]"
                 onPress={handleShare}
               >
                 Share this event
@@ -281,8 +278,8 @@ export const getServerSideProps: GetServerSideProps = async ({ query, locale }) 
       props: {
         organizer: site,
         orderId,
-        brandPrimary: site.brand_primary_color ?? '#6366f1',
-        brandAccent: site.brand_accent_color ?? '#818cf8',
+        brandPrimary: site.brand_primary_color ?? '#2D2A26',
+        brandAccent: site.brand_accent_color ?? '#8B6914',
         ...(await serverSideTranslations(locale ?? 'en', ['common'])),
       },
     };
@@ -301,8 +298,8 @@ export const getServerSideProps: GetServerSideProps = async ({ query, locale }) 
           social_links: {},
         } as IOrganizer,
         orderId: '',
-        brandPrimary: '#6366f1',
-        brandAccent: '#818cf8',
+        brandPrimary: '#2D2A26',
+        brandAccent: '#8B6914',
         ...(await serverSideTranslations(locale ?? 'en', ['common'])),
       },
     };

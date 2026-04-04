@@ -10,15 +10,15 @@ export default function LineupSection({ artists }: LineupSectionProps) {
 	if (!artists.length) return null;
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				Lineup
 			</h2>
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 				{artists.map((artist) => (
 					<div
 						key={artist.id}
-						className="group relative overflow-hidden rounded-xl bg-[var(--theme-surface)]"
+						className="group relative overflow-hidden rounded-2xl bg-[var(--theme-surface)]"
 					>
 						<div className="relative aspect-square">
 							{artist.image_url ? (
@@ -30,16 +30,16 @@ export default function LineupSection({ artists }: LineupSectionProps) {
 									sizes="(max-width: 640px) 50vw, 33vw"
 								/>
 							) : (
-								<div className="flex h-full w-full items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)]">
+								<div className="flex h-full w-full items-center justify-center bg-[color-mix(in_srgb,var(--brand-accent)_15%,transparent)]">
 									<Icon
 										icon="mdi:account-music"
 										width={48}
-										className="text-[color-mix(in_srgb,var(--brand-primary)_60%,transparent)]"
+										className="text-[color-mix(in_srgb,var(--brand-accent)_60%,transparent)]"
 									/>
 								</div>
 							)}
 							<div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-3 pt-8">
-								<p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-semibold leading-tight text-white">
+								<p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] leading-tight text-white">
 									{artist.name}
 								</p>
 								{artist.role && (

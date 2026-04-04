@@ -12,17 +12,17 @@ export default function FaqSection({ items }: FaqSectionProps) {
 	if (!items.length) return null;
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				FAQ
 			</h2>
-			<div className="divide-y divide-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)]">
+			<div className="divide-y divide-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)]">
 				{items.map((faq) => {
 					const isOpen = openId === faq.id;
 					return (
 						<div key={faq.id}>
 							<button
-								className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--theme-surface)] focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-inset"
+								className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--theme-surface)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-inset"
 								onClick={() => setOpenId(isOpen ? null : faq.id)}
 								aria-expanded={isOpen}
 							>

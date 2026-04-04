@@ -10,15 +10,15 @@ export default function SpeakersSection({ speakers }: SpeakersSectionProps) {
 	if (!speakers.length) return null;
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				Speakers
 			</h2>
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{speakers.map((speaker) => (
 					<div
 						key={speaker.id}
-						className="flex gap-3 rounded-xl bg-[var(--theme-surface)] p-4"
+						className="flex gap-3 rounded-2xl bg-[var(--theme-surface)] p-4"
 					>
 						{speaker.image_url ? (
 							<Image
@@ -29,20 +29,20 @@ export default function SpeakersSection({ speakers }: SpeakersSectionProps) {
 								className="h-16 w-16 shrink-0 rounded-full object-cover"
 							/>
 						) : (
-							<div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)]">
+							<div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--brand-accent)_15%,transparent)]">
 								<Icon
 									icon="mdi:account"
 									width={32}
-									className="text-[color-mix(in_srgb,var(--brand-primary)_60%,transparent)]"
+									className="text-[color-mix(in_srgb,var(--brand-accent)_60%,transparent)]"
 								/>
 							</div>
 						)}
 						<div className="min-w-0">
-							<p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-semibold text-[var(--theme-text)]">
+							<p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
 								{speaker.name}
 							</p>
 							{(speaker.title || speaker.company) && (
-								<p className="mt-0.5 text-[0.75rem] text-[var(--brand-primary)]">
+								<p className="mt-0.5 text-[0.75rem] text-[var(--brand-accent)]">
 									{[speaker.title, speaker.company].filter(Boolean).join(' · ')}
 								</p>
 							)}

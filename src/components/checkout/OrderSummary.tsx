@@ -24,9 +24,9 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart }: Or
   };
 
   return (
-    <div className="flex gap-4 rounded-xl p-4" style={{ backgroundColor: 'var(--theme-surface)' }}>
+    <div className="flex gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
       {/* Poster thumbnail */}
-      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
+      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl">
         {event.poster_url ? (
           <Image
             src={event.poster_url}
@@ -36,8 +36,8 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart }: Or
             sizes="80px"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center" style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--theme-text) 15%, transparent), color-mix(in srgb, var(--theme-text) 30%, transparent))' }}>
-            <span className="text-[0.75rem] font-medium text-[var(--theme-text-muted)]">
+          <div className="flex h-full w-full items-center justify-center bg-[color-mix(in_srgb,var(--theme-text)_8%,transparent)]">
+            <span className="font-[family-name:var(--font-display)] text-[1rem] font-[800] text-[var(--theme-text-muted)]">
               {event.title.charAt(0)}
             </span>
           </div>
@@ -46,16 +46,16 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart }: Or
 
       {/* Event info + line items */}
       <div className="min-w-0 flex-1">
-        <h2 className="truncate text-[1.125rem] font-semibold" style={{ color: 'var(--theme-text)' }}>{event.title}</h2>
-        <p className="mt-0.5 text-[0.75rem]" style={{ color: 'var(--theme-text-muted)' }}>{formatDate(sessionDate)}</p>
+        <h2 className="truncate font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">{event.title}</h2>
+        <p className="mt-0.5 font-[family-name:var(--font-data)] text-[0.75rem] text-[var(--theme-text-muted)]">{formatDate(sessionDate)}</p>
 
-        <div className="mt-3 space-y-1">
+        <div className="mt-3 space-y-1.5">
           {cart.map((item) => (
-            <div key={item.ticket_type_id} className="flex items-center justify-between text-[0.875rem]">
-              <span style={{ color: 'var(--theme-text-muted)' }}>
+            <div key={item.ticket_type_id} className="flex items-center justify-between text-[0.8125rem]">
+              <span className="text-[var(--theme-text-muted)]">
                 {item.quantity}x {item.ticket_type_name}
               </span>
-              <span className="font-medium" style={{ color: 'var(--theme-text)' }}>
+              <span className="font-[family-name:var(--font-data)] font-medium tabular-nums text-[var(--theme-text)]">
                 {(item.price * item.quantity).toFixed(2)} {item.currency}
               </span>
             </div>
@@ -63,14 +63,14 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart }: Or
           {addonCart && addonCart.length > 0 && (
             <>
               {addonCart.map((addon) => (
-                <div key={addon.addon_id} className="flex items-center justify-between text-[0.875rem]">
-                  <span style={{ color: 'var(--theme-text-muted)' }}>
+                <div key={addon.addon_id} className="flex items-center justify-between text-[0.8125rem]">
+                  <span className="text-[var(--theme-text-muted)]">
                     {addon.quantity}x {addon.addon_name}
                     {addon.per_ticket && (
-                      <span className="ml-1 text-[0.75rem] opacity-70">(per ticket)</span>
+                      <span className="ml-1 text-[0.6875rem] opacity-60">(per ticket)</span>
                     )}
                   </span>
-                  <span className="font-medium" style={{ color: 'var(--theme-text)' }}>
+                  <span className="font-[family-name:var(--font-data)] font-medium tabular-nums text-[var(--theme-text)]">
                     +{(addon.price * addon.quantity * (addon.per_ticket ? cart.reduce((s, i) => s + i.quantity, 0) : 1)).toFixed(2)} {addon.currency}
                   </span>
                 </div>

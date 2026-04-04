@@ -26,8 +26,8 @@ export default function CampingInfoSection(props: CampingInfoSectionProps) {
 	};
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				Camping Info
 			</h2>
 			<div className="grid grid-cols-2 gap-3">
@@ -37,13 +37,13 @@ export default function CampingInfoSection(props: CampingInfoSectionProps) {
 					return (
 						<div
 							key={item.key}
-							className="rounded-xl bg-[var(--theme-surface)] p-4"
+							className="rounded-2xl bg-[var(--theme-surface)] p-4"
 						>
 							<div className="mb-2 flex items-center gap-2">
 								<Icon
 									icon={item.icon}
 									width={20}
-									className="text-[var(--brand-primary)]"
+									className="text-[var(--brand-accent)]"
 								/>
 								<span className="text-[0.6875rem] font-medium uppercase tracking-wider text-[var(--theme-text-muted)]">
 									{item.label}

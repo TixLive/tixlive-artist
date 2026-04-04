@@ -27,20 +27,19 @@ export default function TicketDetailPage({ organizer, ticket, brandPrimary, bran
 
 			<style jsx global>{`
 				:root {
-					--brand-primary: ${brandPrimary || '#6366f1'};
-					--brand-accent: ${brandAccent || '#f59e0b'};
+					--brand-primary: ${brandPrimary || '#2D2A26'};
+					--brand-accent: ${brandAccent || '#8B6914'};
 				}
 			`}</style>
 
 			<Layout organizerName={organizer.name} logoUrl={organizer.logo_url} socialLinks={organizer.social_links}>
-				<div className="mx-auto max-w-md px-4 py-8">
+				<div className="mx-auto max-w-md px-4 py-10">
 					{/* Back link */}
 					<Link
 						href="/my-tickets"
-						className="mb-6 inline-flex items-center gap-1 text-[0.875rem] font-medium transition"
-					style={{ color: 'var(--theme-text-muted)' }}
+						className="mb-8 inline-flex items-center gap-1.5 text-[0.875rem] font-medium text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
 					>
-						<Icon icon="mdi:arrow-left" className="h-4 w-4" />
+						<Icon icon="mdi:arrow-left" width={16} />
 						Back to My Tickets
 					</Link>
 

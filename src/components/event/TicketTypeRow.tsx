@@ -1,4 +1,3 @@
-import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { ITicketType } from '@/types';
 import CapacityBadge from '@/components/event/CapacityBadge';
@@ -19,22 +18,22 @@ export default function TicketTypeRow({ ticket, quantity, onQuantityChange }: Ti
 
   return (
     <div
-      className={`rounded-xl border-2 p-4 transition-all duration-200 ${
+      className={`rounded-2xl border-2 p-4 transition-all duration-200 ${
         isSoldOut
-          ? 'border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] opacity-60'
+          ? 'border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] opacity-55'
           : isSelected
-            ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_4%,var(--theme-surface))] shadow-[0_0_0_1px_var(--brand-primary),0_2px_12px_color-mix(in_srgb,var(--brand-primary)_15%,transparent)]'
-            : 'border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-surface)] hover:border-[color-mix(in_srgb,var(--theme-text)_20%,transparent)]'
+            ? 'border-[var(--brand-accent)] bg-[color-mix(in_srgb,var(--brand-accent)_3%,var(--theme-bg))]'
+            : 'border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] hover:border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)]'
       }`}
     >
       <div className="flex items-center gap-3">
         {/* Selection indicator */}
         <div className="shrink-0">
           <div
-            className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors ${
+            className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
               isSelected
-                ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)]'
-                : 'border-[color-mix(in_srgb,var(--theme-text)_25%,transparent)]'
+                ? 'border-[var(--brand-accent)] bg-[var(--brand-accent)]'
+                : 'border-[color-mix(in_srgb,var(--theme-text)_20%,transparent)]'
             }`}
           >
             {isSelected && (
@@ -46,7 +45,7 @@ export default function TicketTypeRow({ ticket, quantity, onQuantityChange }: Ti
         {/* Info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h4 className="font-[family-name:var(--font-display)] text-[0.9375rem] font-semibold text-[var(--theme-text)]">
+            <h4 className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
               {ticket.name}
             </h4>
             <CapacityBadge remainingCapacity={ticket.remaining_capacity} />
@@ -65,7 +64,7 @@ export default function TicketTypeRow({ ticket, quantity, onQuantityChange }: Ti
 
         {/* Quantity or Sold Out */}
         {isSoldOut ? (
-          <span className="inline-flex shrink-0 items-center rounded-lg bg-red-50 px-3 py-1.5 text-[0.8125rem] font-semibold text-red-600">
+          <span className="inline-flex shrink-0 items-center rounded-xl bg-[#DC2626]/10 px-3 py-1.5 font-[family-name:var(--font-data)] text-[0.8125rem] font-semibold text-[#DC2626]">
             Sold Out
           </span>
         ) : (
@@ -94,13 +93,12 @@ function QuantityStepper({
 }) {
   return (
     <div
-      className="inline-flex shrink-0 items-center rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-bg)]"
+      className="inline-flex shrink-0 items-center rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-bg)]"
       role="group"
       aria-label={`Quantity for ${ticketName}`}
     >
       <button
-        className="flex h-9 w-9 items-center justify-center rounded-lg transition hover:bg-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
-        style={{ color: 'var(--theme-text-muted)' }}
+        className="flex h-9 w-9 items-center justify-center rounded-l-xl text-[var(--theme-text-muted)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--theme-text)_5%,transparent)] disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
         onClick={() => onChange(Math.max(0, quantity - 1))}
         disabled={quantity === 0}
         aria-label={`Decrease quantity for ${ticketName}`}
@@ -111,8 +109,7 @@ function QuantityStepper({
         {quantity}
       </span>
       <button
-        className="flex h-9 w-9 items-center justify-center rounded-lg transition hover:bg-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
-        style={{ color: 'var(--brand-primary)' }}
+        className="flex h-9 w-9 items-center justify-center rounded-r-xl text-[var(--brand-accent)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--brand-accent)_5%,transparent)] disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
         onClick={() => onChange(Math.min(maxQty, quantity + 1))}
         disabled={quantity >= maxQty}
         aria-label={`Increase quantity for ${ticketName}`}

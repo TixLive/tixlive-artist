@@ -28,8 +28,8 @@ export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 	});
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				Sponsors
 			</h2>
 			<div className="space-y-5">
@@ -43,7 +43,7 @@ export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 								const content = (
 									<div
 										key={sponsor.id}
-										className="flex h-16 items-center justify-center rounded-lg border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-surface)] px-5 transition-colors hover:border-[color-mix(in_srgb,var(--theme-text)_20%,transparent)]"
+										className="flex h-16 items-center justify-center rounded-lg border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-5 transition-colors hover:border-[color-mix(in_srgb,var(--theme-text)_20%,transparent)]"
 									>
 										{sponsor.logo_url ? (
 											<Image

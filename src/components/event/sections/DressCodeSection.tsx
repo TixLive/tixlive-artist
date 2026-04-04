@@ -10,15 +10,15 @@ export default function DressCodeSection({ type, recommended, forbidden }: Dress
 	if (!type && !recommended && !forbidden) return null;
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				Dress Code
 			</h2>
-			<div className="rounded-xl bg-[var(--theme-surface)] p-4">
+			<div className="rounded-2xl bg-[var(--theme-surface)] p-4">
 				{type && (
 					<div className="mb-3 flex items-center gap-2">
-						<Icon icon="mdi:hanger" width={20} className="text-[var(--brand-primary)]" />
-						<span className="font-[family-name:var(--font-display)] text-[0.9375rem] font-semibold text-[var(--theme-text)]">
+						<Icon icon="mdi:hanger" width={20} className="text-[var(--brand-accent)]" />
+						<span className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
 							{type}
 						</span>
 					</div>

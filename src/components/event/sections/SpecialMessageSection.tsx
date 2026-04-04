@@ -8,11 +8,11 @@ export default function SpecialMessageSection({ message }: SpecialMessageSection
 	if (!message) return null;
 
 	return (
-		<section className="mt-8">
-			<div className="rounded-xl border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] p-5">
+		<section className="mt-10">
+			<div className="rounded-2xl border border-[color-mix(in_srgb,var(--brand-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--brand-accent)_8%,transparent)] p-5">
 				<div className="mb-2 flex items-center gap-2">
-					<Icon icon="mdi:heart" width={20} className="text-[var(--brand-primary)]" />
-					<span className="font-[family-name:var(--font-display)] text-[0.875rem] font-semibold text-[var(--brand-primary)]">
+					<Icon icon="mdi:heart" width={20} className="text-[var(--brand-accent)]" />
+					<span className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--brand-accent)]">
 						A Special Message
 					</span>
 				</div>

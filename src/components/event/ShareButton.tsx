@@ -32,8 +32,8 @@ export default function ShareButton({ title, variant = 'hero' }: ShareButtonProp
     }
   }, [title]);
 
-  const heroClass = 'rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30';
-  const inlineClass = 'rounded-full text-[var(--theme-text-muted)] hover:text-[var(--brand-primary)] hover:bg-[var(--theme-surface)]';
+  const heroClass = 'rounded-xl bg-white/15 text-white backdrop-blur-sm hover:bg-white/25';
+  const inlineClass = 'rounded-xl text-[var(--theme-text-muted)] hover:text-[var(--brand-accent)] hover:bg-[var(--theme-surface)]';
 
   return (
     <div className="relative">
@@ -49,7 +49,7 @@ export default function ShareButton({ title, variant = 'hero' }: ShareButtonProp
 
       {/* Copied toast */}
       {copied && (
-        <div className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white shadow-lg">
+        <div className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-xl bg-[var(--theme-text)] px-3 py-1.5 text-xs text-[var(--theme-bg)] shadow-lg">
           Link copied!
         </div>
       )}

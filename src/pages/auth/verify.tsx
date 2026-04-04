@@ -67,8 +67,8 @@ export default function VerifyPage({ organizer, error, brandPrimary, brandAccent
 
 			<style jsx global>{`
 				:root {
-					--brand-primary: ${/^#[0-9a-fA-F]{3,8}$/.test(brandPrimary || '') ? brandPrimary : '#6366f1'};
-					--brand-accent: ${/^#[0-9a-fA-F]{3,8}$/.test(brandAccent || '') ? brandAccent : '#f59e0b'};
+					--brand-primary: ${/^#[0-9a-fA-F]{3,8}$/.test(brandPrimary || '') ? brandPrimary : '#2D2A26'};
+					--brand-accent: ${/^#[0-9a-fA-F]{3,8}$/.test(brandAccent || '') ? brandAccent : '#8B6914'};
 				}
 			`}</style>
 
@@ -77,16 +77,18 @@ export default function VerifyPage({ organizer, error, brandPrimary, brandAccent
 					<div className="w-full max-w-sm text-center">
 						{/* Error state */}
 						<div className="flex flex-col items-center gap-4">
-							<Icon icon="mdi:close-circle" className="h-16 w-16 text-red-500" />
-							<h1 className="text-[1.25rem] font-semibold text-gray-900">{errorTitle}</h1>
+							<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#DC2626]/10">
+								<Icon icon="mdi:close" width={32} className="text-[#DC2626]" />
+							</div>
+							<h1 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">{errorTitle}</h1>
 						</div>
 
 						{/* Resend flow */}
 						{canRetry && !showResend && !sent && (
 							<Button
 								variant="solid"
-								className="mt-6 rounded-full"
-								style={{ backgroundColor: 'var(--brand-primary)', color: '#fff' }}
+								className="mt-8 rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
+								style={{ backgroundColor: 'var(--brand-primary)' }}
 								onPress={() => setShowResend(true)}
 							>
 								Request a new link
@@ -94,7 +96,7 @@ export default function VerifyPage({ organizer, error, brandPrimary, brandAccent
 						)}
 
 						{canRetry && showResend && !sent && (
-							<div className="mt-6 space-y-3">
+							<div className="mt-8 space-y-3">
 								<Input
 									type="email"
 									placeholder="Enter your email"
@@ -107,8 +109,8 @@ export default function VerifyPage({ organizer, error, brandPrimary, brandAccent
 								/>
 								<Button
 									variant="solid"
-									className="w-full rounded-full"
-									style={{ backgroundColor: 'var(--brand-primary)', color: '#fff' }}
+									className="w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
+									style={{ backgroundColor: 'var(--brand-primary)' }}
 									isLoading={sending}
 									isDisabled={!email.trim() || sending}
 									onPress={() => handleResend()}
@@ -116,7 +118,7 @@ export default function VerifyPage({ organizer, error, brandPrimary, brandAccent
 									Send new link
 								</Button>
 								{sendError && (
-									<p className="text-[0.8125rem] text-red-500">
+									<p className="text-[0.8125rem] text-[#DC2626]">
 										Couldn&apos;t send email. Please try again.
 									</p>
 								)}
@@ -125,9 +127,11 @@ export default function VerifyPage({ organizer, error, brandPrimary, brandAccent
 
 						{/* Success */}
 						{sent && (
-							<div className="mt-6 flex flex-col items-center gap-2">
-								<Icon icon="mdi:check-circle" className="h-10 w-10 text-green-500" />
-								<p className="text-[0.9375rem] font-medium text-gray-700">Check your inbox!</p>
+							<div className="mt-8 flex flex-col items-center gap-3">
+								<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#16A34A]/10">
+									<Icon icon="mdi:check" width={24} className="text-[#16A34A]" />
+								</div>
+								<p className="text-[0.9375rem] font-medium text-[var(--theme-text)]">Check your inbox!</p>
 							</div>
 						)}
 					</div>
@@ -150,7 +154,6 @@ export const getServerSideProps: GetServerSideProps<VerifyPageProps> = async ({ 
 		const result = await verifyMagicLink(token);
 
 		if (result.success && result.email) {
-			// Set attendee_session cookie
 			const sessionValue = JSON.stringify({ email: result.email, organizer_id: organizer.id });
 
 			setCookie('attendee_session', sessionValue, {
@@ -176,7 +179,6 @@ export const getServerSideProps: GetServerSideProps<VerifyPageProps> = async ({ 
 			},
 		};
 	} catch (err: any) {
-		// Determine error type from the API response
 		let errorType = 'invalid';
 		const message = err?.message?.toLowerCase() ?? '';
 		if (message.includes('expired')) {

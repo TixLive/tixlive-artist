@@ -29,8 +29,8 @@ export default function TravelSection({ recommendations }: TravelSectionProps) {
 	);
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				Travel & Stay
 			</h2>
 			<div className="space-y-5">
@@ -55,12 +55,12 @@ export default function TravelSection({ recommendations }: TravelSectionProps) {
 														href={rec.url}
 														target="_blank"
 														rel="noopener noreferrer"
-														className="font-[family-name:var(--font-display)] text-[0.875rem] font-semibold text-[var(--brand-primary)] hover:underline"
+														className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--brand-accent)] hover:underline"
 													>
 														{rec.name}
 													</a>
 												) : (
-													<p className="font-[family-name:var(--font-display)] text-[0.875rem] font-semibold text-[var(--theme-text)]">
+													<p className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--theme-text)]">
 														{rec.name}
 													</p>
 												)}

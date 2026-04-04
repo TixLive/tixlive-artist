@@ -29,7 +29,6 @@ function getAddonIcon(name: string): string {
 }
 
 export default function AddonRow({ addon, quantity, onQuantityChange }: AddonRowProps) {
-	const maxQty = addon.max_quantity ?? 99;
 	const isActive = quantity > 0;
 
 	const handleToggle = () => {
@@ -42,35 +41,35 @@ export default function AddonRow({ addon, quantity, onQuantityChange }: AddonRow
 
 	return (
 		<div
-			className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+			className={`flex items-center gap-3 rounded-2xl border-2 px-4 py-3 transition-all duration-200 ${
 				isActive
-					? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_4%,var(--theme-surface))]'
-					: 'border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-surface)]'
+					? 'border-[var(--brand-accent)] bg-[color-mix(in_srgb,var(--brand-accent)_3%,var(--theme-bg))]'
+					: 'border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]'
 			}`}
 		>
 			{/* Icon */}
 			<div
-				className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
+				className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-200 ${
 					isActive
-						? 'bg-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)]'
-						: 'bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)]'
+						? 'bg-[color-mix(in_srgb,var(--brand-accent)_12%,transparent)]'
+						: 'bg-[var(--theme-surface)]'
 				}`}
 			>
 				<Icon
 					icon={getAddonIcon(addon.name)}
 					width={20}
-					className="text-[var(--brand-primary)]"
+					className={isActive ? 'text-[var(--brand-accent)]' : 'text-[var(--theme-text-muted)]'}
 				/>
 			</div>
 
 			{/* Info */}
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-1.5">
-					<span className="font-[family-name:var(--font-display)] text-[0.875rem] font-semibold text-[var(--theme-text)]">
+					<span className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--theme-text)]">
 						{addon.name}
 					</span>
 					{addon.per_ticket && (
-						<span className="rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] px-1.5 py-0.5 text-[0.625rem] font-medium text-[var(--brand-primary)]">
+						<span className="rounded-md bg-[var(--theme-surface)] px-1.5 py-0.5 font-[family-name:var(--font-data)] text-[0.625rem] font-medium text-[var(--theme-text-muted)]">
 							per ticket
 						</span>
 					)}
@@ -90,10 +89,10 @@ export default function AddonRow({ addon, quantity, onQuantityChange }: AddonRow
 			{/* Toggle switch */}
 			<button
 				onClick={handleToggle}
-				className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2 ${
+				className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2 ${
 					isActive
-						? 'bg-[var(--brand-primary)]'
-						: 'bg-[color-mix(in_srgb,var(--theme-text)_20%,transparent)]'
+						? 'bg-[var(--brand-accent)]'
+						: 'bg-[color-mix(in_srgb,var(--theme-text)_15%,transparent)]'
 				}`}
 				role="switch"
 				aria-checked={isActive}

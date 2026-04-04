@@ -3,7 +3,7 @@ import { HeroUIProvider } from '@heroui/react';
 import type { AppProps } from 'next/app';
 import { appWithTranslation } from 'next-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { dmSans, geist, geistMono } from '@/styles/font';
+import { geist, geistMono } from '@/styles/font';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
@@ -40,7 +40,7 @@ function App({ Component, pageProps }: AppProps) {
 		<QueryClientProvider client={queryClient}>
 			<HeroUIProvider navigate={router.push}>
 				<Head>{brandCssVars && <style>{`:root { ${brandCssVars} }`}</style>}</Head>
-				<main className={`${dmSans.variable} ${geist.variable} ${geistMono.variable} font-sans min-h-screen`}>
+				<main className={`${geist.variable} ${geistMono.variable} font-sans min-h-screen`}>
 					<Component {...pageProps} />
 				</main>
 			</HeroUIProvider>

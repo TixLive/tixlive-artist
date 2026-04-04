@@ -12,14 +12,14 @@ export default function RulesSection({ rules }: RulesSectionProps) {
 	const forbidden = rules.filter((r) => r.type === 'forbidden');
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				Rules
 			</h2>
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{/* Allowed */}
 				{allowed.length > 0 && (
-					<div className="rounded-xl bg-[var(--theme-surface)] p-4">
+					<div className="rounded-2xl bg-[var(--theme-surface)] p-4">
 						<p className="mb-3 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wider text-emerald-600">
 							<Icon icon="mdi:check-circle" width={18} />
 							Allowed
@@ -43,7 +43,7 @@ export default function RulesSection({ rules }: RulesSectionProps) {
 
 				{/* Forbidden */}
 				{forbidden.length > 0 && (
-					<div className="rounded-xl bg-[var(--theme-surface)] p-4">
+					<div className="rounded-2xl bg-[var(--theme-surface)] p-4">
 						<p className="mb-3 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wider text-red-500">
 							<Icon icon="mdi:close-circle" width={18} />
 							Not Allowed

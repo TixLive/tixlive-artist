@@ -32,39 +32,39 @@ export default function PriceBreakdown({ items, addonItems, totalTicketQty = 0, 
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between text-[0.875rem]" style={{ color: 'var(--theme-text-muted)' }}>
-        <span>Tickets</span>
-        <span>
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between text-[0.875rem]">
+        <span className="text-[var(--theme-text-muted)]">Tickets</span>
+        <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
           {formatPrice(ticketSubtotal)} {currency}
         </span>
       </div>
 
       {addonSubtotal > 0 && (
-        <div className="flex items-center justify-between text-[0.875rem]" style={{ color: 'var(--theme-text-muted)' }}>
-          <span>Add-ons</span>
-          <span>
+        <div className="flex items-center justify-between text-[0.875rem]">
+          <span className="text-[var(--theme-text-muted)]">Add-ons</span>
+          <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
             {formatPrice(addonSubtotal)} {currency}
           </span>
         </div>
       )}
 
       {discount && discountAmount > 0 && (
-        <div className="flex items-center justify-between text-[0.875rem] text-green-600">
+        <div className="flex items-center justify-between text-[0.875rem] text-[#16A34A]">
           <span>
             Discount
             {discount.percent ? ` (${discount.percent}%)` : ''}
           </span>
-          <span>
+          <span className="font-[family-name:var(--font-data)] tabular-nums">
             -{formatPrice(discountAmount)} {currency}
           </span>
         </div>
       )}
 
-      <div className="border-t pt-2" style={{ borderColor: 'color-mix(in srgb, var(--theme-text) 15%, transparent)' }}>
+      <div className="border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-3">
         <div className="flex items-center justify-between">
-          <span className="text-[1.125rem] font-semibold" style={{ color: 'var(--theme-text)' }}>Total</span>
-          <span className="text-[1.125rem] font-bold" style={{ color: 'var(--theme-text)' }}>
+          <span className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">Total</span>
+          <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
             {formatPrice(total)} {currency}
           </span>
         </div>

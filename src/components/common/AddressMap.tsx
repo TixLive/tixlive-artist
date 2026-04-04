@@ -12,7 +12,7 @@ const AddressMap: FC<AddressMapProps> = ({ googlePlaceId, height = 200 }) => {
 	if (!MAPS_KEY) {
 		return (
 			<div
-				className="flex items-center justify-center rounded-xl bg-[var(--theme-surface)] text-[var(--theme-text-muted)]"
+				className="flex items-center justify-center rounded-2xl bg-[var(--theme-surface)] text-[var(--theme-text-muted)]"
 				style={{ height: `${height}px` }}
 			>
 				<Icon icon="mdi:map" width={40} />
@@ -22,7 +22,7 @@ const AddressMap: FC<AddressMapProps> = ({ googlePlaceId, height = 200 }) => {
 
 	return (
 		<iframe
-			className="w-full rounded-xl"
+			className="w-full rounded-2xl"
 			height={height}
 			style={{ height: `${height}px` }}
 			loading="lazy"

@@ -12,14 +12,14 @@ export default function PackingSection({ items }: PackingSectionProps) {
 	const recommended = items.filter((i) => i.type === 'recommended');
 
 	return (
-		<section className="mt-8">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+		<section className="mt-10">
+			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
 				What to Bring
 			</h2>
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{essential.length > 0 && (
-					<div className="rounded-xl bg-[var(--theme-surface)] p-4">
-						<p className="mb-3 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--brand-primary)]">
+					<div className="rounded-2xl bg-[var(--theme-surface)] p-4">
+						<p className="mb-3 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--brand-accent)]">
 							<Icon icon="mdi:alert-circle" width={18} />
 							Essential
 						</p>
@@ -29,7 +29,7 @@ export default function PackingSection({ items }: PackingSectionProps) {
 									<Icon
 										icon="mdi:checkbox-marked-circle"
 										width={16}
-										className="mt-0.5 shrink-0 text-[var(--brand-primary)]"
+										className="mt-0.5 shrink-0 text-[var(--brand-accent)]"
 									/>
 									<span className="text-[0.8125rem] text-[var(--theme-text)]">
 										{item.text}
@@ -41,7 +41,7 @@ export default function PackingSection({ items }: PackingSectionProps) {
 				)}
 
 				{recommended.length > 0 && (
-					<div className="rounded-xl bg-[var(--theme-surface)] p-4">
+					<div className="rounded-2xl bg-[var(--theme-surface)] p-4">
 						<p className="mb-3 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--theme-text-muted)]">
 							<Icon icon="mdi:plus-circle" width={18} />
 							Recommended

@@ -15,7 +15,7 @@ export default function StickyBuyBar({ cartItems, currency, onBuy }: StickyBuyBa
   if (totalQuantity === 0) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-bg)]/90 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-xl md:hidden"
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/95 px-4 py-3 shadow-[0_-4px_20px_rgba(20,19,18,0.06)] backdrop-blur-xl md:hidden"
       style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
     >
       <div className="flex items-center justify-between gap-3">
@@ -30,7 +30,7 @@ export default function StickyBuyBar({ cartItems, currency, onBuy }: StickyBuyBa
         <Button
           variant="solid"
           size="lg"
-          className="rounded-xl font-[family-name:var(--font-display)] font-semibold text-white"
+          className="rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
           style={{ backgroundColor: 'var(--brand-primary)' }}
           onPress={onBuy}
         >

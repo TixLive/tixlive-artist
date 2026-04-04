@@ -3,51 +3,36 @@
 
 @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 
-/* Default theme tokens */
+/* Warm Editorial — default tokens */
 :root {
-	--brand-primary: #6366f1;
-	--brand-accent: #8b5cf6;
-	--theme-bg: #ffffff;
-	--theme-surface: #f9fafb;
-	--theme-text: #111827;
-	--theme-text-muted: #6b7280;
+	--brand-primary: #2D2A26;
+	--brand-accent: #8B6914;
+	--theme-bg: #FAFAF8;
+	--theme-surface: #F3F2EF;
+	--theme-text: #141312;
+	--theme-text-muted: #7A756D;
 
-	/* Font families — use hardcoded names here because Next.js font
-	   variables (--font-dm-sans etc.) are scoped to <main>, not :root */
-	--font-display: 'Satoshi', 'DM Sans', system-ui, sans-serif;
-	--font-body: 'DM Sans', system-ui, sans-serif;
+	/* Font families — hardcoded names in :root because Next.js font
+	   variables are scoped to <main>, not :root */
+	--font-display: 'Cabinet Grotesk', 'Instrument Sans', system-ui, sans-serif;
+	--font-body: 'Instrument Sans', system-ui, sans-serif;
 	--font-data: 'Geist', system-ui, sans-serif;
 	--font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
-/* Concert — purple + pink accents on light base */
+/* Concert — cool violet accent */
 [data-event-type='concert'] {
-	--brand-primary: #8b5cf6;
-	--brand-accent: #ec4899;
-	--theme-bg: #ffffff;
-	--theme-surface: #f9fafb;
-	--theme-text: #111827;
-	--theme-text-muted: #6b7280;
+	--brand-accent: #6B5CE7;
 }
 
-/* Conference — professional, trust */
+/* Conference — navy accent */
 [data-event-type='conference'] {
-	--brand-primary: #1d4ed8;
-	--brand-accent: #0891b2;
-	--theme-bg: #ffffff;
-	--theme-surface: #f8fafc;
-	--theme-text: #0f172a;
-	--theme-text-muted: #64748b;
+	--brand-accent: #1D4ED8;
 }
 
-/* Sports — red + orange accents on light base */
+/* Sports — warm red accent */
 [data-event-type='sports'] {
-	--brand-primary: #ef4444;
-	--brand-accent: #f97316;
-	--theme-bg: #ffffff;
-	--theme-surface: #f8fafc;
-	--theme-text: #0f172a;
-	--theme-text-muted: #64748b;
+	--brand-accent: #C53030;
 }
 
 body {

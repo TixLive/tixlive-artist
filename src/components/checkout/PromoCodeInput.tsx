@@ -57,8 +57,7 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
       <Button
         variant="light"
         onPress={() => setExpanded(true)}
-        className="text-[0.875rem] font-medium underline underline-offset-2 px-0"
-        style={{ color: 'var(--brand-primary)' }}
+        className="px-0 text-[0.875rem] font-medium text-[var(--brand-accent)] underline underline-offset-2"
       >
         Have a discount code?
       </Button>
@@ -80,7 +79,7 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
           size="sm"
           endContent={
             applied ? (
-              <Icon icon="mdi:check-circle" className="text-green-500" width={20} />
+              <Icon icon="mdi:check-circle" className="text-[#16A34A]" width={20} />
             ) : undefined
           }
         />
@@ -88,7 +87,7 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
           <Button
             type="button"
             variant="flat"
-            className="shrink-0 rounded-xl"
+            className="shrink-0 rounded-xl font-[family-name:var(--font-display)] font-[700]"
             onPress={handleApply}
             isLoading={loading}
             isDisabled={!code.trim()}
@@ -99,16 +98,16 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
           <Button
             type="button"
             variant="light"
-            className="shrink-0 text-red-500"
+            className="shrink-0 text-[#DC2626]"
             onPress={handleRemove}
           >
             Remove
           </Button>
         )}
       </div>
-      {error && <p className="text-[0.75rem] text-red-500">{error}</p>}
+      {error && <p className="text-[0.75rem] text-[#DC2626]">{error}</p>}
       {applied && (
-        <p className="text-[0.75rem] text-green-600">
+        <p className="text-[0.75rem] text-[#16A34A]">
           <Icon icon="mdi:check" className="mr-1 inline" width={14} />
           Promo code applied!
         </p>

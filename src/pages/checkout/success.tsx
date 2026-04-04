@@ -15,7 +15,7 @@ interface OrderDetails {
   id: string;
   event_title: string;
   session_date: string;
-  tickets: { name: string; quantity: number }[];
+  items: { name: string; quantity: number }[];
   pdf_url?: string;
 }
 
@@ -160,11 +160,11 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
                   })}
                 </p>
               )}
-              {order.tickets && order.tickets.length > 0 && (
+              {order.items && order.items.length > 0 && (
                 <div className="mt-3 space-y-1">
-                  {order.tickets.map((ticket, i) => (
+                  {order.items.map((item, i) => (
                     <p key={i} className="text-[0.875rem] text-gray-700">
-                      {ticket.quantity}x {ticket.name}
+                      {item.quantity}x {item.name}
                     </p>
                   ))}
                 </div>

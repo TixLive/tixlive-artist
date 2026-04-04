@@ -37,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         addons,
         promo_code,
         locale,
+        return_origin: `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`,
       }),
     });
 
@@ -45,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!response.ok) {
       return res.status(response.status).json({
         error: data.message ?? data.error ?? 'Order failed',
-        code: data.message ?? data.code,
+        code: data.code ?? data.message,
       });
     }
 

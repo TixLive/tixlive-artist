@@ -50,7 +50,7 @@ export default function TravelSection({ recommendations }: TravelSectionProps) {
 									>
 										<div className="flex items-start justify-between gap-2">
 											<div className="min-w-0">
-												{rec.url ? (
+												{rec.url && /^https?:\/\//i.test(rec.url) ? (
 													<a
 														href={rec.url}
 														target="_blank"

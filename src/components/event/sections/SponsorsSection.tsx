@@ -61,7 +61,7 @@ export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 									</div>
 								);
 
-								if (sponsor.website_url) {
+								if (sponsor.website_url && /^https?:\/\//i.test(sponsor.website_url)) {
 									return (
 										<a
 											key={sponsor.id}

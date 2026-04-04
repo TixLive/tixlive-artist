@@ -71,7 +71,7 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart }: Or
                     )}
                   </span>
                   <span className="font-medium" style={{ color: 'var(--theme-text)' }}>
-                    +{(addon.price * addon.quantity).toFixed(2)} {addon.currency}
+                    +{(addon.price * addon.quantity * (addon.per_ticket ? cart.reduce((s, i) => s + i.quantity, 0) : 1)).toFixed(2)} {addon.currency}
                   </span>
                 </div>
               ))}

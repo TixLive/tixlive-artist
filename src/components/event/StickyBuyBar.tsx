@@ -15,54 +15,29 @@ export default function StickyBuyBar({ cartItems, currency, onBuy }: StickyBuyBa
   if (totalQuantity === 0) return null;
 
   return (
-    <>
-      {/* Mobile sticky bottom bar */}
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-100 bg-white px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] md:hidden">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[0.75rem] text-gray-500">
-              {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
-            </p>
-            <p className="text-[1.125rem] font-bold text-gray-900">
-              {totalPrice} {currency}
-            </p>
-          </div>
-          <Button
-            variant="solid"
-            size="lg"
-            className="rounded-full font-semibold text-white"
-            style={{ backgroundColor: 'var(--brand-primary)' }}
-            onPress={onBuy}
-          >
-            Buy Tickets
-            <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-          </Button>
-        </div>
-      </div>
-
-      {/* Desktop inline summary */}
-      <div className="mt-6 hidden rounded-xl border border-gray-100 bg-gray-50 p-4 md:block">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[0.875rem] text-gray-500">
-              {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
-            </p>
-            <p className="text-[1.5rem] font-bold text-gray-900">
-              {totalPrice} {currency}
-            </p>
-          </div>
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-bg)]/90 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-xl md:hidden"
+      style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[0.75rem] text-[var(--theme-text-muted)]">
+            {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
+          </p>
+          <p className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
+            {totalPrice} {currency}
+          </p>
         </div>
         <Button
           variant="solid"
           size="lg"
-          className="mt-3 w-full rounded-full font-semibold text-white"
+          className="rounded-xl font-[family-name:var(--font-display)] font-semibold text-white"
           style={{ backgroundColor: 'var(--brand-primary)' }}
           onPress={onBuy}
         >
-          Buy Tickets
+          Checkout
           <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
         </Button>
       </div>
-    </>
+    </div>
   );
 }

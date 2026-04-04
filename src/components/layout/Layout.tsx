@@ -9,18 +9,35 @@ interface LayoutProps {
 	organizerName?: string;
 	logoUrl?: string | null;
 	socialLinks?: Record<string, string>;
+	cartQuantity?: number;
+	cartTotal?: number;
+	currency?: string;
+	onCartClick?: () => void;
 }
 
-export default function Layout({ children, organizer, organizerName, logoUrl, socialLinks }: LayoutProps) {
+export default function Layout({ children, organizer, organizerName, logoUrl, socialLinks, cartQuantity, cartTotal, currency, onCartClick }: LayoutProps) {
 	const name = organizerName ?? organizer?.name ?? '';
 	const logo = logoUrl ?? organizer?.logo_url;
 	const links = socialLinks ?? organizer?.social_links;
+	const bio = organizer?.bio;
 
 	return (
 		<div className="flex min-h-screen flex-col">
-			<AppHeader organizerName={name} logoUrl={logo} />
+			<AppHeader
+				organizerName={name}
+				logoUrl={logo}
+				cartQuantity={cartQuantity}
+				cartTotal={cartTotal}
+				currency={currency}
+				onCartClick={onCartClick}
+			/>
 			<main className="flex-1">{children}</main>
-			<AppFooter socialLinks={links} />
+			<AppFooter
+				organizerName={name}
+				organizerBio={bio}
+				logoUrl={logo}
+				socialLinks={links}
+			/>
 		</div>
 	);
 }

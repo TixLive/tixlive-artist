@@ -7,20 +7,66 @@ interface AddonRowProps {
 	onQuantityChange: (addonId: number, quantity: number) => void;
 }
 
+const ADDON_ICONS: Record<string, string> = {
+	parking: 'mdi:car',
+	vip: 'mdi:star',
+	upgrade: 'mdi:arrow-up-circle',
+	skip: 'mdi:flash',
+	meet: 'mdi:account-star',
+	shirt: 'mdi:tshirt-crew',
+	food: 'mdi:food',
+	meal: 'mdi:food',
+	drink: 'mdi:glass-cocktail',
+	merch: 'mdi:shopping',
+};
+
+function getAddonIcon(name: string): string {
+	const lower = name.toLowerCase();
+	for (const [key, icon] of Object.entries(ADDON_ICONS)) {
+		if (lower.includes(key)) return icon;
+	}
+	return 'mdi:plus-circle';
+}
+
 export default function AddonRow({ addon, quantity, onQuantityChange }: AddonRowProps) {
 	const maxQty = addon.max_quantity ?? 99;
+	const isActive = quantity > 0;
+
+	const handleToggle = () => {
+		if (isActive) {
+			onQuantityChange(addon.id, 0);
+		} else {
+			onQuantityChange(addon.id, 1);
+		}
+	};
 
 	return (
 		<div
-			className="flex items-center gap-3 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] px-4 py-3"
-			style={{ backgroundColor: 'var(--theme-surface)' }}
+			className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+				isActive
+					? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_4%,var(--theme-surface))]'
+					: 'border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-surface)]'
+			}`}
 		>
-			<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)]">
-				<Icon icon="mdi:plus-box" width={18} className="text-[var(--brand-primary)]" />
+			{/* Icon */}
+			<div
+				className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
+					isActive
+						? 'bg-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)]'
+						: 'bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)]'
+				}`}
+			>
+				<Icon
+					icon={getAddonIcon(addon.name)}
+					width={20}
+					className="text-[var(--brand-primary)]"
+				/>
 			</div>
+
+			{/* Info */}
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-1.5">
-					<span className="text-[0.875rem] font-medium text-[var(--theme-text)]">
+					<span className="font-[family-name:var(--font-display)] text-[0.875rem] font-semibold text-[var(--theme-text)]">
 						{addon.name}
 					</span>
 					{addon.per_ticket && (
@@ -30,39 +76,35 @@ export default function AddonRow({ addon, quantity, onQuantityChange }: AddonRow
 					)}
 				</div>
 				{addon.description && (
-					<p className="text-[0.6875rem] text-[var(--theme-text-muted)]">{addon.description}</p>
+					<p className="text-[0.6875rem] leading-relaxed text-[var(--theme-text-muted)]">
+						{addon.description}
+					</p>
 				)}
 			</div>
-			<span className="shrink-0 font-[family-name:var(--font-data)] text-[0.875rem] font-semibold tabular-nums text-[var(--theme-text)]">
-				+{addon.price} {/* currency comes from parent context */}
+
+			{/* Price */}
+			<span className="shrink-0 font-[family-name:var(--font-data)] text-[0.875rem] font-bold tabular-nums text-[var(--theme-text)]">
+				+{addon.price}
 			</span>
-			<div
-				className="inline-flex items-center rounded-lg border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)]"
-				role="group"
-				aria-label={`Quantity for ${addon.name}`}
+
+			{/* Toggle switch */}
+			<button
+				onClick={handleToggle}
+				className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2 ${
+					isActive
+						? 'bg-[var(--brand-primary)]'
+						: 'bg-[color-mix(in_srgb,var(--theme-text)_20%,transparent)]'
+				}`}
+				role="switch"
+				aria-checked={isActive}
+				aria-label={`Toggle ${addon.name}`}
 			>
-				<button
-					className="flex h-9 w-9 items-center justify-center transition disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
-					style={{ color: 'var(--theme-text-muted)' }}
-					onClick={() => onQuantityChange(addon.id, Math.max(0, quantity - 1))}
-					disabled={quantity === 0}
-					aria-label={`Decrease quantity for ${addon.name}`}
-				>
-					<Icon icon="mdi:minus" width={18} />
-				</button>
-				<span className="min-w-[28px] text-center text-[0.8125rem] font-semibold tabular-nums text-[var(--theme-text)]">
-					{quantity}
-				</span>
-				<button
-					className="flex h-9 w-9 items-center justify-center transition disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-offset-2"
-					style={{ color: 'var(--theme-text-muted)' }}
-					onClick={() => onQuantityChange(addon.id, Math.min(maxQty, quantity + 1))}
-					disabled={quantity >= maxQty}
-					aria-label={`Increase quantity for ${addon.name}`}
-				>
-					<Icon icon="mdi:plus" width={18} />
-				</button>
-			</div>
+				<span
+					className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+						isActive ? 'translate-x-[22px]' : 'translate-x-0.5'
+					}`}
+				/>
+			</button>
 		</div>
 	);
 }

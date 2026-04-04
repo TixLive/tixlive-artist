@@ -107,7 +107,6 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
   const handleBuy = useCallback(() => {
     if (cartItems.length === 0) return;
-    // POST redirect to avoid URL length limits with large carts
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/checkout';
@@ -190,6 +189,10 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
         organizerName={organizer.name}
         logoUrl={organizer.logo_url}
         socialLinks={organizer.social_links}
+        cartQuantity={totalQuantity}
+        cartTotal={totalPrice}
+        currency={currency}
+        onCartClick={handleBuy}
       >
         <EventHero event={event} />
         <KeyFactsStrip event={event} />
@@ -200,9 +203,9 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
           <div className="min-w-0 flex-1">
             {/* Description */}
             {event.description && (
-              <section>
-                <h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
-                  About
+              <section id="about">
+                <h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
+                  About Event
                 </h2>
                 <div className="relative">
                   <p
@@ -225,13 +228,20 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             )}
 
             {/* Tickets */}
-            <section className="mt-8" ref={ticketsRef}>
-              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
-                Tickets
-              </h2>
+            <section className="mt-8" id="tickets" ref={ticketsRef}>
+              <div className="mb-1 flex items-baseline justify-between">
+                <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
+                  Order Tickets
+                </h2>
+                {priceFrom > 0 && (
+                  <span className="font-[family-name:var(--font-data)] text-[0.8125rem] text-[var(--theme-text-muted)]">
+                    {priceFrom} - {Math.max(...ticketTypes.map(tt => tt.price))} {currency}
+                  </span>
+                )}
+              </div>
 
               {(event.sessions ?? []).length > 1 && (
-                <div className="mb-4">
+                <div className="mb-4 mt-3">
                   <SessionPicker
                     sessions={event.sessions ?? []}
                     activeSessionId={activeSessionId}
@@ -245,7 +255,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
               {!isEventSoldOut ? (
                 <>
-                  <div className="flex flex-col gap-2">
+                  <div className="mt-3 flex flex-col gap-2">
                     {ticketTypes.map((ticket) => (
                       <TicketTypeRow
                         key={ticket.id}
@@ -256,51 +266,50 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                     ))}
                   </div>
 
-                  {/* Addons */}
-                  {addons.length > 0 && totalQuantity > 0 && (
-                    <div className="mt-4">
-                      <h3 className="mb-2 font-[family-name:var(--font-display)] text-[1rem] font-semibold text-[var(--theme-text)]">
-                        Add-ons
-                      </h3>
-                      <div className="flex flex-col gap-2">
-                        {addons.map((addon) => (
-                          <AddonRow
-                            key={addon.id}
-                            addon={addon}
-                            quantity={addonQuantities[addon.id] ?? 0}
-                            onQuantityChange={handleAddonQuantityChange}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
+                  {/* Cart summary */}
                   {totalQuantity > 0 && (
-                    <div className="mt-4 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] p-4">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="text-[0.875rem] text-[var(--theme-text-muted)]">
-                          {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
-                          {addonTotal > 0 && ' + add-ons'}
-                        </span>
-                        <span className="font-[family-name:var(--font-data)] text-[1.25rem] font-bold text-[var(--theme-text)]">
-                          {totalPrice} {currency}
-                        </span>
+                    <div className="mt-4 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-surface)] p-4">
+                      <div className="space-y-1.5 text-[0.8125rem]">
+                        {cartItems.map(item => (
+                          <div key={item.ticket_type_id} className="flex items-center justify-between">
+                            <span className="text-[var(--theme-text)]">
+                              {item.quantity} {item.ticket_type_name}
+                            </span>
+                            <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text)]">
+                              {item.price * item.quantity} {currency}
+                            </span>
+                          </div>
+                        ))}
+                        {addonTotal > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[var(--theme-text-muted)]">Add-ons</span>
+                            <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
+                              +{addonTotal} {currency}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] pt-2">
+                          <span className="font-semibold text-[var(--theme-text)]">Total</span>
+                          <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
+                            {totalPrice} {currency}
+                          </span>
+                        </div>
                       </div>
                       <Button
                         variant="solid"
                         size="lg"
-                        className="w-full rounded-full font-[family-name:var(--font-display)] font-semibold text-white"
+                        className="mt-3 w-full rounded-xl font-[family-name:var(--font-display)] font-semibold text-white"
                         style={{ backgroundColor: 'var(--brand-primary)' }}
                         onPress={handleBuy}
                       >
-                        Buy Tickets
+                        Continue to Checkout
                         <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
                       </Button>
                     </div>
                   )}
                 </>
               ) : (
-                <div className="rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] py-6 text-center">
+                <div className="mt-3 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] bg-[var(--theme-surface)] py-6 text-center">
                   <Icon icon="mdi:alert-circle" className="mx-auto mb-2 text-red-500" width={32} />
                   <p className="font-[family-name:var(--font-display)] text-[1rem] font-semibold text-red-600">
                     Sold Out
@@ -311,6 +320,63 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                 </div>
               )}
             </section>
+
+            {/* Add-ons ("Enhance Your Experience") */}
+            {addons.length > 0 && totalQuantity > 0 && (
+              <section className="mt-8">
+                <div className="mb-1 flex items-center gap-2">
+                  <Icon icon="mdi:auto-awesome" width={20} className="text-[var(--brand-primary)]" />
+                  <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
+                    Enhance Your Experience
+                  </h2>
+                </div>
+                <p className="mb-3 text-[0.75rem] text-[var(--theme-text-muted)]">
+                  Price per ticket · Applied to all tickets in your cart.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {addons.map((addon) => (
+                    <AddonRow
+                      key={addon.id}
+                      addon={addon}
+                      quantity={addonQuantities[addon.id] ?? 0}
+                      onQuantityChange={handleAddonQuantityChange}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Promo code */}
+            <div className="mt-8 flex items-center gap-2">
+              <Icon icon="mdi:tag-outline" width={18} className="shrink-0 text-[var(--theme-text-muted)]" />
+              <input
+                type="text"
+                placeholder="Cod promoțional"
+                className="h-10 flex-1 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-transparent px-3 text-[0.875rem] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] focus:border-[var(--brand-primary)] focus:outline-none"
+              />
+              <button className="h-10 shrink-0 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] px-4 text-[0.8125rem] font-medium text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-surface)]">
+                Aplică
+              </button>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="mt-8 flex items-start justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-8">
+              <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
+                <Icon icon="mdi:shield-check-outline" width={28} className="text-[color-mix(in_srgb,var(--theme-text)_30%,transparent)]" />
+                <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Plată securizată</span>
+                <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">SSL 256-bit</span>
+              </div>
+              <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
+                <Icon icon="mdi:flash-outline" width={28} className="text-[color-mix(in_srgb,var(--theme-text)_30%,transparent)]" />
+                <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Bilet instant</span>
+                <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">Email & telefon</span>
+              </div>
+              <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
+                <Icon icon="mdi:check-decagram-outline" width={28} className="text-[color-mix(in_srgb,var(--theme-text)_30%,transparent)]" />
+                <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Garanție 100%</span>
+                <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">Rambursare ușoară</span>
+              </div>
+            </div>
 
             {/* Event-type-specific sections */}
             {event.active_sections && event.page_content && (
@@ -357,8 +423,8 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
             {/* Venue */}
             {event.venue_name && (
-              <section className="mt-8">
-                <h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+              <section className="mt-8" id="info">
+                <h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
                   Venue
                 </h2>
                 <div className="flex items-start gap-3">
@@ -380,12 +446,12 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
             {/* Organizer card */}
             <section className="mb-8 mt-8">
-              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.5rem] font-semibold text-[var(--theme-text)]">
+              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-semibold text-[var(--theme-text)]">
                 Organizer
               </h2>
               <Link
                 href="/"
-                className="flex items-center gap-3 rounded-xl border border-[var(--theme-surface)] p-4 transition hover:bg-[var(--theme-surface)]"
+                className="flex items-center gap-3 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] p-4 transition hover:bg-[var(--theme-surface)]"
               >
                 {organizer.logo_url ? (
                   <Image

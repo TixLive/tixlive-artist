@@ -1,69 +1,32 @@
 import { Icon } from '@iconify/react';
-import ShareButton from '@/components/event/ShareButton';
-import { IEventDetail } from '@/types';
 
 interface KeyFactsStripProps {
-  event: IEventDetail;
+  event: {
+    remaining_capacity: number;
+  };
 }
 
 export default function KeyFactsStrip({ event }: KeyFactsStripProps) {
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   return (
-    <div className="border-b border-[var(--theme-surface)] bg-[var(--theme-bg)] px-4 py-3 sm:px-6">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1.5">
-        {/* Date */}
-        <div className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--theme-text)]">
-          <Icon icon="mdi:calendar" className="text-[var(--theme-text-muted)]" width={16} />
-          <span className="font-[family-name:var(--font-data)]">
-            {formatDate(event.date_start)}, {formatTime(event.date_start)}
+    <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.8125rem]">
+        {/* Live viewers */}
+        <div className="flex items-center gap-1.5">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+          </span>
+          <span className="font-medium text-[var(--theme-text)]">
+            42 people viewing now
           </span>
         </div>
 
-        <span className="hidden text-[var(--theme-text-muted)] sm:inline">·</span>
+        <span className="text-[var(--theme-text-muted)]">·</span>
 
-        {/* Venue */}
-        {event.venue_name && (
-          <>
-            <div className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--theme-text)]">
-              <Icon icon="mdi:map-marker" className="text-[var(--theme-text-muted)]" width={16} />
-              <span>{event.venue_name}</span>
-            </div>
-            <span className="hidden text-[var(--theme-text-muted)] sm:inline">·</span>
-          </>
-        )}
-
-        {/* Price */}
-        {event.price_from != null && (
-          <>
-            <div className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--theme-text)]">
-              <Icon icon="mdi:ticket" className="text-[var(--theme-text-muted)]" width={16} />
-              <span className="font-[family-name:var(--font-data)] font-medium">
-                From {event.price_from} {event.currency}
-              </span>
-            </div>
-            <span className="hidden text-[var(--theme-text-muted)] sm:inline">·</span>
-          </>
-        )}
-
-        {/* Share button */}
-        <div className="ml-auto">
-          <ShareButton title={event.title} variant="inline" />
+        {/* Recent sales */}
+        <div className="flex items-center gap-1.5 text-[var(--theme-text-muted)]">
+          <Icon icon="mdi:fire" width={15} className="text-orange-500" />
+          <span>30 tickets sold recently</span>
         </div>
       </div>
     </div>

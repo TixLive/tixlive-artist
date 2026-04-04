@@ -274,7 +274,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
 
 export const getServerSideProps: GetServerSideProps = async ({ query, locale }) => {
   try {
-    const orderId = (query.order_id as string) ?? '';
+    const orderId = (query.token as string) ?? '';
     const site = await getSite();
 
     return {

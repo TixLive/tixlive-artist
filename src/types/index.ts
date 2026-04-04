@@ -202,7 +202,7 @@ export interface IOrderBuyBody {
 
 export interface IOrderBuyResponse {
 	payment_url: string;
-	order_id: string;
+	token: string;
 }
 
 export interface IPromoValidateResponse {

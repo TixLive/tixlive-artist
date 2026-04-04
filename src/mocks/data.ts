@@ -245,7 +245,7 @@ export const mockEventDetail: IEventDetail = {
 
 export const mockOrderResponse: IOrderBuyResponse = {
 	payment_url: 'https://maibmerchants.md/checkout/mock-session',
-	order_id: 'mock-order-123',
+	token: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
 };
 
 export const mockOrderDetail: IOrderDetail = {

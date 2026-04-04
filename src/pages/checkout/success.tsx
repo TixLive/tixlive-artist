@@ -169,7 +169,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
 
             {/* 3. Download tickets */}
             {order.pdf_url && (
-              <a href={order.pdf_url} download>
+              <a href={order.pdf_url} target="_blank" rel="noopener noreferrer">
                 <Button
                   className="w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
                   style={{ backgroundColor: 'var(--brand-primary)' }}

@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 
 interface KeyFactsStripProps {
   event: {
-    remaining_capacity: number;
+    remaining_capacity: number | null;
   };
 }
 

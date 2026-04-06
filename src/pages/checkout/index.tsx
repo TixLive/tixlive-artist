@@ -277,6 +277,11 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
                   totalTicketQty={cart.reduce((s, i) => s + i.quantity, 0)}
                   discount={discount}
                   currency={cart[0]?.currency ?? 'USD'}
+                  platformFeePayer={event.platform_fee_payer}
+                  providerFeePayer={event.provider_fee_payer}
+                  platformFeePercent={event.platform_fee_percent}
+                  platformFeeFixed={event.platform_fee_fixed}
+                  providerFeePercent={selectedMethod?.fee_percent ?? 0}
                 />
               </div>
             </div>

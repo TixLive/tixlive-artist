@@ -6,9 +6,25 @@ interface PriceBreakdownProps {
   totalTicketQty?: number;
   discount?: { percent?: number; amount?: number };
   currency: string;
+  platformFeePayer?: 'buyer' | 'organizer';
+  providerFeePayer?: 'buyer' | 'organizer';
+  platformFeePercent?: number;
+  platformFeeFixed?: number;
+  providerFeePercent?: number;
 }
 
-export default function PriceBreakdown({ items, addonItems, totalTicketQty = 0, discount, currency }: PriceBreakdownProps) {
+export default function PriceBreakdown({
+  items,
+  addonItems,
+  totalTicketQty = 0,
+  discount,
+  currency,
+  platformFeePayer,
+  providerFeePayer,
+  platformFeePercent = 0,
+  platformFeeFixed = 0,
+  providerFeePercent = 0,
+}: PriceBreakdownProps) {
   const ticketSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const addonSubtotal = (addonItems ?? []).reduce((sum, addon) => {
@@ -25,7 +41,20 @@ export default function PriceBreakdown({ items, addonItems, totalTicketQty = 0, 
     discountAmount = discount.amount;
   }
 
-  const total = Math.max(0, subtotal - discountAmount);
+  const afterDiscount = Math.max(0, subtotal - discountAmount);
+
+  // Platform fee (tix.live charges organizer, optionally passed to buyer)
+  const platformFee = platformFeePayer === 'buyer' && afterDiscount > 0
+    ? Math.round((afterDiscount * platformFeePercent / 100 + platformFeeFixed) * 100) / 100
+    : 0;
+
+  // Payment provider fee (Stripe, MAIB, etc.)
+  const providerFee = providerFeePayer === 'buyer'
+    ? Math.round(afterDiscount * providerFeePercent / 100 * 100) / 100
+    : 0;
+
+  const serviceFee = platformFee + providerFee;
+  const total = afterDiscount + serviceFee;
 
   const formatPrice = (value: number) => {
     return value.toFixed(2);
@@ -57,6 +86,15 @@ export default function PriceBreakdown({ items, addonItems, totalTicketQty = 0, 
           </span>
           <span className="font-[family-name:var(--font-data)] tabular-nums">
             -{formatPrice(discountAmount)} {currency}
+          </span>
+        </div>
+      )}
+
+      {serviceFee > 0 && (
+        <div className="flex items-center justify-between text-[0.875rem]">
+          <span className="text-[var(--theme-text-muted)]">Service fee</span>
+          <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
+            +{formatPrice(serviceFee)} {currency}
           </span>
         </div>
       )}

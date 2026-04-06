@@ -53,7 +53,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
   const addons = event.ticket_addons ?? [];
 
   const isEventSoldOut = useMemo(() => {
-    return ticketTypes.every((tt) => tt.remaining_capacity === 0);
+    return ticketTypes.length > 0 && ticketTypes.every((tt) => tt.remaining_capacity !== null && tt.remaining_capacity === 0);
   }, [ticketTypes]);
 
   const cartItems: ICartItem[] = useMemo(() => {

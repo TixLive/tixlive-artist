@@ -21,7 +21,7 @@ export interface IEventListItem {
 	date_start: string;
 	price_from: number;
 	currency: string;
-	remaining_capacity: number;
+	remaining_capacity: number | null;
 }
 
 export interface IEventSession {
@@ -36,7 +36,7 @@ export interface ITicketType {
 	description: string | null;
 	price: number;
 	currency: string;
-	remaining_capacity: number;
+	remaining_capacity: number | null;
 	max_tickets_per_user: number;
 }
 
@@ -45,6 +45,7 @@ export interface IAvailablePaymentMethod {
 	name: string;
 	type: 'redirect' | 'card';
 	logo_url: string | null;
+	fee_percent: number;
 }
 
 // --- Page content sub-types (event-type-specific sections) ---
@@ -168,6 +169,10 @@ export interface IEventDetail extends IEventListItem {
 	ticket_addons?: ITicketAddon[];
 	active_sections?: string[];
 	page_content?: IPageContent;
+	platform_fee_payer?: 'buyer' | 'organizer';
+	provider_fee_payer?: 'buyer' | 'organizer';
+	platform_fee_percent?: number;
+	platform_fee_fixed?: number;
 }
 
 export interface ICartItem {

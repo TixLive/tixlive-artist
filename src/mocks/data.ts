@@ -175,12 +175,14 @@ export const mockEventDetail: IEventDetail = {
 			name: 'MAIB',
 			type: 'redirect',
 			logo_url: null,
+			fee_percent: 0,
 		},
 		{
 			id: 1,
 			name: 'Runpay',
 			type: 'card',
 			logo_url: null,
+			fee_percent: 0,
 		},
 	],
 	ticket_addons: [
@@ -188,6 +190,10 @@ export const mockEventDetail: IEventDetail = {
 		{ id: 2, name: 'Festival T-Shirt', description: 'Limited edition Electric Summer Festival merch', price: 120, max_quantity: 5, per_ticket: false, color: null, sort_order: 2 },
 		{ id: 3, name: 'Meal Voucher', description: 'Redeemable at any food truck on site', price: 80, max_quantity: null, per_ticket: true, color: null, sort_order: 3 },
 	],
+	platform_fee_payer: 'buyer' as const,
+	provider_fee_payer: 'buyer' as const,
+	platform_fee_percent: 3.5,
+	platform_fee_fixed: 1.50,
 	active_sections: ['lineup', 'sponsors', 'program', 'rules', 'faq', 'video', 'travel'],
 	page_content: {
 		lineup: [

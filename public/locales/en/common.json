@@ -41,16 +41,25 @@
 		"payment_successful": "Payment Successful!",
 		"download_tickets": "Download Tickets",
 		"save_to_account": "Save to Your Account",
-		"magic_link_description": "Enter your email to receive a link to access your tickets anytime",
-		"send_link": "Send Link",
-		"check_inbox": "Check your inbox for the access link"
+		"save_to_account_description": "Enter your email to get a code and access your tickets anytime.",
+		"send_code": "Send code",
+		"check_inbox": "Check your inbox for the access code"
 	},
 	"auth": {
-		"verifying": "Verifying...",
-		"link_expired": "This link has expired",
-		"link_used": "This link has already been used",
-		"invalid_link": "Invalid link",
-		"request_new_link": "Request a new link"
+		"login_title": "Access your tickets",
+		"login_subtitle": "Enter your email. We'll send you a 6-digit code.",
+		"email_placeholder": "your@email.com",
+		"send_code": "Send code",
+		"enter_code": "Enter the code",
+		"please_enter_code": "We sent a 6-digit code to",
+		"code_sent_to": "Code sent to {{email}}",
+		"paste_code": "Paste code",
+		"resend_code": "Resend code",
+		"resend_code_in": "Resend in {{time}}",
+		"otp_invalid": "Invalid or expired code. Try again or request a new one.",
+		"back": "Back",
+		"login_error": "Something went wrong. Please try again.",
+		"sign_out": "Sign out"
 	},
 	"common": {
 		"sold_out": "Sold Out",
@@ -65,6 +74,11 @@
 		"browse_events": "Browse Events",
 		"view_ticket": "View Ticket",
 		"scan_at_door": "Show this QR code at the door",
-		"download_pdf": "Download PDF"
+		"scan_at_door_short": "Scan at the door",
+		"download_pdf": "Download PDF",
+		"back_to_tickets": "Back to My Tickets",
+		"signed_in_as": "Signed in as",
+		"tickets_count_one": "{{count}} ticket",
+		"tickets_count_other": "{{count}} tickets"
 	}
 }

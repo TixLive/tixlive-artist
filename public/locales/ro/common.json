@@ -41,16 +41,25 @@
 		"payment_successful": "Plata Reusita!",
 		"download_tickets": "Descarca Biletele",
 		"save_to_account": "Salveaza in Contul Tau",
-		"magic_link_description": "Introdu emailul pentru a primi un link de acces la biletele tale",
-		"send_link": "Trimite Link",
-		"check_inbox": "Verifica inboxul pentru linkul de acces"
+		"save_to_account_description": "Introdu emailul pentru a primi un cod de acces la biletele tale.",
+		"send_code": "Trimite cod",
+		"check_inbox": "Verifica inboxul pentru codul de acces"
 	},
 	"auth": {
-		"verifying": "Se verifica...",
-		"link_expired": "Acest link a expirat",
-		"link_used": "Acest link a fost deja folosit",
-		"invalid_link": "Link invalid",
-		"request_new_link": "Solicita un link nou"
+		"login_title": "Acceseaza biletele tale",
+		"login_subtitle": "Introdu emailul. Iti trimitem un cod din 6 cifre.",
+		"email_placeholder": "email@exemplu.com",
+		"send_code": "Trimite cod",
+		"enter_code": "Introdu codul",
+		"please_enter_code": "Am trimis un cod din 6 cifre la",
+		"code_sent_to": "Cod trimis la {{email}}",
+		"paste_code": "Lipeste codul",
+		"resend_code": "Retrimite codul",
+		"resend_code_in": "Retrimite in {{time}}",
+		"otp_invalid": "Cod invalid sau expirat. Incearca din nou sau solicita unul nou.",
+		"back": "Inapoi",
+		"login_error": "Ceva nu a mers bine. Te rugam sa incerci din nou.",
+		"sign_out": "Deconectare"
 	},
 	"common": {
 		"sold_out": "Epuizat",
@@ -65,6 +74,12 @@
 		"browse_events": "Exploreaza Evenimente",
 		"view_ticket": "Vezi Bilet",
 		"scan_at_door": "Arata acest cod QR la intrare",
-		"download_pdf": "Descarca PDF"
+		"scan_at_door_short": "Scaneaza la intrare",
+		"download_pdf": "Descarca PDF",
+		"back_to_tickets": "Inapoi la Biletele Mele",
+		"signed_in_as": "Conectat ca",
+		"tickets_count_one": "{{count}} bilet",
+		"tickets_count_few": "{{count}} bilete",
+		"tickets_count_other": "{{count}} de bilete"
 	}
 }

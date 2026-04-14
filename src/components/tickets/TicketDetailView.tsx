@@ -1,16 +1,20 @@
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useTranslation } from 'next-i18next';
 import { ITicket } from '@/types';
 
 interface TicketDetailViewProps {
 	ticket: ITicket;
+	locale?: string;
 }
 
-export default function TicketDetailView({ ticket }: TicketDetailViewProps) {
+export default function TicketDetailView({ ticket, locale = 'en' }: TicketDetailViewProps) {
+	const { t } = useTranslation('common');
+
 	const formatDate = (dateStr: string) => {
 		const date = new Date(dateStr);
-		return date.toLocaleDateString('en-US', {
+		return date.toLocaleDateString(locale, {
 			weekday: 'long',
 			month: 'long',
 			day: 'numeric',
@@ -20,7 +24,7 @@ export default function TicketDetailView({ ticket }: TicketDetailViewProps) {
 
 	const formatTime = (dateStr: string) => {
 		const date = new Date(dateStr);
-		return date.toLocaleTimeString('en-US', {
+		return date.toLocaleTimeString(locale, {
 			hour: 'numeric',
 			minute: '2-digit',
 		});
@@ -29,15 +33,18 @@ export default function TicketDetailView({ ticket }: TicketDetailViewProps) {
 	return (
 		<div className="flex flex-col items-center gap-8">
 			{/* QR Code */}
-			<div className="flex flex-col items-center gap-2">
+			<div className="flex flex-col items-center gap-3">
 				<div
-					className="flex min-h-[240px] min-w-[240px] items-center justify-center rounded-[20px] bg-[var(--theme-surface)] p-5"
+					className="flex min-h-[272px] min-w-[272px] items-center justify-center rounded-[20px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6"
 					role="img"
-					aria-label={`QR code for ${ticket.event_title} ticket. Show at the door.`}
+					aria-label={`QR ${ticket.event_title}`}
 				>
-					<QRCodeSVG value={ticket.qr_code_data} size={200} level="M" />
+					<QRCodeSVG value={ticket.qr_code_data} size={224} level="M" />
 				</div>
-				<p className="text-[0.8125rem] text-[var(--theme-text-muted)]">Scan at the door</p>
+				<p className="text-[0.8125rem] text-[var(--theme-text-muted)]">{t('tickets.scan_at_door_short')}</p>
+				<p className="font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-wide text-[var(--theme-text-muted)]">
+					{ticket.id}
+				</p>
 			</div>
 
 			{/* Event details */}
@@ -75,7 +82,7 @@ export default function TicketDetailView({ ticket }: TicketDetailViewProps) {
 						className="w-full rounded-xl border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]"
 						startContent={<Icon icon="mdi:download" width={20} />}
 					>
-						Download PDF
+						{t('tickets.download_pdf')}
 					</Button>
 				</a>
 			)}

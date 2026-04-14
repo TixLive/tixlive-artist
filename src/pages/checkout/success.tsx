@@ -89,10 +89,10 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
     setLinkSent(false);
 
     try {
-      const res = await fetch('/api/auth/magic-link', {
+      const res = await fetch('/api/auth/email-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: magicEmail, order_id: orderId }),
+        body: JSON.stringify({ email: magicEmail.trim() }),
       });
 
       if (!res.ok) throw new Error('Failed to send');
@@ -181,19 +181,23 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
               </a>
             )}
 
-            {/* 4. Magic link section */}
+            {/* 4. Save tickets section */}
             <div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] p-6">
               <h3 className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">
                 Save tickets to your account
               </h3>
               <p className="mt-1 text-[0.875rem] text-[var(--theme-text-muted)]">
-                Access your tickets anytime from any device. Enter your email and we&apos;ll send a link.
+                Enter your email and we&apos;ll send you a 6-digit code. Use it on the sign-in page to access your tickets anytime.
               </p>
 
               {linkSent ? (
                 <div className="mt-4 rounded-xl bg-[#16A34A]/8 p-4 text-[0.875rem] text-[#16A34A]">
                   <Icon icon="mdi:check" className="mr-1 inline" width={16} />
-                  Check your inbox! We sent a link to {magicEmail}. It expires in 24 hours.
+                  Code sent to {magicEmail}. Check your inbox, then{' '}
+                  <Link href={`/login?next=%2Fmy-tickets`} className="underline">
+                    sign in here
+                  </Link>
+                  .
                 </div>
               ) : (
                 <div className="mt-4 flex gap-2">
@@ -212,7 +216,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
                     isLoading={sendingLink}
                     isDisabled={!magicEmail.trim()}
                   >
-                    Send link
+                    Send code
                   </Button>
                 </div>
               )}

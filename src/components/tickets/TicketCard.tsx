@@ -5,12 +5,13 @@ import { ITicket } from '@/types';
 
 interface TicketCardProps {
 	ticket: ITicket;
+	locale?: string;
 }
 
-export default function TicketCard({ ticket }: TicketCardProps) {
+export default function TicketCard({ ticket, locale = 'en' }: TicketCardProps) {
 	const formatDate = (dateStr: string) => {
 		const date = new Date(dateStr);
-		return date.toLocaleDateString('en-US', {
+		return date.toLocaleDateString(locale, {
 			weekday: 'short',
 			month: 'short',
 			day: 'numeric',
@@ -21,7 +22,7 @@ export default function TicketCard({ ticket }: TicketCardProps) {
 
 	return (
 		<Link href={`/my-tickets/${ticket.id}`} className="group block">
-			<article className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4 transition-all duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] hover:shadow-[0_1px_3px_rgba(20,19,18,0.04)]">
+			<article className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4 transition-all duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] hover:shadow-[0_4px_12px_rgba(20,19,18,0.06)]">
 				{/* Event poster thumbnail */}
 				<div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--theme-text)_6%,transparent)]">
 					<Icon icon="mdi:ticket-confirmation" width={24} className="text-[var(--theme-text-muted)]" />

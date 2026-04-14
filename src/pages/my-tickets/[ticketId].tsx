@@ -1,6 +1,6 @@
-import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
@@ -8,6 +8,7 @@ import { IOrganizer, ITicket } from '@/types';
 import { getSite, getTicket } from '@/lib/api';
 import Layout from '@/components/layout/Layout';
 import TicketDetailView from '@/components/tickets/TicketDetailView';
+import { withAttendeeAuth } from '@/middleware/Attendee.Middleware';
 
 interface TicketDetailPageProps {
 	organizer: IOrganizer;
@@ -18,17 +19,18 @@ interface TicketDetailPageProps {
 
 export default function TicketDetailPage({ organizer, ticket, brandPrimary, brandAccent }: TicketDetailPageProps) {
 	const { t } = useTranslation('common');
+	const router = useRouter();
 
 	return (
 		<>
 			<Head>
-				<title>{ticket.event_title} — Ticket — {organizer.name}</title>
+				<title>{ticket.event_title} — {t('tickets.my_tickets')} — {organizer.name}</title>
 			</Head>
 
 			<style jsx global>{`
 				:root {
-					--brand-primary: ${brandPrimary || '#2D2A26'};
-					--brand-accent: ${brandAccent || '#8B6914'};
+					--brand-primary: ${/^#[0-9a-fA-F]{3,8}$/.test(brandPrimary || '') ? brandPrimary : '#2D2A26'};
+					--brand-accent: ${/^#[0-9a-fA-F]{3,8}$/.test(brandAccent || '') ? brandAccent : '#8B6914'};
 				}
 			`}</style>
 
@@ -40,41 +42,27 @@ export default function TicketDetailPage({ organizer, ticket, brandPrimary, bran
 						className="mb-8 inline-flex items-center gap-1.5 text-[0.875rem] font-medium text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
 					>
 						<Icon icon="mdi:arrow-left" width={16} />
-						Back to My Tickets
+						{t('tickets.back_to_tickets')}
 					</Link>
 
-					<TicketDetailView ticket={ticket} />
+					<TicketDetailView ticket={ticket} locale={router.locale} />
 				</div>
 			</Layout>
 		</>
 	);
 }
 
-export const getServerSideProps: GetServerSideProps<TicketDetailPageProps> = async ({ req, params, locale }) => {
-	const sessionCookie = req.cookies.attendee_session;
-
-	if (!sessionCookie) {
-		return { redirect: { destination: '/', permanent: false } };
-	}
-
-	const ticketId = params?.ticketId as string;
-
+export const getServerSideProps = withAttendeeAuth<TicketDetailPageProps>(async ({ params, locale }, attendee) => {
+	const ticketId = params?.ticketId as string | undefined;
 	if (!ticketId) {
 		return { notFound: true };
 	}
 
-	let email: string;
-	let organizerId: number;
 	try {
-		const session = JSON.parse(sessionCookie);
-		email = session.email;
-		organizerId = session.organizer_id;
-	} catch {
-		return { redirect: { destination: '/', permanent: false } };
-	}
-
-	try {
-		const [organizer, ticket] = await Promise.all([getSite(), getTicket(email, organizerId, ticketId)]);
+		const [organizer, ticket] = await Promise.all([
+			getSite(),
+			getTicket(attendee.email, attendee.organizer_id, ticketId),
+		]);
 
 		return {
 			props: {
@@ -88,4 +76,4 @@ export const getServerSideProps: GetServerSideProps<TicketDetailPageProps> = asy
 	} catch {
 		return { notFound: true };
 	}
-};
+});

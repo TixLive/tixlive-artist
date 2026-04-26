@@ -39,6 +39,9 @@ yarn-error.log*
 # gstack local artifacts
 .gstack/
 
+# gstack — vendoring is deprecated, every developer installs gstack globally
+.claude/skills/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

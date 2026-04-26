@@ -35,7 +35,16 @@
 		"error_payment_method": "Nu exista o metoda de plata disponibila pentru acest eveniment. Te rugam sa contactezi organizatorul.",
 		"error_invalid_order": "Ceva nu este in regula cu comanda ta. Te rugam sa te intorci si sa incerci din nou.",
 		"error_server": "Sistemul nostru de plati este temporar indisponibil. Te rugam sa incerci din nou intr-un moment.",
-		"error_generic": "Ceva nu a mers bine. Te rugam sa incerci din nou."
+		"error_generic": "Ceva nu a mers bine. Te rugam sa incerci din nou.",
+		"welcome_back": "Bine ai revenit, {{name}}",
+		"account_email": "Email cont",
+		"add_phone": "Adauga telefon",
+		"edit_profile": "Editeaza",
+		"edit_profile_aria": "Editeaza datele profilului",
+		"edit_profile_title": "Editeaza datele tale",
+		"profile_incomplete": "Adauga numele tau pentru a continua. Il vom salva in cont.",
+		"me_error_fallback": "Nu am putut incarca datele contului. Te rugam sa le completezi mai jos.",
+		"me_error_fallback_note": "Date cont indisponibile — folosim datele in cache."
 	},
 	"success": {
 		"payment_successful": "Plata Reusita!",

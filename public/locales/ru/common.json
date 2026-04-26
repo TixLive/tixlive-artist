@@ -41,16 +41,25 @@
 		"payment_successful": "Оплата Успешна!",
 		"download_tickets": "Скачать Билеты",
 		"save_to_account": "Сохранить в Аккаунт",
-		"magic_link_description": "Введите email, чтобы получить ссылку для доступа к вашим билетам",
-		"send_link": "Отправить Ссылку",
-		"check_inbox": "Проверьте почту для ссылки доступа"
+		"save_to_account_description": "Введите email, чтобы получить код доступа к вашим билетам.",
+		"send_code": "Отправить код",
+		"check_inbox": "Проверьте почту для кода доступа"
 	},
 	"auth": {
-		"verifying": "Проверка...",
-		"link_expired": "Эта ссылка истекла",
-		"link_used": "Эта ссылка уже использована",
-		"invalid_link": "Недействительная ссылка",
-		"request_new_link": "Запросить новую ссылку"
+		"login_title": "Доступ к вашим билетам",
+		"login_subtitle": "Введите email. Мы пришлём 6-значный код.",
+		"email_placeholder": "email@example.com",
+		"send_code": "Отправить код",
+		"enter_code": "Введите код",
+		"please_enter_code": "Мы отправили 6-значный код на",
+		"code_sent_to": "Код отправлен на {{email}}",
+		"paste_code": "Вставить код",
+		"resend_code": "Отправить повторно",
+		"resend_code_in": "Повтор через {{time}}",
+		"otp_invalid": "Неверный или истёкший код. Попробуйте снова или запросите новый.",
+		"back": "Назад",
+		"login_error": "Что-то пошло не так. Пожалуйста, попробуйте снова.",
+		"sign_out": "Выйти"
 	},
 	"common": {
 		"sold_out": "Распродано",
@@ -65,6 +74,13 @@
 		"browse_events": "Просмотреть События",
 		"view_ticket": "Посмотреть Билет",
 		"scan_at_door": "Покажите этот QR-код на входе",
-		"download_pdf": "Скачать PDF"
+		"scan_at_door_short": "Сканируйте на входе",
+		"download_pdf": "Скачать PDF",
+		"back_to_tickets": "Назад к Моим Билетам",
+		"signed_in_as": "Вы вошли как",
+		"tickets_count_one": "{{count}} билет",
+		"tickets_count_few": "{{count}} билета",
+		"tickets_count_many": "{{count}} билетов",
+		"tickets_count_other": "{{count}} билета"
 	}
 }

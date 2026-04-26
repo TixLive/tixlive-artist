@@ -43,6 +43,12 @@ export default function AttendeeIdentityRow({ me, onEditPress }: AttendeeIdentit
 						</Chip>
 					</div>
 					<div className="flex min-w-0 items-center gap-1 text-[0.8125rem] text-[var(--theme-text-muted)]">
+						<Icon
+							icon="mdi:lock-outline"
+							width={12}
+							className="flex-shrink-0 text-[var(--theme-text-muted)] sm:hidden"
+							aria-label={t('checkout.account_email')}
+						/>
 						<span className="truncate">{me.email}</span>
 						{hasPhone ? (
 							<>

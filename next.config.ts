@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
 		],
 		dangerouslyAllowLocalIP: process.env.NODE_ENV === 'development',
 	},
+	async redirects() {
+		return [
+			{ source: '/my-tickets', destination: '/account/tickets', permanent: true },
+			{ source: '/my-tickets/:ticketId', destination: '/account/tickets/:ticketId', permanent: true },
+		];
+	},
 };
 
 export default nextConfig;

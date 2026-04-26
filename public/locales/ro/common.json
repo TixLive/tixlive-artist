@@ -81,5 +81,44 @@
 		"tickets_count_one": "{{count}} bilet",
 		"tickets_count_few": "{{count}} bilete",
 		"tickets_count_other": "{{count}} de bilete"
+	},
+	"account": {
+		"orders": "Comenzi",
+		"tickets": "Bilete",
+		"profile": "Profil",
+		"signed_in_as": "Conectat ca"
+	},
+	"orders": {
+		"empty_title": "Nu ai comenzi inca",
+		"empty_cta": "Exploreaza evenimente",
+		"total": "Total",
+		"status_paid": "Platit",
+		"status_pending": "In asteptare",
+		"status_failed": "Esuat",
+		"items_count_one": "{{count}} articol",
+		"items_count_few": "{{count}} articole",
+		"items_count_other": "{{count}} de articole"
+	},
+	"order_detail": {
+		"back_to_orders": "Inapoi la comenzi",
+		"items": "Articole",
+		"total": "Total",
+		"download_pdf": "Descarca biletele PDF"
+	},
+	"profile": {
+		"subtitle": "Actualizeaza numele si telefonul folosite pe bilete.",
+		"first_name": "Prenume",
+		"last_name": "Nume",
+		"phone": "Telefon",
+		"email": "Email",
+		"email_hint": "Pentru a schimba emailul, contacteaza suportul.",
+		"save": "Salveaza modificarile",
+		"saved": "Profil salvat",
+		"save_error": "Nu am putut salva. Incearca din nou.",
+		"no_changes": "Nu sunt schimbari de salvat",
+		"first_name_required": "Prenumele este obligatoriu",
+		"last_name_required": "Numele este obligatoriu",
+		"phone_invalid": "Introdu un numar de telefon valid",
+		"too_long": "Prea lung"
 	}
 }

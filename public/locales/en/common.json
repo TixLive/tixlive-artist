@@ -80,5 +80,43 @@
 		"signed_in_as": "Signed in as",
 		"tickets_count_one": "{{count}} ticket",
 		"tickets_count_other": "{{count}} tickets"
+	},
+	"account": {
+		"orders": "Orders",
+		"tickets": "Tickets",
+		"profile": "Profile",
+		"signed_in_as": "Signed in as"
+	},
+	"orders": {
+		"empty_title": "No orders yet",
+		"empty_cta": "Browse events",
+		"total": "Total",
+		"status_paid": "Paid",
+		"status_pending": "Pending",
+		"status_failed": "Failed",
+		"items_count_one": "{{count}} item",
+		"items_count_other": "{{count}} items"
+	},
+	"order_detail": {
+		"back_to_orders": "Back to orders",
+		"items": "Items",
+		"total": "Total",
+		"download_pdf": "Download tickets PDF"
+	},
+	"profile": {
+		"subtitle": "Update the name and phone we use on your tickets.",
+		"first_name": "First name",
+		"last_name": "Last name",
+		"phone": "Phone",
+		"email": "Email",
+		"email_hint": "To change your email, contact support.",
+		"save": "Save changes",
+		"saved": "Profile saved",
+		"save_error": "Couldn't save. Please try again.",
+		"no_changes": "No changes to save",
+		"first_name_required": "First name is required",
+		"last_name_required": "Last name is required",
+		"phone_invalid": "Enter a valid phone number",
+		"too_long": "Too long"
 	}
 }

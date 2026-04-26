@@ -7,21 +7,30 @@ import type {
 	IOrderBuyResponse,
 	IOrderDetail,
 	ITicket,
+	IMe,
+	IMeUpdate,
 } from '@/types';
 
 const USE_MOCKS = process.env.USE_MOCKS === 'true';
 const BASE_URL = process.env.BESTTIX_API_URL || 'http://localhost:3001';
 const API_KEY = process.env.BESTTIX_API_KEY || '';
 
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-	const res = await fetch(`${BASE_URL}${path}`, {
-		...options,
-		headers: {
-			'Content-Type': 'application/json',
-			'x-api-key': API_KEY,
-			...options?.headers,
-		},
-	});
+interface ApiFetchOptions extends RequestInit {
+	bearerToken?: string;
+}
+
+async function apiFetch<T>(path: string, options?: ApiFetchOptions): Promise<T> {
+	const { bearerToken, headers: extraHeaders, ...rest } = options ?? {};
+	const headers: Record<string, string> = {
+		'Content-Type': 'application/json',
+		'x-api-key': API_KEY,
+		...(extraHeaders as Record<string, string> | undefined),
+	};
+	if (bearerToken) {
+		headers['Authorization'] = `Bearer ${bearerToken}`;
+	}
+
+	const res = await fetch(`${BASE_URL}${path}`, { ...rest, headers });
 
 	if (!res.ok) {
 		const body = await res.text();
@@ -86,37 +95,54 @@ export async function getOrder(orderId: string): Promise<IOrderDetail> {
 	return apiFetch<IOrderDetail>(`/api/public/order/${orderId}`);
 }
 
-export async function requestMagicLink(email: string): Promise<{ success: boolean }> {
-	if (USE_MOCKS) {
-		return { success: true };
-	}
-	return apiFetch<{ success: boolean }>('/api/public/auth/magic-link', {
-		method: 'POST',
-		body: JSON.stringify({ email }),
-	});
-}
-
-export async function verifyMagicLink(token: string): Promise<{ success: boolean; email: string }> {
-	if (USE_MOCKS) {
-		if (token === 'test-expired') throw new Error('This magic link has expired.');
-		if (token === 'test-used') throw new Error('This magic link has already been used.');
-		return { success: true, email: 'test@example.com' };
-	}
-	return apiFetch<{ success: boolean; email: string }>(`/api/public/auth/verify?t=${encodeURIComponent(token)}`);
-}
-
-export async function getMyTickets(email: string, organizerId: number): Promise<ITicket[]> {
+export async function getMyTickets(bearerToken: string): Promise<ITicket[]> {
 	if (USE_MOCKS) {
 		const { mockTickets } = await import('@/mocks/data');
 		return mockTickets;
 	}
-	return apiFetch<ITicket[]>(`/api/public/tickets?email=${encodeURIComponent(email)}&organizer_id=${organizerId}`);
+	return apiFetch<ITicket[]>('/api/public/tickets', { bearerToken });
 }
 
-export async function getTicket(email: string, organizerId: number, ticketId: string): Promise<ITicket> {
+export async function getTicket(bearerToken: string, ticketId: string): Promise<ITicket> {
 	if (USE_MOCKS) {
 		const { mockTickets } = await import('@/mocks/data');
 		return mockTickets.find((t) => t.id === ticketId) || mockTickets[0];
 	}
-	return apiFetch<ITicket>(`/api/public/tickets/${ticketId}?email=${encodeURIComponent(email)}&organizer_id=${organizerId}`);
+	return apiFetch<ITicket>(`/api/public/tickets/${ticketId}`, { bearerToken });
+}
+
+export async function getMyOrders(bearerToken: string): Promise<IOrderDetail[]> {
+	if (USE_MOCKS) {
+		const { mockOrderDetail } = await import('@/mocks/data');
+		return [mockOrderDetail];
+	}
+	return apiFetch<IOrderDetail[]>('/api/public/orders', { bearerToken });
+}
+
+export async function getMe(bearerToken: string): Promise<IMe> {
+	if (USE_MOCKS) {
+		return {
+			email: 'test@example.com',
+			first_name: 'Test',
+			last_name: 'User',
+			phone: '',
+		};
+	}
+	return apiFetch<IMe>('/api/public/me', { bearerToken });
+}
+
+export async function updateMe(bearerToken: string, body: IMeUpdate): Promise<IMe> {
+	if (USE_MOCKS) {
+		return {
+			email: 'test@example.com',
+			first_name: body.first_name,
+			last_name: body.last_name,
+			phone: body.phone ?? '',
+		};
+	}
+	return apiFetch<IMe>('/api/public/me', {
+		bearerToken,
+		method: 'PATCH',
+		body: JSON.stringify(body),
+	});
 }

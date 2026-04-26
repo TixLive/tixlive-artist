@@ -82,5 +82,45 @@
 		"tickets_count_few": "{{count}} билета",
 		"tickets_count_many": "{{count}} билетов",
 		"tickets_count_other": "{{count}} билета"
+	},
+	"account": {
+		"orders": "Заказы",
+		"tickets": "Билеты",
+		"profile": "Профиль",
+		"signed_in_as": "Вы вошли как"
+	},
+	"orders": {
+		"empty_title": "Заказов пока нет",
+		"empty_cta": "Просмотреть события",
+		"total": "Итого",
+		"status_paid": "Оплачено",
+		"status_pending": "В ожидании",
+		"status_failed": "Не удалось",
+		"items_count_one": "{{count}} позиция",
+		"items_count_few": "{{count}} позиции",
+		"items_count_many": "{{count}} позиций",
+		"items_count_other": "{{count}} позиции"
+	},
+	"order_detail": {
+		"back_to_orders": "Назад к заказам",
+		"items": "Позиции",
+		"total": "Итого",
+		"download_pdf": "Скачать билеты PDF"
+	},
+	"profile": {
+		"subtitle": "Обновите имя и телефон, которые используются на билетах.",
+		"first_name": "Имя",
+		"last_name": "Фамилия",
+		"phone": "Телефон",
+		"email": "Email",
+		"email_hint": "Чтобы изменить email, обратитесь в поддержку.",
+		"save": "Сохранить изменения",
+		"saved": "Профиль сохранён",
+		"save_error": "Не удалось сохранить. Попробуйте снова.",
+		"no_changes": "Нет изменений для сохранения",
+		"first_name_required": "Имя обязательно",
+		"last_name_required": "Фамилия обязательна",
+		"phone_invalid": "Введите корректный номер телефона",
+		"too_long": "Слишком длинно"
 	}
 }

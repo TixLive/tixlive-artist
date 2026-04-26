@@ -63,6 +63,21 @@ function parseCookieHeader(header: string | undefined): Record<string, string> {
 	return out;
 }
 
+/**
+ * Extract the attendee access token from an incoming request. Used by
+ * API proxy routes that need to forward the JWT as `Authorization: Bearer`
+ * to besttix.
+ */
+export function getAccessTokenFromCookies(req: {
+	cookies?: Partial<Record<string, string>>;
+	headers: { cookie?: string };
+}): string | null {
+	const direct = req.cookies?.[ACCESS_COOKIE];
+	if (direct) return direct;
+	const parsed = parseCookieHeader(req.headers?.cookie);
+	return parsed[ACCESS_COOKIE] || null;
+}
+
 type ReqLike = NextApiRequest | (IncomingMessage & { cookies?: Partial<Record<string, string>> });
 type ResLike = NextApiResponse | ServerResponse;
 

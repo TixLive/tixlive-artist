@@ -62,11 +62,11 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 						</button>
 					) : (
 						<Link
-							href="/my-tickets"
+							href="/account"
 							className="inline-flex items-center gap-2 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] px-3.5 py-2 text-[0.8125rem] font-medium text-[var(--theme-text-muted)] transition-colors duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_18%,transparent)] hover:text-[var(--theme-text)]"
 						>
-							<Icon icon="mdi:ticket-outline" width={16} />
-							<span className="hidden sm:inline">My Tickets</span>
+							<Icon icon="mdi:account-circle-outline" width={16} />
+							<span className="hidden sm:inline">Account</span>
 						</Link>
 					)}
 				</div>

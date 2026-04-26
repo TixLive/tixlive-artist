@@ -227,6 +227,20 @@ export interface IOrderDetail {
 	total: number;
 	currency: string;
 	pdf_url: string | null;
+	created_at?: string;
+}
+
+export interface IMe {
+	email: string;
+	first_name: string;
+	last_name: string;
+	phone: string;
+}
+
+export interface IMeUpdate {
+	first_name: string;
+	last_name: string;
+	phone?: string;
 }
 
 export interface ITicket {

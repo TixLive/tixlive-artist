@@ -35,7 +35,16 @@
 		"error_payment_method": "No payment method available for this event. Please contact the organizer.",
 		"error_invalid_order": "Something is wrong with your order. Please go back and try again.",
 		"error_server": "Our payment system is temporarily unavailable. Please try again in a moment.",
-		"error_generic": "Something went wrong. Please try again."
+		"error_generic": "Something went wrong. Please try again.",
+		"welcome_back": "Welcome back, {{name}}",
+		"account_email": "Account email",
+		"add_phone": "Add phone",
+		"edit_profile": "Edit",
+		"edit_profile_aria": "Edit profile details",
+		"edit_profile_title": "Edit your details",
+		"profile_incomplete": "Add your name to continue. We'll save it to your account.",
+		"me_error_fallback": "We couldn't load your account details. Please fill in below.",
+		"me_error_fallback_note": "Account details unavailable — using cached info."
 	},
 	"success": {
 		"payment_successful": "Payment Successful!",

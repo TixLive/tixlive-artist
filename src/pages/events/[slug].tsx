@@ -18,6 +18,7 @@ import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
 import AddonRow from '@/components/event/AddonRow';
 import AddressMap from '@/components/common/AddressMap';
+import TicketAvailabilityNotice, { TicketAvailabilityVariant } from '@/components/event/TicketAvailabilityNotice';
 import LineupSection from '@/components/event/sections/LineupSection';
 import TeamsSection from '@/components/event/sections/TeamsSection';
 import SpeakersSection from '@/components/event/sections/SpeakersSection';
@@ -55,6 +56,18 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
   const isEventSoldOut = useMemo(() => {
     return ticketTypes.length > 0 && ticketTypes.every((tt) => tt.remaining_capacity !== null && tt.remaining_capacity === 0);
   }, [ticketTypes]);
+
+  // Only `open` events can be purchased. `soon`/`closed` (and sold out) are viewable
+  // but the ticket selector is replaced by a notice and every buy entry point is disabled.
+  const salesOpen = event.status === 'open';
+  const availabilityNotice: TicketAvailabilityVariant | null =
+    event.status === 'soon'
+      ? 'coming_soon'
+      : event.status === 'closed'
+        ? 'closed'
+        : isEventSoldOut
+          ? 'sold_out'
+          : null;
 
   const cartItems: ICartItem[] = useMemo(() => {
     return ticketTypes
@@ -106,7 +119,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
   }, []);
 
   const handleBuy = useCallback(() => {
-    if (cartItems.length === 0) return;
+    if (!salesOpen || cartItems.length === 0) return;
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/checkout';
@@ -140,7 +153,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
     document.body.appendChild(form);
     form.submit();
-  }, [cartItems, event.slug, activeSessionId, addons, addonQuantities, currency]);
+  }, [salesOpen, cartItems, event.slug, activeSessionId, addons, addonQuantities, currency]);
 
   // JSON-LD structured data
   const jsonLd = {
@@ -253,7 +266,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                 </div>
               )}
 
-              {!isEventSoldOut ? (
+              {availabilityNotice === null ? (
                 <>
                   <div className="mt-3 flex flex-col gap-3">
                     {ticketTypes.map((ticket) => (
@@ -309,15 +322,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                   )}
                 </>
               ) : (
-                <div className="mt-3 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-8 text-center">
-                  <Icon icon="mdi:alert-circle" className="mx-auto mb-2 text-[#DC2626]" width={32} />
-                  <p className="font-[family-name:var(--font-display)] text-[1rem] font-[700] text-[#DC2626]">
-                    Sold Out
-                  </p>
-                  <p className="mt-1 text-[0.8125rem] text-[var(--theme-text-muted)]">
-                    This event is no longer available
-                  </p>
-                </div>
+                <TicketAvailabilityNotice variant={availabilityNotice} />
               )}
             </section>
 
@@ -481,6 +486,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             priceFrom={priceFrom}
             currency={currency}
             event={event}
+            salesOpen={salesOpen}
             totalQuantity={totalQuantity}
             totalPrice={totalPrice}
             onScrollToTickets={scrollToTickets}
@@ -509,7 +515,9 @@ export const getServerSideProps: GetServerSideProps<EventDetailProps> = async ({
 
   const [organizer, event] = await Promise.all([getSite(), getEvent(slug)]);
 
-  if (!event || event.status !== 'open') {
+  // The public API only ever returns non-draft events owned by this organizer, so
+  // anything we get back (open / soon / closed) is viewable. Purchasing is gated in the UI.
+  if (!event) {
     return { notFound: true };
   }
 

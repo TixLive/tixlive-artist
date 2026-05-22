@@ -1,5 +1,5 @@
 import '@/styles/globals.css';
-import { HeroUIProvider } from '@heroui/react';
+import { HeroUIProvider, ToastProvider } from '@heroui/react';
 import type { AppProps } from 'next/app';
 import { appWithTranslation } from 'next-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -39,6 +39,8 @@ function App({ Component, pageProps }: AppProps) {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<HeroUIProvider navigate={router.push}>
+				{/* Toasts (e.g. seat per-category cap) — bottom placement stays reachable on mobile */}
+				<ToastProvider placement="bottom-center" toastOffset={16} />
 				<Head>{brandCssVars && <style>{`:root { ${brandCssVars} }`}</style>}</Head>
 				<main className={`${geist.variable} ${geistMono.variable} font-sans min-h-screen`}>
 					<Component {...pageProps} />

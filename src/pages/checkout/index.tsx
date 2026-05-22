@@ -38,6 +38,8 @@ interface CheckoutPageProps {
   session: { id: number; date: string };
   cart: ICartItem[];
   addonCart: IAddonCartItem[];
+  selectedSeats: string[];
+  seatLabels: string[];
   brandPrimary: string;
   brandAccent: string;
   eventType: string;
@@ -45,7 +47,7 @@ interface CheckoutPageProps {
   meError: boolean;
 }
 
-export default function CheckoutPage({ organizer, event, session, cart, addonCart, me, meError }: CheckoutPageProps) {
+export default function CheckoutPage({ organizer, event, session, cart, addonCart, selectedSeats, seatLabels, me, meError }: CheckoutPageProps) {
   const { t } = useTranslation('common');
   const router = useRouter();
 
@@ -56,6 +58,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [profileIncomplete, setProfileIncomplete] = useState(false);
+  const [seatConflict, setSeatConflict] = useState(false);
 
   const { isOpen: drawerOpen, onOpen: openDrawer, onOpenChange: setDrawerOpen } = useDisclosure();
 
@@ -97,9 +100,33 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
     }
   }, [drawerOpen, profileIncomplete]);
 
+  // Re-pick seats: POST back to the seat page (fresh booked snapshot + re-suggest).
+  const goPickSeats = () => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/events/${event.slug}/seats`;
+    form.style.display = 'none';
+    const fields: Record<string, string> = {
+      event: event.slug,
+      session: String(session.id),
+      cart: JSON.stringify(cart),
+      ...(addonCart.length > 0 && { addons: JSON.stringify(addonCart) }),
+    };
+    for (const [key, value] of Object.entries(fields)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    }
+    document.body.appendChild(form);
+    form.submit();
+  };
+
   const submitOrder = async (values?: CheckoutFormValues) => {
     setSubmitting(true);
     setSubmitError('');
+    setSeatConflict(false);
 
     try {
       const baseBody = {
@@ -112,6 +139,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
         ...(addonCart.length > 0 && {
           addons: addonCart.map((a) => ({ addon_id: a.addon_id, quantity: a.quantity })),
         }),
+        ...(selectedSeats.length > 0 && { selected_seats: selectedSeats }),
         promo_code: promoCode || undefined,
         locale: router.locale ?? 'en',
         idempotency_key: idempotencyKeyRef.current,
@@ -146,8 +174,19 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
           openDrawer();
           return;
         }
-        if (code.includes('SOLD_OUT') || code.includes('NO_AVAILABLE_TICKETS')) {
+        // besttix seat error codes — all are recoverable by re-picking on the map.
+        const SEAT_ERROR_CODES = ['SEAT_TAKEN', 'SEATS_REQUIRED', 'SEAT_COUNT_MISMATCH', 'INVALID_SEAT_ID', 'DUPLICATE_SEATS'];
+        if (SEAT_ERROR_CODES.some((c) => code.includes(c))) {
+          // A held/sold seat (or a stale selection) blocked order creation. Send the
+          // buyer back to the map with fresh availability rather than dead-ending.
+          setSubmitError(t('checkout.error_seat_taken'));
+          setSeatConflict(true);
+        } else if (code.includes('SOLD_OUT') || code.includes('NO_AVAILABLE_TICKETS')) {
           setSubmitError(t('checkout.error_sold_out'));
+        } else if (code.includes('TICKET_LIMIT_REACHED')) {
+          // Per-category cap exceeded (the FE caps this, so normally only tampering).
+          // Must be checked BEFORE the generic 400 branch, which would swallow it.
+          setSubmitError(t('checkout.error_too_many_tickets'));
         } else if (code.includes('PAYMENT_METHOD')) {
           setSubmitError(t('checkout.error_payment_method'));
         } else if (res.status === 400) {
@@ -217,7 +256,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
                 <div className="space-y-6">
                   {/* Mobile order summary (above form) */}
                   <div className="md:hidden">
-                    <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} />
+                    <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} seatLabels={seatLabels} />
                   </div>
 
                   {/* Identity / details */}
@@ -315,6 +354,15 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
                   {submitError && (
                     <div className="rounded-2xl bg-[#DC2626]/8 p-4 text-center text-[0.875rem] text-[#DC2626]">
                       {submitError}
+                      {seatConflict && (
+                        <Button
+                          variant="ghost"
+                          onPress={goPickSeats}
+                          className="mt-3 w-full rounded-xl font-[family-name:var(--font-display)] font-[700]"
+                        >
+                          {t('checkout.choose_different_seats')}
+                        </Button>
+                      )}
                     </div>
                   )}
 
@@ -351,7 +399,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
           {/* Right column — sticky order summary (desktop only) */}
           <aside className="hidden w-[360px] flex-shrink-0 md:block">
             <div className="sticky top-24">
-              <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} />
+              <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} seatLabels={seatLabels} />
 
               <div className="mt-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
                 <PriceBreakdown
@@ -399,6 +447,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     let sessionId: string | undefined;
     let cartJson: string | undefined;
     let addonsJson: string | undefined;
+    let seatsJson: string | undefined;
+    let seatLabelsJson: string | undefined;
 
     if (req.method === 'POST') {
       const chunks: Buffer[] = [];
@@ -411,11 +461,15 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       sessionId = params.get('session') ?? undefined;
       cartJson = params.get('cart') ?? undefined;
       addonsJson = params.get('addons') ?? undefined;
+      seatsJson = params.get('selected_seats') ?? undefined;
+      seatLabelsJson = params.get('seat_labels') ?? undefined;
     } else {
       eventSlug = query.event as string;
       sessionId = query.session as string;
       cartJson = query.cart as string;
       addonsJson = query.addons as string;
+      seatsJson = query.selected_seats as string;
+      seatLabelsJson = query.seat_labels as string;
     }
 
     if (!eventSlug || !cartJson) {
@@ -448,6 +502,35 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       }
     }
 
+    // Seated events forward the chosen seat IDs (authoritative for besttix) plus
+    // human labels (display only). Both optional — GA orders carry neither.
+    let selectedSeats: string[] = [];
+    if (seatsJson) {
+      try {
+        const parsed = JSON.parse(seatsJson);
+        if (Array.isArray(parsed)) selectedSeats = parsed.filter((s): s is string => typeof s === 'string');
+      } catch {
+        selectedSeats = [];
+      }
+    }
+
+    let seatLabels: string[] = [];
+    if (seatLabelsJson) {
+      try {
+        const parsed = JSON.parse(seatLabelsJson);
+        if (Array.isArray(parsed)) seatLabels = parsed.filter((s): s is string => typeof s === 'string');
+      } catch {
+        seatLabels = [];
+      }
+    }
+
+    // A seated event can't check out without seats (besttix would reject on a
+    // count mismatch). Reaching here seatless means a crafted URL or a lost
+    // selection — send the buyer back to the event to pick seats, not a dead end.
+    if (event.is_seated && selectedSeats.length === 0) {
+      return { redirect: { destination: `/events/${eventSlug}`, permanent: false } };
+    }
+
     // Find the selected session
     const session = event.sessions?.find((s: { id: number }) => String(s.id) === sessionId) ?? event.sessions?.[0];
 
@@ -474,6 +557,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         session: session ? { id: session.id, date: session.date } : { id: 0, date: '' },
         cart,
         addonCart,
+        selectedSeats,
+        seatLabels,
         brandPrimary: site.brand_primary_color ?? '#6366f1',
         brandAccent: site.brand_accent_color ?? '#818cf8',
         eventType: event.event_type ?? 'general',

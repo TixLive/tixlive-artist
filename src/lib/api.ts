@@ -9,6 +9,8 @@ import type {
 	ITicket,
 	IMe,
 	IMeUpdate,
+	ISeatingResponse,
+	ISeatingSuggestResponse,
 } from '@/types';
 
 const USE_MOCKS = process.env.USE_MOCKS === 'true';
@@ -63,6 +65,27 @@ export async function getEvent(slug: string): Promise<IEventDetail> {
 		return mockEventDetail;
 	}
 	return apiFetch<IEventDetail>(`/api/public/event/${slug}`);
+}
+
+/**
+ * Full hall payload for a seated event's seat-selection page. Server-side only
+ * (uses the secret x-api-key). The browser reaches this through the
+ * /api/seating/* proxy routes, never directly.
+ */
+export async function getSeating(slug: string, sessionId: number): Promise<ISeatingResponse> {
+	return apiFetch<ISeatingResponse>(`/api/public/seating/${slug}?session_id=${sessionId}`);
+}
+
+/** Auto-pick nearby seats for the requested per-tier quantities. Server-side only. */
+export async function suggestSeats(
+	slug: string,
+	sessionId: number,
+	items: Array<{ ticket_package_id: number; quantity: number }>
+): Promise<ISeatingSuggestResponse> {
+	return apiFetch<ISeatingSuggestResponse>(`/api/public/seating/${slug}/suggest`, {
+		method: 'POST',
+		body: JSON.stringify({ session_id: sessionId, items }),
+	});
 }
 
 export async function validatePromo(eventId: number, code: string): Promise<IPromoValidateResponse> {

@@ -6,20 +6,24 @@ interface EventSidebarProps {
   priceFrom: number;
   currency: string;
   event: IEventDetail;
+  salesOpen: boolean;
   totalQuantity: number;
   totalPrice: number;
   onScrollToTickets: () => void;
   onBuy: () => void;
+  ctaLabel?: string;
 }
 
 export default function EventSidebar({
   priceFrom,
   currency,
   event,
+  salesOpen,
   totalQuantity,
   totalPrice,
   onScrollToTickets,
   onBuy,
+  ctaLabel,
 }: EventSidebarProps) {
 
   const formatDate = (dateStr: string) => {
@@ -76,7 +80,16 @@ export default function EventSidebar({
           </div>
 
           {/* CTA */}
-          {totalQuantity > 0 ? (
+          {!salesOpen ? (
+            <Button
+              isDisabled
+              variant="flat"
+              size="lg"
+              className="w-full rounded-xl font-[family-name:var(--font-display)] text-[0.9375rem] font-[700]"
+            >
+              {event.status === 'soon' ? 'Coming Soon' : 'Sales Ended'}
+            </Button>
+          ) : totalQuantity > 0 ? (
             <>
               <Button
                 variant="solid"
@@ -85,7 +98,7 @@ export default function EventSidebar({
                 style={{ backgroundColor: 'var(--brand-primary)' }}
                 onPress={onBuy}
               >
-                Checkout · {totalPrice} {currency}
+                {ctaLabel ?? `Checkout · ${totalPrice} ${currency}`}
               </Button>
               <p className="mt-2 text-[0.75rem] text-[var(--theme-text-muted)]">
                 {totalQuantity} {totalQuantity === 1 ? 'bilet selectat' : 'bilete selectate'}

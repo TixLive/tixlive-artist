@@ -1,3 +1,5 @@
+import type { Section } from '@/lib/seatingGeometry';
+
 export interface IOrganizer {
 	id: number;
 	name: string;
@@ -38,6 +40,8 @@ export interface ITicketType {
 	currency: string;
 	remaining_capacity: number | null;
 	max_tickets_per_user: number;
+	/** For seated events: number of seats assigned to this tier. null for GA events. */
+	total_seats?: number | null;
 }
 
 export interface IAvailablePaymentMethod {
@@ -173,6 +177,8 @@ export interface IEventDetail extends IEventListItem {
 	provider_fee_payer?: 'buyer' | 'organizer';
 	platform_fee_percent?: number;
 	platform_fee_fixed?: number;
+	/** True when the event sells assigned seats (has a seating chart). */
+	is_seated?: boolean;
 }
 
 export interface ICartItem {
@@ -203,6 +209,8 @@ export interface IOrderBuyBody {
 	addons?: Array<{ addon_id: number; quantity: number }>;
 	promo_code?: string;
 	locale: string;
+	/** Seated events only: flat list of chosen seat IDs (length === total ticket count). */
+	selected_seats?: string[];
 }
 
 export interface IOrderBuyResponse {
@@ -257,4 +265,32 @@ export interface ITicket {
 export interface IAttendeeSession {
 	email: string;
 	organizer_id: number;
+}
+
+// --- Seating (assigned-seat events) ---
+
+export interface ISeatingTier {
+	ticket_package_id: number;
+	name: string;
+	price: number;
+	color: string | null;
+	seat_ids: string[];
+}
+
+/** Response of GET /api/public/seating/[slug]?session_id= (full hall payload). */
+export interface ISeatingResponse {
+	geometry_version: number;
+	canvas_w: number;
+	canvas_h: number;
+	sections: Section[];
+	tiers: ISeatingTier[];
+	/** Seats taken for this session (sold + active holds; expired holds excluded). */
+	booked: string[];
+}
+
+/** Response of POST /api/public/seating/[slug]/suggest (auto-pick nearby seats). */
+export interface ISeatingSuggestResponse {
+	items: Array<{ ticket_package_id: number; seat_ids: string[] }>;
+	/** True when any tier got fewer seats than requested. */
+	shortfall: boolean;
 }

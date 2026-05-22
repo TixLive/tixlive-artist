@@ -6,9 +6,11 @@ interface OrderSummaryProps {
   sessionDate: string;
   cart: ICartItem[];
   addonCart?: IAddonCartItem[];
+  /** Seated events: human-readable labels ("VIP · A-12") for the chosen seats. */
+  seatLabels?: string[];
 }
 
-export default function OrderSummary({ event, sessionDate, cart, addonCart }: OrderSummaryProps) {
+export default function OrderSummary({ event, sessionDate, cart, addonCart, seatLabels }: OrderSummaryProps) {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -78,6 +80,17 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart }: Or
             </>
           )}
         </div>
+
+        {seatLabels && seatLabels.length > 0 && (
+          <div className="mt-3 border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-2.5">
+            <p className="text-[0.6875rem] font-medium uppercase tracking-[0.05em] text-[var(--theme-text-muted)]">
+              {seatLabels.length === 1 ? 'Seat' : 'Seats'}
+            </p>
+            <p className="mt-0.5 font-[family-name:var(--font-data)] text-[0.8125rem] tabular-nums text-[var(--theme-text)]">
+              {seatLabels.join(', ')}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

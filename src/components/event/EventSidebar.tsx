@@ -11,6 +11,7 @@ interface EventSidebarProps {
   totalPrice: number;
   onScrollToTickets: () => void;
   onBuy: () => void;
+  ctaLabel?: string;
 }
 
 export default function EventSidebar({
@@ -22,6 +23,7 @@ export default function EventSidebar({
   totalPrice,
   onScrollToTickets,
   onBuy,
+  ctaLabel,
 }: EventSidebarProps) {
 
   const formatDate = (dateStr: string) => {
@@ -96,7 +98,7 @@ export default function EventSidebar({
                 style={{ backgroundColor: 'var(--brand-primary)' }}
                 onPress={onBuy}
               >
-                Checkout · {totalPrice} {currency}
+                {ctaLabel ?? `Checkout · ${totalPrice} ${currency}`}
               </Button>
               <p className="mt-2 text-[0.75rem] text-[var(--theme-text-muted)]">
                 {totalQuantity} {totalQuantity === 1 ? 'bilet selectat' : 'bilete selectate'}

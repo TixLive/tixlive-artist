@@ -19,6 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			promo_code,
 			locale,
 			idempotency_key,
+			selected_seats,
 		} = req.body;
 
 		// Cart + payment + locale are always required (anonymous and authed both).
@@ -53,6 +54,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			});
 		}
 
+		// `selected_seats` only travels for seated events (besttix ignores it for GA).
+		const seatField = Array.isArray(selected_seats) && selected_seats.length > 0 ? { selected_seats } : {};
+		const returnOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
+
 		const forwardedBody = isAuthed
 			? {
 					session_id,
@@ -62,7 +67,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 					promo_code,
 					locale,
 					idempotency_key,
-					return_origin: `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`,
+					...seatField,
+					return_origin: returnOrigin,
 			  }
 			: {
 					session_id,
@@ -76,7 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 					promo_code,
 					locale,
 					idempotency_key,
-					return_origin: `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`,
+					...seatField,
+					return_origin: returnOrigin,
 			  };
 
 		const headers: Record<string, string> = {

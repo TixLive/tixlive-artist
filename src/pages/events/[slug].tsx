@@ -52,6 +52,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
   const ticketTypes = event.ticket_types ?? [];
   const addons = event.ticket_addons ?? [];
+  const isSeated = !!event.is_seated;
 
   const isEventSoldOut = useMemo(() => {
     return ticketTypes.length > 0 && ticketTypes.every((tt) => tt.remaining_capacity !== null && tt.remaining_capacity === 0);
@@ -119,10 +120,14 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
   }, []);
 
   const handleBuy = useCallback(() => {
-    if (!salesOpen || cartItems.length === 0) return;
+    if (!salesOpen) return;
+    // Seated events route to the seat page even with no pre-picked quantity (the
+    // seat map is the selection surface); GA still requires at least one ticket.
+    if (!isSeated && cartItems.length === 0) return;
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = '/checkout';
+    // Seated events route through the seat-selection page first; GA goes straight to checkout.
+    form.action = isSeated ? `/events/${event.slug}/seats` : '/checkout';
     form.style.display = 'none';
 
     const addonItems = addons
@@ -153,7 +158,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
     document.body.appendChild(form);
     form.submit();
-  }, [salesOpen, cartItems, event.slug, activeSessionId, addons, addonQuantities, currency]);
+  }, [salesOpen, isSeated, cartItems, event.slug, activeSessionId, addons, addonQuantities, currency]);
 
   // JSON-LD structured data
   const jsonLd = {
@@ -279,6 +284,20 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                     ))}
                   </div>
 
+                  {/* Seated: pick seats directly (steppers above are an optional seed) */}
+                  {isSeated && salesOpen && totalQuantity === 0 && (
+                    <Button
+                      variant="solid"
+                      size="lg"
+                      className="mt-5 w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
+                      style={{ backgroundColor: 'var(--brand-primary)' }}
+                      onPress={handleBuy}
+                    >
+                      {t('seating.select_seats')}
+                      <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
+                    </Button>
+                  )}
+
                   {/* Cart summary */}
                   {totalQuantity > 0 && (
                     <div className="mt-5 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
@@ -315,7 +334,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                         style={{ backgroundColor: 'var(--brand-primary)' }}
                         onPress={handleBuy}
                       >
-                        Continue to Checkout
+                        {isSeated ? t('seating.select_seats') : 'Continue to Checkout'}
                         <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
                       </Button>
                     </div>
@@ -491,6 +510,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             totalPrice={totalPrice}
             onScrollToTickets={scrollToTickets}
             onBuy={handleBuy}
+            ctaLabel={isSeated ? t('seating.select_seats') : undefined}
           />
         </div>
 
@@ -500,6 +520,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             cartItems={cartItems}
             currency={currency}
             onBuy={handleBuy}
+            ctaLabel={isSeated ? t('seating.select_seats') : undefined}
           />
         </div>
 

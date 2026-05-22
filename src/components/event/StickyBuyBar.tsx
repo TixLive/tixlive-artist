@@ -6,9 +6,10 @@ interface StickyBuyBarProps {
   cartItems: ICartItem[];
   currency: string;
   onBuy: () => void;
+  ctaLabel?: string;
 }
 
-export default function StickyBuyBar({ cartItems, currency, onBuy }: StickyBuyBarProps) {
+export default function StickyBuyBar({ cartItems, currency, onBuy, ctaLabel }: StickyBuyBarProps) {
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -34,7 +35,7 @@ export default function StickyBuyBar({ cartItems, currency, onBuy }: StickyBuyBa
           style={{ backgroundColor: 'var(--brand-primary)' }}
           onPress={onBuy}
         >
-          Checkout
+          {ctaLabel ?? 'Checkout'}
           <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
         </Button>
       </div>

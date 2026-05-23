@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import { HeroUIProvider, ToastProvider } from '@heroui/react';
 import type { AppProps } from 'next/app';
 import { appWithTranslation } from 'next-i18next';
+import nextI18NextConfig from '@/i18n.config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { geist, geistMono } from '@/styles/font';
 import { useRouter } from 'next/router';
@@ -50,4 +51,4 @@ function App({ Component, pageProps }: AppProps) {
 	);
 }
 
-export default appWithTranslation(App);
+export default appWithTranslation(App, nextI18NextConfig);

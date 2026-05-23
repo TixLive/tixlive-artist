@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Input, useDisclosure } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
 
 import Layout from '@/components/layout/Layout';
@@ -564,7 +565,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         eventType: event.event_type ?? 'general',
         me,
         meError,
-        ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+        ...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
       },
     };
   } catch (error) {

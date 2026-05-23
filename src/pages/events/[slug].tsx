@@ -4,6 +4,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
@@ -549,7 +550,7 @@ export const getServerSideProps: GetServerSideProps<EventDetailProps> = async ({
       brandPrimary: organizer.brand_primary_color || '',
       brandAccent: organizer.brand_accent_color || '',
       eventType: event.event_type || '',
-      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+      ...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
     },
   };
 };

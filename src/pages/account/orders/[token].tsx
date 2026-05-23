@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
 import AccountLayout from '@/components/account/AccountLayout';
@@ -65,7 +66,7 @@ export const getServerSideProps = withAttendeeAuth<OrderDetailPageProps>(async (
 				email: attendee.email,
 				brandPrimary: organizer.brand_primary_color || '',
 				brandAccent: organizer.brand_accent_color || '',
-				...(await serverSideTranslations(ctx.locale ?? 'en', ['common'])),
+				...(await serverSideTranslations(ctx.locale ?? 'en', ['common'], nextI18NextConfig)),
 			},
 		};
 	} catch {

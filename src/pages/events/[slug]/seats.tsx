@@ -1,6 +1,7 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import nextI18NextConfig from '@/i18n.config';
 
 import Layout from '@/components/layout/Layout';
 import SeatSelection from '@/components/seating/SeatSelection';
@@ -168,7 +169,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 				brandPrimary: organizer.brand_primary_color || '',
 				brandAccent: organizer.brand_accent_color || '',
 				eventType: event.event_type || '',
-				...(await serverSideTranslations(locale ?? 'en', ['common'])),
+				...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
 			},
 		};
 	} catch (error) {

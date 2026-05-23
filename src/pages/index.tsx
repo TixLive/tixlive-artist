@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
 import { IOrganizer, IEventListItem } from '@/types';
 import { getSite, getEvents } from '@/lib/api';
@@ -85,16 +86,21 @@ export default function Home({ organizer, events: initialEvents, total: initialT
 }
 
 export const getServerSideProps: GetServerSideProps<HomeProps> = async ({ locale }) => {
-  const [organizer, eventsData] = await Promise.all([getSite(), getEvents()]);
-
-  return {
-    props: {
-      organizer,
-      events: eventsData.events,
-      total: eventsData.total,
-      brandPrimary: organizer.brand_primary_color || '',
-      brandAccent: organizer.brand_accent_color || '',
-      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
-    },
-  };
+  try {
+    const [organizer, eventsData] = await Promise.all([getSite(), getEvents()]);
+    return {
+      props: {
+        organizer,
+        events: eventsData.events,
+        total: eventsData.total,
+        brandPrimary: organizer.brand_primary_color || '',
+        brandAccent: organizer.brand_accent_color || '',
+        ...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
+      },
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? `${e.message}\n${e.stack}` : String(e);
+    console.error('[index gssp]', msg);
+    throw e;
+  }
 };

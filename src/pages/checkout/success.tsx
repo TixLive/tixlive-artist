@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button, Input, Skeleton } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
 
 import Layout from '@/components/layout/Layout';
@@ -284,7 +285,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query, locale }) 
         orderId,
         brandPrimary: site.brand_primary_color ?? '#2D2A26',
         brandAccent: site.brand_accent_color ?? '#8B6914',
-        ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+        ...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
       },
     };
   } catch (error) {
@@ -304,7 +305,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query, locale }) 
         orderId: '',
         brandPrimary: '#2D2A26',
         brandAccent: '#8B6914',
-        ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+        ...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
       },
     };
   }

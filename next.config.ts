@@ -3,6 +3,11 @@ import path from 'path';
 
 const nextConfig: NextConfig = {
 	outputFileTracingRoot: path.join(__dirname),
+	experimental: {
+		outputFileTracingIncludes: {
+			'/**': ['./next-i18next.config.js', './public/locales/**/*'],
+		},
+	},
 	i18n: {
 		defaultLocale: 'en',
 		locales: ['en', 'ro', 'ru'],

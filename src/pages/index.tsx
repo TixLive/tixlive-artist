@@ -13,19 +13,25 @@ import EventGrid from '@/components/landing/EventGrid';
 import OrganizerIdentityBar from '@/components/landing/OrganizerIdentityBar';
 
 interface HomeProps {
-  organizer: IOrganizer;
-  events: IEventListItem[];
-  total: number;
-  brandPrimary: string;
-  brandAccent: string;
+	organizer: IOrganizer;
+	events: IEventListItem[];
+	total: number;
+	brandPrimary: string;
+	brandAccent: string;
 }
 
-export default function Home({ organizer, events: initialEvents, total: initialTotal, brandPrimary, brandAccent }: HomeProps) {
-  const { t } = useTranslation('common');
-  const [events, setEvents] = useState(initialEvents);
-  const [total, setTotal] = useState(initialTotal);
-  const [category, setCategory] = useState<Category>('All');
-  const [loadingMore, setLoadingMore] = useState(false);
+export default function Home({
+	organizer,
+	events: initialEvents,
+	total: initialTotal,
+	brandPrimary,
+	brandAccent,
+}: HomeProps) {
+	const { t } = useTranslation('common');
+	const [events, setEvents] = useState(initialEvents);
+	const [total, setTotal] = useState(initialTotal);
+	const [category, setCategory] = useState<Category>('All');
+	const [loadingMore, setLoadingMore] = useState(false);
 
   const availableTypes = useMemo(() => {
     const seen = new Set<string>();
@@ -40,35 +46,40 @@ export default function Home({ organizer, events: initialEvents, total: initialT
     return events.filter((e) => e.event_type?.toLowerCase() === category.toLowerCase());
   }, [events, category]);
 
-  const filteredTotal = useMemo(() => {
-    if (category === 'All') return total;
-    return filteredEvents.length;
-  }, [category, total, filteredEvents.length]);
+	const filteredTotal = useMemo(() => {
+		if (category === 'All') return total;
+		return filteredEvents.length;
+	}, [category, total, filteredEvents.length]);
 
-  const handleLoadMore = useCallback(async () => {
-    setLoadingMore(true);
-    try {
-      const res = await fetch(`/api/events?offset=${events.length}`);
-      const data = await res.json();
-      if (data.events) {
-        setEvents((prev) => [...prev, ...data.events]);
-        setTotal(data.total ?? total);
-      }
-    } catch {
-      // Handle error silently
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [events.length, total]);
+	const handleLoadMore = useCallback(async () => {
+		setLoadingMore(true);
+		try {
+			const res = await fetch(`/api/events?offset=${events.length}`);
+			const data = await res.json();
+			if (data.events) {
+				setEvents((prev) => [...prev, ...data.events]);
+				setTotal(data.total ?? total);
+			}
+		} catch {
+			// Handle error silently
+		} finally {
+			setLoadingMore(false);
+		}
+	}, [events.length, total]);
 
-  return (
-    <>
-      <Head>
-        <title>{organizer.name} — Events</title>
-        <meta property="og:title" content={`${organizer.name} — Events`} />
-        <meta property="og:description" content={organizer.bio || `Events by ${organizer.name}`} />
-        {organizer.logo_url && <meta property="og:image" content={organizer.logo_url} />}
-      </Head>
+	return (
+		<>
+			<Head>
+				<title>{organizer.name} — Events</title>
+				<meta property="og:title" content={`${organizer.name} — Events`} />
+				<meta
+					property="og:description"
+					content={organizer.bio || `Events by ${organizer.name}`}
+				/>
+				{organizer.logo_url && (
+					<meta property="og:image" content={organizer.logo_url} />
+				)}
+			</Head>
 
       <Layout
         organizerName={organizer.name}

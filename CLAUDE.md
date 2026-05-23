@@ -21,7 +21,6 @@ npm run lint     # ESLint
 ## Key Conventions
 - `@/*` maps to `src/*`
 - All pages use `getServerSideProps` + `serverSideTranslations`
-- Mock data via `USE_MOCKS=true` env var with `src/mocks/data.ts`
 - Event-type theming via `[data-event-type]` CSS attribute on `<main>`
 - Never hardcode hex colors — use CSS custom properties (`--brand-primary`, `--theme-text`, etc.)
 - Use `color-mix(in srgb, var(--theme-text) X%, transparent)` for adaptive opacity (NOT `bg-white/X`)

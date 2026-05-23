@@ -8,14 +8,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { event_id, code } = req.body;
 
-    // Mock mode for local dev
-    if (process.env.USE_MOCKS === 'true') {
-      if (code === 'SUMMER10') {
-        return res.status(200).json({ valid: true, discount_percent: 10 });
-      }
-      return res.status(200).json({ valid: false, error: 'Invalid promo code' });
-    }
-
     const response = await fetch(`${process.env.BESTTIX_API_URL}/api/public/promo/validate`, {
       method: 'POST',
       headers: {

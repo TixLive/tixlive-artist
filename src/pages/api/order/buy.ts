@@ -46,14 +46,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			}
 		}
 
-		// Mock mode for local dev
-		if (process.env.USE_MOCKS === 'true') {
-			return res.status(200).json({
-				payment_url: `/checkout/success?token=mock-token-abc123`,
-				token: 'mock-token-abc123',
-			});
-		}
-
 		// `selected_seats` only travels for seated events (besttix ignores it for GA).
 		const seatField = Array.isArray(selected_seats) && selected_seats.length > 0 ? { selected_seats } : {};
 		const returnOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;

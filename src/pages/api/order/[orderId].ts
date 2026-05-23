@@ -12,19 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Missing order ID' });
     }
 
-    // Mock mode for local dev
-    if (process.env.USE_MOCKS === 'true') {
-      return res.status(200).json({
-        id: orderId,
-        event_title: 'Electric Summer Festival 2026',
-        session_date: '2026-07-15T18:00:00Z',
-        tickets: [
-          { name: 'General Admission', quantity: 2 },
-        ],
-        pdf_url: null,
-      });
-    }
-
     const response = await fetch(`${process.env.BESTTIX_API_URL}/api/public/order/${orderId}`, {
       headers: {
         'x-api-key': process.env.BESTTIX_API_KEY ?? '',

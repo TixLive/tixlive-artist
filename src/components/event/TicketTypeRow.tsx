@@ -6,9 +6,11 @@ interface TicketTypeRowProps {
   ticket: ITicketType;
   quantity: number;
   onQuantityChange: (ticketTypeId: number, quantity: number) => void;
+  /** Gate the low-stock urgency badge on the event's `fomo_low_stock` toggle. */
+  showLowStockUrgency?: boolean;
 }
 
-export default function TicketTypeRow({ ticket, quantity, onQuantityChange }: TicketTypeRowProps) {
+export default function TicketTypeRow({ ticket, quantity, onQuantityChange, showLowStockUrgency }: TicketTypeRowProps) {
   const isSoldOut = ticket.remaining_capacity === 0;
   const maxQty = Math.min(
     ticket.remaining_capacity ?? Infinity,
@@ -48,7 +50,7 @@ export default function TicketTypeRow({ ticket, quantity, onQuantityChange }: Ti
             <h4 className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
               {ticket.name}
             </h4>
-            <CapacityBadge remainingCapacity={ticket.remaining_capacity} />
+            <CapacityBadge remainingCapacity={ticket.remaining_capacity} showLowStockUrgency={showLowStockUrgency} />
           </div>
           {ticket.description && (
             <p className="mt-0.5 text-[0.75rem] leading-relaxed text-[var(--theme-text-muted)]">

@@ -15,6 +15,7 @@ import EventHero from '@/components/event/EventHero';
 import EventSidebar from '@/components/event/EventSidebar';
 import StickyBuyBar from '@/components/event/StickyBuyBar';
 import KeyFactsStrip from '@/components/event/KeyFactsStrip';
+import EventCountdown from '@/components/event/EventCountdown';
 import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
 import AddonRow from '@/components/event/AddonRow';
@@ -216,6 +217,12 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
         <EventHero event={event} />
         <KeyFactsStrip event={event} />
 
+        {event.fomo_enabled && event.fomo_countdown && (
+          <div className="mt-3">
+            <EventCountdown target={event.sessions?.[0]?.date ?? event.date_start} />
+          </div>
+        )}
+
         {/* Two-column layout: content left, sidebar right */}
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:flex md:gap-10">
           {/* Left column — content */}
@@ -297,6 +304,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                             ticket={ticket}
                             quantity={quantities[ticket.id] ?? 0}
                             onQuantityChange={handleQuantityChange}
+                        	showLowStockUrgency={!!(event.fomo_enabled && event.fomo_low_stock)}
                           />
                         ))}
                       </div>

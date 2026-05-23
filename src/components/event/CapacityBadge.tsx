@@ -1,5 +1,12 @@
 interface CapacityBadgeProps {
   remainingCapacity: number | null | undefined;
+  /**
+   * Show the low-stock urgency badges ("X left" / "Only X left!"). Gated by the
+   * event's `fomo_low_stock` toggle on the detail page. "Sold Out" always shows
+   * regardless — it is a real availability state, not a marketing nudge.
+   * Defaults true so other surfaces (landing cards) keep their behavior.
+   */
+  showLowStockUrgency?: boolean;
 }
 
 /**
@@ -9,7 +16,10 @@ interface CapacityBadgeProps {
  * - Critical (<=5): red + pulse animation
  * - Sold out (0): red static
  */
-export default function CapacityBadge({ remainingCapacity }: CapacityBadgeProps) {
+export default function CapacityBadge({
+  remainingCapacity,
+  showLowStockUrgency = true,
+}: CapacityBadgeProps) {
   if (remainingCapacity == null || remainingCapacity > 20) return null;
 
   if (remainingCapacity === 0) {
@@ -22,6 +32,8 @@ export default function CapacityBadge({ remainingCapacity }: CapacityBadgeProps)
       </span>
     );
   }
+
+  if (!showLowStockUrgency) return null;
 
   if (remainingCapacity <= 5) {
     return (

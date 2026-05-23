@@ -125,6 +125,11 @@ export const mockEventDetail: IEventDetail = {
 	price_from: 350,
 	currency: 'MDL',
 	remaining_capacity: 1200,
+	fomo_enabled: true,
+	fomo_live_viewers: true,
+	fomo_recent_sales: true,
+	fomo_countdown: true,
+	fomo_low_stock: true,
 	description:
 		'Experience the ultimate summer music festival! Three stages, 20+ artists, and an unforgettable night of electronic music under the stars. Food trucks, art installations, and VIP lounges available.',
 	google_place_id: 'ChIJe7vKMf1wkEARXoL_vDkGFHo',

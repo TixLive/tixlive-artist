@@ -179,6 +179,12 @@ export interface IEventDetail extends IEventListItem {
 	platform_fee_fixed?: number;
 	/** True when the event sells assigned seats (has a seating chart). */
 	is_seated?: boolean;
+	/** FOMO/urgency display config — admin toggles on the event (besttix). */
+	fomo_enabled?: boolean;
+	fomo_live_viewers?: boolean;
+	fomo_recent_sales?: boolean;
+	fomo_countdown?: boolean;
+	fomo_low_stock?: boolean;
 }
 
 export interface ICartItem {

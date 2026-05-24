@@ -4,7 +4,25 @@
 		"search_placeholder": "Cauta evenimente..."
 	},
 	"footer": {
-		"powered_by": "Creat de"
+		"powered_by": "Creat de",
+		"terms": "Regulament bilete",
+		"cookies": "Confidențialitate",
+		"publicRules": "Ofertă publică",
+		"paymentRegulations": "Achitare"
+	},
+	"pages": {
+		"terms": {
+			"title": "Regulamentul procurării biletelor"
+		},
+		"cookies": {
+			"title": "Politica de Confidențialitate"
+		},
+		"publicRules": {
+			"title": "Oferta publică"
+		},
+		"paymentRegulations": {
+			"title": "Achitare"
+		}
 	},
 	"events": {
 		"no_upcoming": "Nu sunt evenimente viitoare",

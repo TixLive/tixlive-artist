@@ -4,7 +4,25 @@
 		"search_placeholder": "Поиск событий..."
 	},
 	"footer": {
-		"powered_by": "Создано"
+		"powered_by": "Создано",
+		"terms": "Правила покупки",
+		"cookies": "Конфиденциальность",
+		"publicRules": "Публичная оферта",
+		"paymentRegulations": "Оплата"
+	},
+	"pages": {
+		"terms": {
+			"title": "Правила приобретения билетов"
+		},
+		"cookies": {
+			"title": "Политика конфиденциальности"
+		},
+		"publicRules": {
+			"title": "Публичная оферта"
+		},
+		"paymentRegulations": {
+			"title": "Оплата"
+		}
 	},
 	"events": {
 		"no_upcoming": "Нет предстоящих событий",

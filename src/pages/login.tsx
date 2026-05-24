@@ -44,7 +44,7 @@ export default function LoginPage({ organizer, brandPrimary, brandAccent, nextPa
 	return (
 		<>
 			<Head>
-				<title>{t('auth.login_title')} — {organizer.name}</title>
+				<title>{`${t('auth.login_title')} — ${organizer.name}`}</title>
 			</Head>
 
 			<style jsx global>{`
@@ -54,7 +54,7 @@ export default function LoginPage({ organizer, brandPrimary, brandAccent, nextPa
 				}
 			`}</style>
 
-			<Layout organizerName={organizer.name} logoUrl={organizer.logo_url} socialLinks={organizer.social_links}>
+			<Layout organizerName={organizer.name} logoUrl={organizer.logo_url} socialLinks={organizer.social_links} pages={organizer.pages}>
 				<div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
 					<div className="w-full max-w-sm">
 						<div className="mb-8 flex flex-col items-center gap-4 text-center">

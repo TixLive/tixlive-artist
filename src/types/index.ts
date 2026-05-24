@@ -9,6 +9,14 @@ export interface IOrganizer {
 	brand_accent_color: string | null;
 	bio: string | null;
 	social_links: Record<string, string>;
+	/** Legal/info pages with published content + the locales they exist in. */
+	pages?: Array<{ page_type: string; locales: string[] }>;
+}
+
+/** A single legal/info page (HTML content per locale). */
+export interface IOrganizerPage {
+	page_type: string;
+	content: Record<string, string>;
 }
 
 export interface IEventListItem {
@@ -166,6 +174,8 @@ export interface IPageContent {
 
 export interface IEventDetail extends IEventListItem {
 	description: string;
+	/** Portrait 2:3 poster (movie-poster style). null when not uploaded. */
+	poster_portrait_url?: string | null;
 	google_place_id: string | null;
 	sessions: IEventSession[];
 	ticket_types: ITicketType[];

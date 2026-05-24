@@ -195,7 +195,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
   return (
     <>
       <Head>
-        <title>{event.title} — {organizer.name}</title>
+        <title>{`${event.title} — ${organizer.name}`}</title>
         <meta property="og:title" content={event.title} />
         <meta property="og:description" content={event.description || `Get tickets for ${event.title}`} />
         {event.poster_url && <meta property="og:image" content={event.poster_url} />}
@@ -209,6 +209,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
         organizerName={organizer.name}
         logoUrl={organizer.logo_url}
         socialLinks={organizer.social_links}
+        pages={organizer.pages}
         cartQuantity={totalQuantity}
         cartTotal={totalPrice}
         currency={currency}

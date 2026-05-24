@@ -41,7 +41,7 @@ export default function SeatsPage({
 	return (
 		<Layout organizer={organizer}>
 			<Head>
-				<title>Select seats — {eventTitle}</title>
+				<title>{`Select seats — ${eventTitle}`}</title>
 				<meta name="robots" content="noindex" />
 			</Head>
 			<SeatSelection

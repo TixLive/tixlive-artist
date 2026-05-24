@@ -224,7 +224,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
   return (
     <Layout organizer={organizer}>
       <Head>
-        <title>Checkout - {event.title}</title>
+        <title>{`Checkout - ${event.title}`}</title>
       </Head>
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">

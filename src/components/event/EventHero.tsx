@@ -29,14 +29,19 @@ export default function EventHero({ event }: EventHeroProps) {
 	const priceFrom = event.price_from ?? (event.ticket_types?.[0]?.price ?? 0);
 	const currency = event.currency ?? event.ticket_types?.[0]?.currency ?? 'MDL';
 
+	// Background fill falls back to the portrait poster so a portrait-only event
+	// (no 16:9 cover) doesn't render an empty dark hero. The sharp 16:9 layer
+	// stays gated on poster_url; the portrait card renders separately.
+	const heroBg = event.poster_url ?? event.poster_portrait_url ?? null;
+
 	return (
 		<section className="mx-auto mt-4 max-w-6xl px-4 sm:px-6">
 			<div className="relative w-full overflow-hidden rounded-[20px]">
 				<div className="relative h-[220px] w-full sm:h-[300px] md:h-[360px]">
 					{/* Blurred background fill */}
-					{event.poster_url ? (
+					{heroBg ? (
 						<Image
-							src={event.poster_url}
+							src={heroBg}
 							alt=""
 							fill
 							className="scale-110 object-cover blur-2xl opacity-40"
@@ -67,6 +72,23 @@ export default function EventHero({ event }: EventHeroProps) {
 							<span className="inline-flex items-center rounded-lg bg-[var(--theme-bg)]/90 px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold uppercase tracking-wider text-[var(--theme-text)] backdrop-blur-sm">
 								{event.event_type}
 							</span>
+						</div>
+					)}
+
+					{/* Portrait poster card (2:3) — overlaid, right side. Falls back to
+					    plain hero when no portrait image is provided. */}
+					{event.poster_portrait_url && (
+						<div className="absolute right-4 top-4 z-10 w-[110px] sm:right-6 sm:top-6 sm:w-[160px] md:w-[200px]">
+							<div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl shadow-[0_8px_24px_rgba(20,19,18,0.35)] ring-1 ring-white/10">
+								<Image
+									src={event.poster_portrait_url}
+									alt={event.title}
+									fill
+									className="object-cover"
+									sizes="(max-width: 640px) 110px, (max-width: 768px) 160px, 200px"
+									priority
+								/>
+							</div>
 						</div>
 					)}
 

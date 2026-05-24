@@ -1,5 +1,6 @@
 import type {
 	IOrganizer,
+	IOrganizerPage,
 	IEventListItem,
 	IEventDetail,
 	IPromoValidateResponse,
@@ -43,6 +44,10 @@ async function apiFetch<T>(path: string, options?: ApiFetchOptions): Promise<T> 
 
 export async function getSite(): Promise<IOrganizer> {
 	return apiFetch<IOrganizer>('/api/public/site');
+}
+
+export async function getPage(pageType: string): Promise<IOrganizerPage> {
+	return apiFetch<IOrganizerPage>(`/api/public/pages/${encodeURIComponent(pageType)}`);
 }
 
 export async function getEvents(offset?: number): Promise<{ events: IEventListItem[]; total: number }> {

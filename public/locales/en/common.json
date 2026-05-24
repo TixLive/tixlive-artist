@@ -4,7 +4,25 @@
 		"search_placeholder": "Search events..."
 	},
 	"footer": {
-		"powered_by": "Powered by"
+		"powered_by": "Powered by",
+		"terms": "Terms",
+		"cookies": "Privacy",
+		"publicRules": "Public offer",
+		"paymentRegulations": "Payment"
+	},
+	"pages": {
+		"terms": {
+			"title": "Ticket Purchase Terms"
+		},
+		"cookies": {
+			"title": "Privacy Policy"
+		},
+		"publicRules": {
+			"title": "Public Offer"
+		},
+		"paymentRegulations": {
+			"title": "Payment"
+		}
 	},
 	"events": {
 		"no_upcoming": "No upcoming events",

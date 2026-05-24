@@ -70,7 +70,7 @@ export default function Home({
 	return (
 		<>
 			<Head>
-				<title>{organizer.name} — Events</title>
+				<title>{`${organizer.name} — Events`}</title>
 				<meta property="og:title" content={`${organizer.name} — Events`} />
 				<meta
 					property="og:description"
@@ -85,6 +85,7 @@ export default function Home({
         organizerName={organizer.name}
         logoUrl={organizer.logo_url}
         socialLinks={organizer.social_links}
+        pages={organizer.pages}
       >
         <HeroCarousel events={events} />
         <OrganizerIdentityBar organizer={organizer} eventCount={total} />

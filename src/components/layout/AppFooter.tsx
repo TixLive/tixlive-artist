@@ -1,16 +1,29 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from 'next-i18next';
+import type { IOrganizer } from '@/types';
 
 interface AppFooterProps {
 	organizerName?: string;
 	organizerBio?: string | null;
 	logoUrl?: string | null;
 	socialLinks?: Record<string, string>;
+	pages?: IOrganizer['pages'];
 }
 
-export default function AppFooter({ organizerName, organizerBio, logoUrl }: AppFooterProps) {
+/** The four fixed legal pages, in display order, mapped to their i18n label key. */
+const LEGAL_PAGES: Array<{ pageType: string; labelKey: string }> = [
+	{ pageType: 'terms', labelKey: 'footer.terms' },
+	{ pageType: 'cookies', labelKey: 'footer.cookies' },
+	{ pageType: 'public-rules', labelKey: 'footer.publicRules' },
+	{ pageType: 'payment-regulations', labelKey: 'footer.paymentRegulations' },
+];
+
+export default function AppFooter({ organizerName, organizerBio, logoUrl, pages }: AppFooterProps) {
 	const { t } = useTranslation('common');
+
+	const publishedTypes = new Set((pages ?? []).map((p) => p.page_type));
+	const legalLinks = LEGAL_PAGES.filter((p) => publishedTypes.has(p.pageType));
 
 	return (
 		<footer className="mt-auto bg-[var(--theme-surface)]">
@@ -57,24 +70,26 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl }: AppF
 						</ul>
 					</div>
 
-					{/* Legal */}
-					<div>
-						<h3 className="mb-4 font-[family-name:var(--font-display)] text-[0.75rem] font-[700] uppercase tracking-[0.05em] text-[var(--theme-text-muted)]">
-							Legal
-						</h3>
-						<ul className="space-y-3 text-[0.8125rem]">
-							<li>
-								<a href="https://tix.live/termeni" target="_blank" rel="noopener noreferrer" className="text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]">
-									Termeni
-								</a>
-							</li>
-							<li>
-								<a href="https://tix.live/confidentialitate" target="_blank" rel="noopener noreferrer" className="text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]">
-									Confidențialitate
-								</a>
-							</li>
-						</ul>
-					</div>
+					{/* Legal — only pages the organizer has actually published */}
+					{legalLinks.length > 0 && (
+						<div>
+							<h3 className="mb-4 font-[family-name:var(--font-display)] text-[0.75rem] font-[700] uppercase tracking-[0.05em] text-[var(--theme-text-muted)]">
+								Legal
+							</h3>
+							<ul className="space-y-3 text-[0.8125rem]">
+								{legalLinks.map((page) => (
+									<li key={page.pageType}>
+										<Link
+											href={`/${page.pageType}`}
+											className="text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
+										>
+											{t(page.labelKey)}
+										</Link>
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
 
 					{/* Contact */}
 					<div>

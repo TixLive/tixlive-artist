@@ -58,7 +58,7 @@ export default function AccountLayout({
 	return (
 		<>
 			<Head>
-				<title>{title} — {organizer.name}</title>
+				<title>{`${title} — ${organizer.name}`}</title>
 			</Head>
 
 			<style jsx global>{`
@@ -72,6 +72,7 @@ export default function AccountLayout({
 				organizerName={organizer.name}
 				logoUrl={organizer.logo_url}
 				socialLinks={organizer.social_links}
+				pages={organizer.pages}
 			>
 				<div className="mx-auto max-w-5xl px-4 py-10">
 					{/* Mobile segmented tabs */}

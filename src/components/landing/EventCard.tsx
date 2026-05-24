@@ -62,14 +62,14 @@ export default function EventCard({ event }: EventCardProps) {
         {isCritical && (
           <div className="absolute top-3 left-3">
             <span className="animate-urgency-pulse rounded-full bg-[#DC2626] px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-white">
-              {t('events.only_left', { count: event.remaining_capacity })}
+              {t('events.only_left', { count: event.remaining_capacity ?? 0 })}
             </span>
           </div>
         )}
         {isLowStock && !isCritical && (
           <div className="absolute top-3 left-3">
             <span className="rounded-full bg-[#D97706] px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-white">
-              {t('events.low_stock', { count: event.remaining_capacity })}
+              {t('events.low_stock', { count: event.remaining_capacity ?? 0 })}
             </span>
           </div>
         )}

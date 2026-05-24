@@ -254,12 +254,19 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			const isSel = selected.current.has(seat.id);
 			const isBooked = booked.current.has(seat.id);
 			const tier = tierColors.current.get(seat.id);
-			if (!tier) continue; // unpriced — skip on minimap
+			if (!tier) {
+				// Unpriced — draw dimly to show venue shape
+				mCtx.globalAlpha = 0.18;
+				mCtx.fillStyle = pal.muted;
+				mCtx.fillRect(seat.x * scaleX - 0.7, seat.y * scaleY - 0.7, 1.4, 1.4);
+				mCtx.globalAlpha = 1;
+				continue;
+			}
 			mCtx.fillStyle = isSel ? pal.accent : tier;
 			mCtx.globalAlpha = isBooked ? 0.25 : 0.8;
 			mCtx.fillRect(seat.x * scaleX - 0.9, seat.y * scaleY - 0.9, 1.8, 1.8);
+			mCtx.globalAlpha = 1;
 		}
-		mCtx.globalAlpha = 1;
 
 		const { w, h } = sizeRef.current;
 		const sc = scale.current;
@@ -520,7 +527,9 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 		const el = containerRef.current;
 		if (!el) return;
 		const ro = new ResizeObserver((entries) => {
-			const { width, height } = entries[0].contentRect;
+			// Round to integer CSS pixels to avoid sub-pixel fractional dimensions
+			const width = Math.round(entries[0].contentRect.width);
+			const height = Math.round(entries[0].contentRect.height);
 			sizeRef.current = { w: width, h: height };
 			setSize({ w: width, h: height });
 		});
@@ -531,10 +540,14 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	useEffect(() => {
 		const canvas = canvasEl.current;
 		if (!canvas || !size.w) return;
-		// Cap at 3 to support 3x displays (iPhone); 2 caused blurriness on high-DPR mobile
-		const dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 3);
-		canvas.width = size.w * dpr;
-		canvas.height = size.h * dpr;
+		// Use real DPR (no cap) — iOS Safari composes the canvas at native resolution
+		// only when the canvas internal dimensions exactly match physical pixels.
+		const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+		// Align to exact physical pixels to prevent sub-pixel blur on high-DPR displays
+		const physW = Math.round(size.w * dpr);
+		const physH = Math.round(size.h * dpr);
+		canvas.width = physW;
+		canvas.height = physH;
 		canvas.style.width = `${size.w}px`;
 		canvas.style.height = `${size.h}px`;
 		const ctx = canvas.getContext('2d');
@@ -877,6 +890,10 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			<canvas
 				ref={canvasEl}
 				className="absolute inset-0 block"
+				// translateZ(0) gives the canvas its own GPU compositing layer,
+				// preventing iOS Safari from downsampling it through the parent's
+				// overflow:hidden + border-radius compositing boundary (blur fix).
+				style={{ transform: 'translateZ(0)' }}
 				aria-hidden="true"
 				onClick={handleClick}
 				onContextMenu={(e) => e.preventDefault()}

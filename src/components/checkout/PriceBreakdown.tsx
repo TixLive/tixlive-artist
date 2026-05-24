@@ -1,4 +1,5 @@
 import { ICartItem, IAddonCartItem } from '@/types';
+import { computeCheckoutFees } from '@/lib/orderFees';
 
 interface PriceBreakdownProps {
   items: ICartItem[];
@@ -43,17 +44,16 @@ export default function PriceBreakdown({
 
   const afterDiscount = Math.max(0, subtotal - discountAmount);
 
-  // Platform fee (tix.live charges organizer, optionally passed to buyer)
-  const platformFee = platformFeePayer === 'buyer' && afterDiscount > 0
-    ? Math.round((afterDiscount * platformFeePercent / 100 + platformFeeFixed) * 100) / 100
-    : 0;
-
-  // Payment provider fee (Stripe, MAIB, etc.)
-  const providerFee = providerFeePayer === 'buyer'
-    ? Math.round(afterDiscount * providerFeePercent / 100 * 100) / 100
-    : 0;
-
-  const serviceFee = platformFee + providerFee;
+  // Fee math lives in a shared util kept in parity with the besttix server
+  // (src/utils/fees.ts) so the total shown equals exactly what is charged.
+  const { serviceFee } = computeCheckoutFees({
+    afterDiscount,
+    platformFeePayer,
+    providerFeePayer,
+    platformFeePercent,
+    platformFeeFixed,
+    providerFeePercent,
+  });
   const total = afterDiscount + serviceFee;
 
   const formatPrice = (value: number) => {

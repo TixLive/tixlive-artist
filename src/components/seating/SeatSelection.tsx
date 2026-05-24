@@ -120,6 +120,7 @@ export default function SeatSelection({
 	);
 	const [shortfall, setShortfall] = useState(initialShortfall);
 	const [repicking, setRepicking] = useState(false);
+	const [continuing, setContinuing] = useState(false);
 
 	const { isOpen: modalOpen, onClose: closeModal, onOpen: openModal } = useDisclosure({
 		defaultOpen: !versionMismatch && initialSelectedSeatIds.length > 0,
@@ -188,7 +189,8 @@ export default function SeatSelection({
 	}, [seedCart, slug, sessionId, seatTier, bookedSet, maxPerCategory, openModal, t]);
 
 	const handleContinue = useCallback(() => {
-		if (!complete) return;
+		if (!complete || continuing) return;
+		setContinuing(true);
 		const derivedCart = deriveCart(selected, seatTier, tiers, currency);
 		const seatLabels = selectedItems.map((it) => `${it.tierName} · ${it.label}`);
 
@@ -214,7 +216,7 @@ export default function SeatSelection({
 		}
 		document.body.appendChild(form);
 		form.submit();
-	}, [complete, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart]);
+	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart]);
 
 	// ── Geometry version guard (deploy-skew, D12) ────────────────────────────────
 	if (versionMismatch) {
@@ -268,7 +270,8 @@ export default function SeatSelection({
 				</div>
 				<Button
 					size="lg"
-					isDisabled={!complete}
+					isDisabled={!complete || continuing}
+					isLoading={continuing}
 					onPress={handleContinue}
 					className="w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)] disabled:opacity-45"
 					style={{ backgroundColor: 'var(--brand-primary)' }}
@@ -378,7 +381,8 @@ export default function SeatSelection({
 					</div>
 					<Button
 						size="lg"
-						isDisabled={!complete}
+						isDisabled={!complete || continuing}
+						isLoading={continuing}
 						onPress={handleContinue}
 						className="rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)] disabled:opacity-45"
 						style={{ backgroundColor: 'var(--brand-primary)' }}

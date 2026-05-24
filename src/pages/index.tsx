@@ -27,6 +27,14 @@ export default function Home({ organizer, events: initialEvents, total: initialT
   const [category, setCategory] = useState<Category>('All');
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const availableTypes = useMemo(() => {
+    const seen = new Set<string>();
+    for (const e of events) {
+      if (e.event_type) seen.add(e.event_type);
+    }
+    return [...seen];
+  }, [events]);
+
   const filteredEvents = useMemo(() => {
     if (category === 'All') return events;
     return events.filter((e) => e.event_type?.toLowerCase() === category.toLowerCase());
@@ -69,7 +77,7 @@ export default function Home({ organizer, events: initialEvents, total: initialT
       >
         <HeroCarousel events={events} />
         <OrganizerIdentityBar organizer={organizer} eventCount={total} />
-        <CategoryFilter active={category} onChange={setCategory} />
+        <CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
         <section className="py-6">
           <EventGrid
             events={filteredEvents}

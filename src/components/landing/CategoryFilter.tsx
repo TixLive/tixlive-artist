@@ -1,14 +1,20 @@
 import { Chip } from '@heroui/react';
 
-const CATEGORIES = ['All', 'Concert', 'Conference', 'Sports'] as const;
-type Category = (typeof CATEGORIES)[number];
+type Category = string;
 
 interface CategoryFilterProps {
   active: Category;
   onChange: (category: Category) => void;
+  /** Event types that actually have events; controls which tabs are shown. */
+  availableTypes: string[];
 }
 
-export default function CategoryFilter({ active, onChange }: CategoryFilterProps) {
+export default function CategoryFilter({ active, onChange, availableTypes }: CategoryFilterProps) {
+  // Only show "All" + types that actually have events
+  const tabs = ['All', ...availableTypes];
+
+  if (tabs.length <= 1) return null;
+
   return (
     <div
       className="sticky top-16 z-30 border-b border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] backdrop-blur-md"
@@ -19,7 +25,7 @@ export default function CategoryFilter({ active, onChange }: CategoryFilterProps
         aria-label="Event categories"
         style={{ scrollbarWidth: 'none' }}
       >
-        {CATEGORIES.map((cat) => {
+        {tabs.map((cat) => {
           const isActive = cat === active;
           return (
             <Chip

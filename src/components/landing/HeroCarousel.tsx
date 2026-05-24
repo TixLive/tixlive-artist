@@ -2,17 +2,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import { IEventListItem } from '@/types';
 
 interface FeaturedHeroProps {
   events: IEventListItem[];
 }
 
-/**
- * FeaturedHero — shows the soonest open event as a full-width hero,
- * with an "Also coming up" horizontal strip below.
- */
 export default function HeroCarousel({ events }: FeaturedHeroProps) {
+  const { t } = useTranslation('common');
   const openEvents = events.filter((e) => e.status === 'open');
   if (openEvents.length === 0) return null;
 
@@ -21,7 +19,7 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('ro-RO', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -34,7 +32,6 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
       {/* Featured hero */}
       <div className="relative w-full overflow-hidden bg-[var(--theme-text)]">
         <div className="relative h-[420px] sm:h-[480px] md:h-[540px]">
-          {/* Blurred poster background */}
           {featured.poster_url ? (
             <Image
               src={featured.poster_url}
@@ -48,10 +45,8 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
             <div className="absolute inset-0 bg-[var(--theme-text)]" />
           )}
 
-          {/* Content overlay */}
           <div className="relative z-10 flex h-full items-center justify-center px-6">
             <div className="flex max-w-4xl flex-col items-center gap-8 md:flex-row md:items-center md:gap-12">
-              {/* Poster thumbnail */}
               {featured.poster_url && (
                 <div className="relative hidden aspect-[3/4] w-[220px] flex-shrink-0 overflow-hidden rounded-2xl shadow-2xl md:block">
                   <Image
@@ -65,7 +60,6 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
                 </div>
               )}
 
-              {/* Text + CTA */}
               <div className="flex flex-col items-center text-center md:items-start md:text-left">
                 <h2 className="max-w-xl font-[family-name:var(--font-display)] text-[2.25rem] font-[900] leading-[1.1] tracking-[-0.03em] text-[var(--theme-bg)] sm:text-[2.75rem]">
                   {featured.title}
@@ -76,7 +70,7 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
                 </p>
                 {featured.price_from != null && (
                   <span className="mt-4 inline-block rounded-full bg-[var(--theme-bg)]/10 px-4 py-1.5 font-[family-name:var(--font-data)] text-[0.875rem] font-medium text-[var(--theme-bg)] backdrop-blur-sm">
-                    From {featured.price_from} {featured.currency}
+                    {t('events.price_from', { price: featured.price_from, currency: featured.currency ?? '' })}
                   </span>
                 )}
                 <Link href={`/events/${featured.slug}`} className="mt-6">
@@ -85,7 +79,7 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
                     size="lg"
                     className="rounded-xl bg-[var(--theme-bg)] font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)] transition-opacity duration-200 hover:opacity-90"
                   >
-                    Get Tickets
+                    {t('events.get_tickets')}
                     <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
                   </Button>
                 </Link>
@@ -100,7 +94,7 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
         <div className="border-b border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] bg-[var(--theme-surface)] px-4 py-4 sm:px-6">
           <div className="mx-auto max-w-6xl">
             <p className="mb-3 font-[family-name:var(--font-display)] text-[0.6875rem] font-[700] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
-              Also coming up
+              {t('events.also_coming_up')}
             </p>
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
               {upcoming.map((event) => (

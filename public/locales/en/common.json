@@ -9,9 +9,17 @@
 	"events": {
 		"no_upcoming": "No upcoming events",
 		"all_events": "All Events",
+		"category_events": "{{category}} Events",
 		"sold_out": "Sold Out",
 		"tickets_left": "{{count}} tickets left",
 		"buy_tickets": "Buy Tickets",
+		"get_tickets": "Get Tickets",
+		"price_from": "From {{price}} {{currency}}",
+		"also_coming_up": "Also coming up",
+		"only_left": "Only {{count}} left!",
+		"low_stock": "{{count}} left",
+		"events_count_one": "{{count}} event",
+		"events_count_other": "{{count}} events",
 		"show_more": "Show More"
 	},
 	"checkout": {

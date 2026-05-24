@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslation } from 'next-i18next';
 import { IEventListItem } from '@/types';
 
 interface EventCardProps {
@@ -7,9 +8,11 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event }: EventCardProps) {
+  const { t } = useTranslation('common');
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('ro-RO', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -50,7 +53,7 @@ export default function EventCard({ event }: EventCardProps) {
         {isSoldOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-[var(--theme-text)]/60">
             <span className="rounded-xl bg-[#DC2626] px-4 py-1.5 font-[family-name:var(--font-display)] text-sm font-[700] text-white">
-              Sold Out
+              {t('events.sold_out')}
             </span>
           </div>
         )}
@@ -59,14 +62,14 @@ export default function EventCard({ event }: EventCardProps) {
         {isCritical && (
           <div className="absolute top-3 left-3">
             <span className="animate-urgency-pulse rounded-full bg-[#DC2626] px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-white">
-              Only {event.remaining_capacity} left!
+              {t('events.only_left', { count: event.remaining_capacity })}
             </span>
           </div>
         )}
         {isLowStock && !isCritical && (
           <div className="absolute top-3 left-3">
             <span className="rounded-full bg-[#D97706] px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-white">
-              {event.remaining_capacity} left
+              {t('events.low_stock', { count: event.remaining_capacity })}
             </span>
           </div>
         )}
@@ -82,7 +85,7 @@ export default function EventCard({ event }: EventCardProps) {
           </p>
           {event.price_from != null && !isSoldOut && (
             <span className="mt-2 inline-block rounded-lg bg-white/15 px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.75rem] font-semibold text-white backdrop-blur-sm">
-              From {event.price_from} {event.currency}
+              {t('events.price_from', { price: event.price_from, currency: event.currency ?? '' })}
             </span>
           )}
         </div>

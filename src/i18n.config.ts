@@ -1,6 +1,6 @@
 const nextI18NextConfig = {
 	i18n: {
-		defaultLocale: 'en',
+		defaultLocale: 'ro',
 		locales: ['en', 'ro', 'ru'],
 	},
 };

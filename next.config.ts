@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
 		'/**': ['./next-i18next.config.js', './public/locales/**/*'],
 	},
 	i18n: {
-		defaultLocale: 'en',
+		defaultLocale: 'ro',
 		locales: ['en', 'ro', 'ru'],
 	},
 	images: {

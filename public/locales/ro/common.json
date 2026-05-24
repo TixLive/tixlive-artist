@@ -9,10 +9,18 @@
 	"events": {
 		"no_upcoming": "Nu sunt evenimente viitoare",
 		"all_events": "Toate Evenimentele",
+		"category_events": "Eveniment {{category}}",
 		"sold_out": "Epuizat",
 		"tickets_left": "{{count}} bilete ramase",
-		"buy_tickets": "Cumpara Bilete",
-		"show_more": "Arata Mai Multe"
+		"buy_tickets": "Cumpără Bilete",
+		"get_tickets": "Cumpără Bilete",
+		"price_from": "De la {{price}} {{currency}}",
+		"also_coming_up": "Urmează",
+		"only_left": "Doar {{count}} rămase!",
+		"low_stock": "{{count}} rămase",
+		"events_count_one": "{{count}} eveniment",
+		"events_count_other": "{{count}} evenimente",
+		"show_more": "Arată Mai Mult"
 	},
 	"checkout": {
 		"attendee_details": "Detalii Participant",

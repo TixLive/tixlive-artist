@@ -72,15 +72,13 @@ export interface SeatingViewerProps {
 	sections: Section[];
 	canvasW: number;
 	canvasH: number;
-	/** Seats taken for this session (sold + active holds). Non-tappable, dimmed + struck. */
 	bookedSeatIds: Set<string>;
-	/** Currently selected seats. */
 	selectedSeatIds: Set<string>;
-	/** Priced seats → resolved hex tier color. Seats absent here render as unpriced (hollow, non-selectable). */
 	tierColorBySeatId: Map<string, string>;
-	/** Toggle a seat in/out of the selection. Only fired for selectable (priced, free) seats. */
+	/** seatId → price (used in hover tooltip). */
+	priceBySeatId?: Map<string, number>;
+	currency?: string;
 	onSeatToggle?: (seat: Seat) => void;
-	/** When true, zoom/pan snaps instantly (honours prefers-reduced-motion). */
 	reducedMotion?: boolean;
 }
 
@@ -113,6 +111,8 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	bookedSeatIds,
 	selectedSeatIds,
 	tierColorBySeatId,
+	priceBySeatId,
+	currency,
 	onSeatToggle,
 	reducedMotion = false,
 }) => {
@@ -128,6 +128,8 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	const booked = useRef(bookedSeatIds);
 	const selected = useRef(selectedSeatIds);
 	const tierColors = useRef(tierColorBySeatId);
+	const pricesBySeat = useRef(priceBySeatId);
+	const currencyRef = useRef(currency);
 	const palette = useRef<Palette>(FALLBACK_PALETTE);
 	const rafId = useRef<number | null>(null);
 	const isPanning = useRef(false);
@@ -150,6 +152,8 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	booked.current = bookedSeatIds;
 	selected.current = selectedSeatIds;
 	tierColors.current = tierColorBySeatId;
+	pricesBySeat.current = priceBySeatId;
+	currencyRef.current = currency;
 	reducedMotionRef.current = reducedMotion;
 
 	const allSeats = useMemo(() => computeAllSeats(sections), [sections]);
@@ -618,14 +622,14 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 					setCursorPointer(!!foundSec);
 					if (foundSec) {
 						setTooltip({
-							x: e.clientX - rect.left,
+							x: e.clientX - rect.left + 16,
 							y: e.clientY - rect.top - 44,
 							title: sectionLabelByKey.get(foundSec) ?? '',
 							sub: '',
 						});
 					} else setTooltip(null);
 				} else if (foundSec) {
-					setTooltip((prev) => (prev ? { ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top - 44 } : prev));
+					setTooltip((prev) => (prev ? { ...prev, x: e.clientX - rect.left + 16, y: e.clientY - rect.top - 44 } : prev));
 				}
 				return;
 			}
@@ -661,11 +665,13 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 				setCursorPointer(!!found);
 				scheduleRedraw();
 				if (foundSeat) {
+					const price = pricesBySeat.current?.get(foundSeat.id);
+					const priceStr = price != null ? ` · ${price} ${currencyRef.current ?? ''}` : '';
 					setTooltip({
-						x: e.clientX - rect.left,
-						y: e.clientY - rect.top - 44,
+						x: e.clientX - rect.left + 16,
+						y: e.clientY - rect.top - 60,
 						title: sectionLabelByKey.get(foundSeat.sectionKey) ?? '',
-						sub: `${foundSeat.row} · ${foundSeat.num}`,
+						sub: `Rând ${foundSeat.row} · Loc ${foundSeat.num}${priceStr}`,
 					});
 				} else setTooltip(null);
 			}
@@ -785,7 +791,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			{tooltip && (
 				<div
 					className="pointer-events-none absolute z-20 whitespace-nowrap rounded-[10px] border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-bg)]/95 px-3 py-1.5 shadow-[0_2px_12px_rgba(20,19,18,0.1)] backdrop-blur"
-					style={{ left: tooltip.x, top: tooltip.y, transform: 'translateX(-50%)' }}
+					style={{ left: tooltip.x, top: tooltip.y }}
 				>
 					<div className="font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)]">
 						{tooltip.title}

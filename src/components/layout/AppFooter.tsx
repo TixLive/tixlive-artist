@@ -64,12 +64,12 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl }: AppF
 						</h3>
 						<ul className="space-y-3 text-[0.8125rem]">
 							<li>
-								<a href="#" className="text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]">
+								<a href="https://tix.live/termeni" target="_blank" rel="noopener noreferrer" className="text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]">
 									Termeni
 								</a>
 							</li>
 							<li>
-								<a href="#" className="text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]">
+								<a href="https://tix.live/confidentialitate" target="_blank" rel="noopener noreferrer" className="text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]">
 									Confidențialitate
 								</a>
 							</li>

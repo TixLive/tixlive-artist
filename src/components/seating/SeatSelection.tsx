@@ -91,6 +91,15 @@ export default function SeatSelection({
 	const colorByTierId = useMemo(() => buildTierColorById(tiers), [tiers]);
 	// Seat-first: ALL priced tiers are coloured + selectable (no cart-tier filter).
 	const tierColorBySeatId = useMemo(() => buildTierColorBySeatId(tiers, colorByTierId), [tiers, colorByTierId]);
+	const priceBySeatId = useMemo(() => {
+		const priceByTierId = new Map(tiers.map((t) => [t.ticket_package_id, t.price]));
+		const m = new Map<string, number>();
+		for (const [seatId, tierId] of seatTier) {
+			const price = priceByTierId.get(tierId);
+			if (price != null) m.set(seatId, price);
+		}
+		return m;
+	}, [tiers, seatTier]);
 	const seatById = useMemo(() => {
 		const m = new Map<string, Seat>();
 		for (const s of computeAllSeats(seating.sections)) m.set(s.id, s);
@@ -248,7 +257,7 @@ export default function SeatSelection({
 				</button>
 			)}
 
-			<div className="border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-4">
+			<div className="hidden border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-4 md:block">
 				<div className="mb-4 flex items-center justify-between">
 					<span className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">
 						{t('seating.total')}
@@ -315,10 +324,30 @@ export default function SeatSelection({
 							bookedSeatIds={bookedSet}
 							selectedSeatIds={selected}
 							tierColorBySeatId={tierColorBySeatId}
+							priceBySeatId={priceBySeatId}
+							currency={currency}
 							onSeatToggle={handleSeatToggle}
 							reducedMotion={reducedMotion}
 						/>
 					</div>
+
+					{/* Compact tier color legend */}
+					<div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+						{tiers.map((tier) => (
+							<div key={tier.ticket_package_id} className="flex items-center gap-1.5">
+								<span
+									className="h-2.5 w-2.5 shrink-0 rounded-full"
+									style={{ backgroundColor: colorByTierId.get(tier.ticket_package_id) ?? 'var(--theme-text-muted)' }}
+									aria-hidden="true"
+								/>
+								<span className="text-[0.75rem] text-[var(--theme-text-muted)]">{tier.name}</span>
+								<span className="font-[family-name:var(--font-data)] text-[0.75rem] tabular-nums text-[var(--theme-text-muted)]">
+									{tier.price} {currency}
+								</span>
+							</div>
+						))}
+					</div>
+
 					<p className="mt-2 hidden text-center text-[0.75rem] text-[var(--theme-text-muted)] md:block">
 						{t('seating.canvas_hint')}
 					</p>

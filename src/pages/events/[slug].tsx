@@ -224,7 +224,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             {event.description && (
               <section id="about">
                 <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                  About Event
+                  Despre Eveniment
                 </h2>
                 <div className="relative">
                   <p
@@ -239,7 +239,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                       className="mt-1.5 text-[0.875rem] font-medium text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] focus-visible:ring-2 focus-visible:ring-offset-2"
                       onClick={() => setDescriptionExpanded(true)}
                     >
-                      Show more
+                      Arată mai mult
                     </button>
                   )}
                 </div>
@@ -250,7 +250,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             <section className="mt-10" id="tickets" ref={ticketsRef}>
               <div className="mb-2 flex items-baseline justify-between">
                 <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                  Order Tickets
+                  Comandă Bilete
                 </h2>
                 {priceFrom > 0 && (
                   <span className="font-[family-name:var(--font-data)] text-[0.8125rem] text-[var(--theme-text-muted)]">
@@ -317,14 +317,14 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                             ))}
                             {addonTotal > 0 && (
                               <div className="flex items-center justify-between">
-                                <span className="text-[var(--theme-text-muted)]">Add-ons</span>
+                                <span className="text-[var(--theme-text-muted)]">Extra</span>
                                 <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
                                   +{addonTotal} {currency}
                                 </span>
                               </div>
                             )}
                             <div className="flex items-center justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-3">
-                              <span className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">Total</span>
+                              <span className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">Total:</span>
                               <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
                                 {totalPrice} {currency}
                               </span>
@@ -337,7 +337,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                             style={{ backgroundColor: 'var(--brand-primary)' }}
                             onPress={handleBuy}
                           >
-                            Continue to Checkout
+                            Continuă la Plată
                             <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
                           </Button>
                         </div>
@@ -356,11 +356,11 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                 <div className="mb-1 flex items-center gap-2">
                   <Icon icon="mdi:auto-awesome" width={20} className="text-[var(--brand-accent)]" />
                   <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                    Enhance Your Experience
+                    Îmbunătățește-ți Experiența
                   </h2>
                 </div>
                 <p className="mb-3 text-[0.75rem] text-[var(--theme-text-muted)]">
-                  Price per ticket · Applied to all tickets in your cart.
+                  Preț per bilet · Aplicat la toate biletele din coș.
                 </p>
                 <div className="flex flex-col gap-3">
                   {addons.map((addon) => (
@@ -456,7 +456,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             {event.venue_name && (
               <section className="mt-10" id="info">
                 <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                  Venue
+                  Locație
                 </h2>
                 <div className="flex items-start gap-3">
                   <Icon icon="mdi:map-marker" className="mt-0.5 shrink-0 text-[var(--theme-text-muted)]" width={22} />
@@ -478,7 +478,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             {/* Organizer card */}
             <section className="mb-10 mt-10">
               <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                Organizer
+                Organizator
               </h2>
               <Link
                 href="/"
@@ -501,7 +501,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                   <p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
                     {organizer.name}
                   </p>
-                  <p className="text-[0.75rem] text-[var(--theme-text-muted)]">View all events</p>
+                  <p className="text-[0.75rem] text-[var(--theme-text-muted)]">Toate evenimentele</p>
                 </div>
               </Link>
             </section>

@@ -74,7 +74,7 @@ export default function EventSidebar({
               </div>
             ) : (
               <span className="font-[family-name:var(--font-display)] text-[2rem] font-[800] text-[var(--theme-text)]">
-                Free
+                Gratuit
               </span>
             )}
           </div>
@@ -87,7 +87,7 @@ export default function EventSidebar({
               size="lg"
               className="w-full rounded-xl font-[family-name:var(--font-display)] text-[0.9375rem] font-[700]"
             >
-              {event.status === 'soon' ? 'Coming Soon' : 'Sales Ended'}
+              {event.status === 'soon' ? 'În curând' : 'Vânzări Încheiate'}
             </Button>
           ) : totalQuantity > 0 ? (
             <>
@@ -112,7 +112,7 @@ export default function EventSidebar({
               style={{ backgroundColor: 'var(--brand-primary)' }}
               onPress={onScrollToTickets}
             >
-              Cumpără Bilet
+              {ctaLabel ?? 'Cumpără Bilet'}
             </Button>
           )}
 

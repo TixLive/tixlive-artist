@@ -11,10 +11,6 @@ vi.mock('next-i18next/serverSideTranslations', () => ({
 vi.mock('@/i18n.config', () => ({
 	default: { i18n: { defaultLocale: 'en', locales: ['en', 'ro', 'ru'] } },
 }));
-vi.mock('isomorphic-dompurify', () => ({
-	// Identity sanitize is fine here — XSS stripping is covered besttix-side; we test routing/fallback.
-	default: { sanitize: (html: string) => html },
-}));
 
 const getSite = vi.fn();
 const getPage = vi.fn();

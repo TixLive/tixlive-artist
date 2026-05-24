@@ -78,7 +78,14 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params
 	}
 
 	const fallbackLocale = nextI18NextConfig.i18n.defaultLocale;
-	const organizer = await getSite();
+
+	let organizer;
+	try {
+		organizer = await getSite();
+	} catch {
+		// Never 500 this route on a transient site fetch failure.
+		return { notFound: true };
+	}
 
 	// Only published pages exist in organizer.pages; gate here so we never call
 	// getPage for a page that will 404 (a thrown 404 in GSSP becomes a 500).
@@ -108,7 +115,15 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params
 		return { notFound: true };
 	}
 
-	const sanitizedHtml = sanitizeHtml(content[usedLocale]);
+	// Render-side sanitize is defense-in-depth — content is already sanitized on write
+	// (besttix OrganizerPage.Service). If the sanitizer ever throws, fall back to the
+	// stored HTML rather than 500-ing the page.
+	let sanitizedHtml: string;
+	try {
+		sanitizedHtml = sanitizeHtml(content[usedLocale]);
+	} catch {
+		sanitizedHtml = content[usedLocale];
+	}
 
 	return {
 		props: {

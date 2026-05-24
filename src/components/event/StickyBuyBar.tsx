@@ -7,27 +7,33 @@ interface StickyBuyBarProps {
   currency: string;
   onBuy: () => void;
   ctaLabel?: string;
+  isSeated?: boolean;
+  salesOpen?: boolean;
 }
 
-export default function StickyBuyBar({ cartItems, currency, onBuy, ctaLabel }: StickyBuyBarProps) {
+export default function StickyBuyBar({ cartItems, currency, onBuy, ctaLabel, isSeated, salesOpen }: StickyBuyBarProps) {
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  if (totalQuantity === 0) return null;
+  if (totalQuantity === 0 && !(isSeated && salesOpen)) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/95 px-4 py-3 shadow-[0_-4px_20px_rgba(20,19,18,0.06)] backdrop-blur-xl md:hidden"
       style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
     >
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[0.75rem] text-[var(--theme-text-muted)]">
-            {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
-          </p>
-          <p className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
-            {totalPrice} {currency}
-          </p>
-        </div>
+        {totalQuantity > 0 ? (
+          <div>
+            <p className="text-[0.75rem] text-[var(--theme-text-muted)]">
+              {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
+            </p>
+            <p className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
+              {totalPrice} {currency}
+            </p>
+          </div>
+        ) : (
+          <div />
+        )}
         <Button
           variant="solid"
           size="lg"

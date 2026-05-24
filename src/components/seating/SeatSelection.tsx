@@ -10,7 +10,6 @@ import { useTranslation } from 'next-i18next';
 import { computeAllSeats, GEOMETRY_VERSION, Seat } from '@/lib/seatingGeometry';
 import {
 	buildSeatTierMap,
-	selectionCounts,
 	toggleSeat,
 	isSelectionValid,
 	deriveCart,
@@ -20,7 +19,6 @@ import {
 } from '@/lib/seatSelection';
 import { buildTierColorById, buildTierColorBySeatId } from '@/lib/tierColors';
 import { requestSuggest } from '@/lib/seatClient';
-import SeatLegend from '@/components/seating/SeatLegend';
 import SelectedSeatsList, { SelectedSeatItem } from '@/components/seating/SelectedSeatsList';
 import type { IAddonCartItem, ISeatingResponse } from '@/types';
 
@@ -119,7 +117,6 @@ export default function SeatSelection({
 	});
 
 	// ── Derived selection views ──────────────────────────────────────────────────
-	const counts = useMemo(() => selectionCounts(selected, seatTier), [selected, seatTier]);
 	const total = useMemo(() => selectionTotal(selected, seatTier, tiers), [selected, seatTier, tiers]);
 	const complete = isSelectionValid(selected.size);
 
@@ -237,8 +234,6 @@ export default function SeatSelection({
 
 	const sidebar = (
 		<div className="space-y-5 rounded-[20px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6">
-			<SeatLegend tiers={tiers} counts={counts} colorByTierId={colorByTierId} currency={currency} />
-			<div className="border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)]" />
 			<SelectedSeatsList items={selectedItems} onRemove={handleRemove} />
 
 			{seedCart.length > 0 && (

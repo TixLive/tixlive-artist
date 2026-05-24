@@ -375,18 +375,20 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
               </section>
             )}
 
-            {/* Promo code */}
-            <div className="mt-10 flex items-center gap-2">
-              <Icon icon="mdi:tag-outline" width={18} className="shrink-0 text-[var(--theme-text-muted)]" />
-              <input
-                type="text"
-                placeholder="Cod promoțional"
-                className="h-10 flex-1 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-3 text-[0.875rem] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] transition-colors duration-200 focus:border-[var(--brand-accent)] focus:outline-none"
-              />
-              <button className="h-10 shrink-0 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] px-4 font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)] transition-colors duration-200 hover:bg-[var(--theme-surface)]">
-                Aplică
-              </button>
-            </div>
+            {/* Promo code — only for GA events; seated events apply promos at checkout */}
+            {!isSeated && (
+              <div className="mt-10 flex items-center gap-2">
+                <Icon icon="mdi:tag-outline" width={18} className="shrink-0 text-[var(--theme-text-muted)]" />
+                <input
+                  type="text"
+                  placeholder="Cod promoțional"
+                  className="h-10 flex-1 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-3 text-[0.875rem] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] transition-colors duration-200 focus:border-[var(--brand-accent)] focus:outline-none"
+                />
+                <button className="h-10 shrink-0 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] px-4 font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)] transition-colors duration-200 hover:bg-[var(--theme-surface)]">
+                  Aplică
+                </button>
+              </div>
+            )}
 
             {/* Trust indicators */}
             <div className="mt-10 flex items-start justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-10">
@@ -513,7 +515,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             salesOpen={salesOpen}
             totalQuantity={totalQuantity}
             totalPrice={totalPrice}
-            onScrollToTickets={scrollToTickets}
+            onScrollToTickets={isSeated ? handleBuy : scrollToTickets}
             onBuy={handleBuy}
             ctaLabel={isSeated ? t('seating.select_seats') : undefined}
           />
@@ -526,6 +528,8 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
             currency={currency}
             onBuy={handleBuy}
             ctaLabel={isSeated ? t('seating.select_seats') : undefined}
+            isSeated={isSeated}
+            salesOpen={salesOpen}
           />
         </div>
 

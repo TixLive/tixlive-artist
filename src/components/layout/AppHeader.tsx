@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Icon } from '@iconify/react';
 
 interface AppHeaderProps {
@@ -36,14 +35,16 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 		<>
 			<header className="sticky top-0 z-50 border-b border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] bg-[var(--theme-bg)]/95 backdrop-blur-md">
 				<div className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
-					{/* Logo + name */}
-					<Link href="/" className="flex shrink-0 items-center gap-3">
+					{/* Logo or name */}
+					<Link href="/" className="flex shrink-0 items-center">
 						{logoUrl ? (
-							<Image src={logoUrl} alt={organizerName} width={28} height={28} className="rounded-md" />
-						) : null}
-						<span className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[800] tracking-tight text-[var(--theme-text)]">
-							{organizerName}
-						</span>
+							// eslint-disable-next-line @next/next/no-img-element
+							<img src={logoUrl} alt={organizerName} className="h-9 w-auto max-w-[160px] rounded-sm object-contain" />
+						) : (
+							<span className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[800] tracking-tight text-[var(--theme-text)]">
+								{organizerName}
+							</span>
+						)}
 					</Link>
 
 					{/* Center nav links — desktop only */}

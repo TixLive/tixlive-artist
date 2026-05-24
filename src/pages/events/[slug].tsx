@@ -274,71 +274,75 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
               {availabilityNotice === null ? (
                 <>
-                  <div className="mt-3 flex flex-col gap-3">
-                    {ticketTypes.map((ticket) => (
-                      <TicketTypeRow
-                        key={ticket.id}
-                        ticket={ticket}
-                        quantity={quantities[ticket.id] ?? 0}
-                        onQuantityChange={handleQuantityChange}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Seated: pick seats directly (steppers above are an optional seed) */}
-                  {isSeated && salesOpen && totalQuantity === 0 && (
-                    <Button
-                      variant="solid"
-                      size="lg"
-                      className="mt-5 w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
-                      style={{ backgroundColor: 'var(--brand-primary)' }}
-                      onPress={handleBuy}
-                    >
-                      {t('seating.select_seats')}
-                      <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-                    </Button>
-                  )}
-
-                  {/* Cart summary */}
-                  {totalQuantity > 0 && (
-                    <div className="mt-5 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
-                      <div className="space-y-2 text-[0.8125rem]">
-                        {cartItems.map(item => (
-                          <div key={item.ticket_type_id} className="flex items-center justify-between">
-                            <span className="text-[var(--theme-text)]">
-                              {item.quantity} {item.ticket_type_name}
-                            </span>
-                            <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text)]">
-                              {item.price * item.quantity} {currency}
-                            </span>
-                          </div>
-                        ))}
-                        {addonTotal > 0 && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-[var(--theme-text-muted)]">Add-ons</span>
-                            <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
-                              +{addonTotal} {currency}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex items-center justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-3">
-                          <span className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">Total</span>
-                          <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
-                            {totalPrice} {currency}
-                          </span>
-                        </div>
-                      </div>
+                  {/* Seated events: skip category steppers — go directly to seat map */}
+                  {isSeated ? (
+                    salesOpen && (
                       <Button
                         variant="solid"
                         size="lg"
-                        className="mt-4 w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
+                        className="mt-5 w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
                         style={{ backgroundColor: 'var(--brand-primary)' }}
                         onPress={handleBuy}
                       >
-                        {isSeated ? t('seating.select_seats') : 'Continue to Checkout'}
+                        {t('seating.select_seats')}
                         <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
                       </Button>
-                    </div>
+                    )
+                  ) : (
+                    <>
+                      <div className="mt-3 flex flex-col gap-3">
+                        {ticketTypes.map((ticket) => (
+                          <TicketTypeRow
+                            key={ticket.id}
+                            ticket={ticket}
+                            quantity={quantities[ticket.id] ?? 0}
+                            onQuantityChange={handleQuantityChange}
+                          />
+                        ))}
+                      </div>
+
+                      {/* GA: cart summary + continue */}
+                      {totalQuantity > 0 && (
+                        <div className="mt-5 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
+                          <div className="space-y-2 text-[0.8125rem]">
+                            {cartItems.map(item => (
+                              <div key={item.ticket_type_id} className="flex items-center justify-between">
+                                <span className="text-[var(--theme-text)]">
+                                  {item.quantity} {item.ticket_type_name}
+                                </span>
+                                <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text)]">
+                                  {item.price * item.quantity} {currency}
+                                </span>
+                              </div>
+                            ))}
+                            {addonTotal > 0 && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-[var(--theme-text-muted)]">Add-ons</span>
+                                <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
+                                  +{addonTotal} {currency}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-3">
+                              <span className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">Total</span>
+                              <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
+                                {totalPrice} {currency}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="solid"
+                            size="lg"
+                            className="mt-4 w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
+                            style={{ backgroundColor: 'var(--brand-primary)' }}
+                            onPress={handleBuy}
+                          >
+                            Continue to Checkout
+                            <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               ) : (

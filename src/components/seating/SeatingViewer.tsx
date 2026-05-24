@@ -133,8 +133,15 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	const palette = useRef<Palette>(FALLBACK_PALETTE);
 	const rafId = useRef<number | null>(null);
 	const isPanning = useRef(false);
+	const isPinching = useRef(false);
 	const panStart = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
 	const reducedMotionRef = useRef(reducedMotion);
+	// Multi-touch tracking for pinch-to-zoom
+	const activePointers = useRef(new Map<number, { x: number; y: number }>());
+	const lastPinchDist = useRef<number | null>(null);
+	const lastPointerType = useRef<string>('mouse');
+	// Prevents first draw from using scale=1 before fit runs
+	const hasInitialFit = useRef(false);
 
 	// Lerp animation
 	const targetScale = useRef(1);
@@ -524,15 +531,26 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	useEffect(() => {
 		const canvas = canvasEl.current;
 		if (!canvas || !size.w) return;
-		const dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2);
+		// Cap at 3 to support 3x displays (iPhone); 2 caused blurriness on high-DPR mobile
+		const dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 3);
 		canvas.width = size.w * dpr;
 		canvas.height = size.h * dpr;
 		canvas.style.width = `${size.w}px`;
 		canvas.style.height = `${size.h}px`;
 		const ctx = canvas.getContext('2d');
 		if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		// Fit on first resize so the very first draw uses the correct scale (not scale=1)
+		if (!hasInitialFit.current && canvasW && canvasH) {
+			const s = Math.min((size.w - 48) / canvasW, (size.h - 48) / canvasH, 1);
+			scale.current = s;
+			targetScale.current = s;
+			pos.current = { x: (size.w - canvasW * s) / 2, y: (size.h - canvasH * s) / 2 };
+			targetPos.current = { ...pos.current };
+			setDisplayScale(s);
+			hasInitialFit.current = true;
+		}
 		scheduleRedraw();
-	}, [size, scheduleRedraw]);
+	}, [size, scheduleRedraw, canvasW, canvasH]);
 
 	// Fit chart to viewport on first load
 	useEffect(() => {
@@ -579,27 +597,72 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 
 	const handlePointerDown = useCallback(
 		(e: React.PointerEvent) => {
-			// Press-drag pans (mouse or one-finger touch); a tiny move threshold
-			// separates a tap (select a seat) from a drag (pan).
 			cancelAnimation();
-			isPanning.current = true;
-			dragMoved.current = false;
-			panStart.current = { x: e.clientX, y: e.clientY, px: pos.current.x, py: pos.current.y };
+			lastPointerType.current = e.pointerType;
+			activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+			if (activePointers.current.size === 1) {
+				// First finger — start pan
+				isPanning.current = true;
+				isPinching.current = false;
+				dragMoved.current = false;
+				panStart.current = { x: e.clientX, y: e.clientY, px: pos.current.x, py: pos.current.y };
+			} else if (activePointers.current.size >= 2) {
+				// Second finger — switch to pinch; mark dragMoved so click is suppressed
+				isPanning.current = false;
+				isPinching.current = true;
+				dragMoved.current = true;
+				const pts = [...activePointers.current.values()];
+				lastPinchDist.current = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+			}
 		},
 		[cancelAnimation]
 	);
 
 	const handlePointerMove = useCallback(
 		(e: React.PointerEvent) => {
+			activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+			// Two-finger pinch-to-zoom
+			if (activePointers.current.size >= 2 && lastPinchDist.current !== null) {
+				const pts = [...activePointers.current.values()];
+				const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+				if (dist > 0) {
+					const factor = dist / lastPinchDist.current;
+					lastPinchDist.current = dist;
+					const rect = containerRef.current!.getBoundingClientRect();
+					const midX = (pts[0].x + pts[1].x) / 2 - rect.left;
+					const midY = (pts[0].y + pts[1].y) / 2 - rect.top;
+					const prev = scale.current;
+					const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev * factor));
+					pos.current = {
+						x: midX - (midX - pos.current.x) * (next / prev),
+						y: midY - (midY - pos.current.y) * (next / prev),
+					};
+					scale.current = next;
+					targetScale.current = next;
+					targetPos.current = { ...pos.current };
+					setDisplayScale(next);
+					scheduleRedraw();
+				}
+				return;
+			}
+
+			// One-finger pan
 			if (isPanning.current && panStart.current) {
 				const ddx = e.clientX - panStart.current.x;
 				const ddy = e.clientY - panStart.current.y;
-				if (Math.abs(ddx) > 3 || Math.abs(ddy) > 3) dragMoved.current = true;
+				// Higher threshold for touch — finger has natural ~3px tremor
+				const threshold = e.pointerType === 'touch' ? 8 : 3;
+				if (Math.abs(ddx) > threshold || Math.abs(ddy) > threshold) dragMoved.current = true;
 				pos.current = { x: panStart.current.px + ddx, y: panStart.current.py + ddy };
 				targetPos.current = { ...pos.current };
 				scheduleRedraw();
 				return;
 			}
+
+			// Hover feedback — mouse/pen only (touch has no cursor)
+			if (e.pointerType === 'touch') return;
 
 			const rect = containerRef.current!.getBoundingClientRect();
 			const cx = (e.clientX - rect.left - pos.current.x) / scale.current;
@@ -679,59 +742,101 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 		[allSeats, sections, sectionBoundsMap, sectionLabelByKey, isSelectable, scheduleRedraw]
 	);
 
-	const endPan = useCallback(() => {
-		isPanning.current = false;
-		panStart.current = null;
+	const endPan = useCallback((e: React.PointerEvent) => {
+		activePointers.current.delete(e.pointerId);
+
+		if (activePointers.current.size === 0) {
+			// All fingers lifted
+			isPanning.current = false;
+			isPinching.current = false;
+			lastPinchDist.current = null;
+			panStart.current = null;
+		} else if (activePointers.current.size === 1) {
+			// One finger remains after pinch — resume single-finger pan
+			isPinching.current = false;
+			lastPinchDist.current = null;
+			const [rem] = activePointers.current.values();
+			panStart.current = { x: rem.x, y: rem.y, px: pos.current.x, py: pos.current.y };
+			isPanning.current = true;
+		}
 	}, []);
 
-	const handleMouseLeave = useCallback(() => {
-		isPanning.current = false;
-		panStart.current = null;
-		hovered.current = null;
-		hoveredSection.current = null;
-		setTooltip(null);
-		setCursorPointer(false);
-		scheduleRedraw();
+	const handleMouseLeave = useCallback((e: React.PointerEvent) => {
+		activePointers.current.delete(e.pointerId);
+		if (activePointers.current.size === 0) {
+			isPanning.current = false;
+			isPinching.current = false;
+			lastPinchDist.current = null;
+			panStart.current = null;
+			hovered.current = null;
+			hoveredSection.current = null;
+			setTooltip(null);
+			setCursorPointer(false);
+			scheduleRedraw();
+		}
 	}, [scheduleRedraw]);
 
 	const handleClick = useCallback(
 		(e: React.MouseEvent) => {
 			if (dragMoved.current) {
 				dragMoved.current = false;
-				return; // it was a pan, not a tap
+				return; // pan gesture, not a tap
 			}
 			const rect = containerRef.current!.getBoundingClientRect();
 			const cx = (e.clientX - rect.left - pos.current.x) / scale.current;
 			const cy = (e.clientY - rect.top - pos.current.y) / scale.current;
 
-			// Zoomed out: tap section → zoom in
-			if (scale.current <= SECTION_CLICK_SCALE + 0.3 && hoveredSection.current) {
-				const bb = sectionBoundsMap.get(hoveredSection.current);
-				if (bb) {
-					const { w, h } = sizeRef.current;
-					const padding = 60;
-					const sW = bb.maxX - bb.minX + padding * 2;
-					const sH = bb.maxY - bb.minY + padding * 2;
-					const newScale = Math.min(MAX_SCALE, Math.min(w / sW, h / sH) * 0.9);
-					const centerX = (bb.minX + bb.maxX) / 2;
-					const centerY = (bb.minY + bb.maxY) / 2;
-					startAnimation(newScale, { x: w / 2 - centerX * newScale, y: h / 2 - centerY * newScale });
-					setTooltip(null);
-					return;
+			// Zoomed out: tap/click section → zoom in
+			// On touch, hoveredSection is never set (no mousemove), so we resolve from coords
+			if (scale.current <= SECTION_CLICK_SCALE + 0.3) {
+				let tappedSection = hoveredSection.current;
+				if (!tappedSection) {
+					for (const [key, bb] of sectionBoundsMap) {
+						const pad = 12 / scale.current;
+						if (cx >= bb.minX - pad && cx <= bb.maxX + pad && cy >= bb.minY - pad && cy <= bb.maxY + pad) {
+							tappedSection = key;
+							break;
+						}
+					}
+				}
+				if (tappedSection) {
+					const bb = sectionBoundsMap.get(tappedSection);
+					if (bb) {
+						const { w, h } = sizeRef.current;
+						const padding = 60;
+						const sW = bb.maxX - bb.minX + padding * 2;
+						const sH = bb.maxY - bb.minY + padding * 2;
+						const newScale = Math.min(MAX_SCALE, Math.min(w / sW, h / sH) * 0.9);
+						const centerX = (bb.minX + bb.maxX) / 2;
+						const centerY = (bb.minY + bb.maxY) / 2;
+						startAnimation(newScale, { x: w / 2 - centerX * newScale, y: h / 2 - centerY * newScale });
+						setTooltip(null);
+						return;
+					}
 				}
 			}
 
 			if (scale.current < HOVER_MIN_SCALE || !onSeatToggle) return;
+
+			// Touch-friendly hit radius: minimum 44px touch target (22px radius in screen px → canvas units)
+			const isTouch = lastPointerType.current === 'touch';
+			const MIN_TOUCH_R = 22 / scale.current;
+
+			// Find the CLOSEST seat within hit radius (not just the first)
+			let bestSeat: Seat | null = null;
+			let bestDist = Infinity;
 			for (const seat of allSeats) {
 				if (!isSelectable(seat.id)) continue;
 				const r = getSeatR(sections, seat.sectionKey);
-				const dx = seat.x - cx,
-					dy = seat.y - cy;
-				if (dx * dx + dy * dy <= r * r) {
-					onSeatToggle(seat);
-					return;
+				const hitR = isTouch ? Math.max(r, MIN_TOUCH_R) : r;
+				const dx = seat.x - cx, dy = seat.y - cy;
+				const d2 = dx * dx + dy * dy;
+				if (d2 <= hitR * hitR && d2 < bestDist) {
+					bestDist = d2;
+					bestSeat = seat;
 				}
 			}
+			if (bestSeat) onSeatToggle(bestSeat);
 		},
 		[allSeats, sections, onSeatToggle, sectionBoundsMap, startAnimation, isSelectable]
 	);

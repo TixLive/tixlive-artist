@@ -605,6 +605,20 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 		return () => el.removeEventListener('wheel', onWheel);
 	}, [scheduleRedraw, cancelAnimation]);
 
+	// Lock page scroll while dragging the map (non-passive). iOS Safari does not
+	// reliably honor `touch-action: none` for single-finger drags on a canvas, and
+	// React's pointer handlers run on passive touch events so they can't cancel the
+	// scroll. Mirroring the wheel handler above, a native non-passive touchmove
+	// listener calls preventDefault() so a one-finger pan / two-finger pinch moves
+	// the seat map only — never the page. Pointer events still fire for pan/zoom.
+	useEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+		const onTouchMove = (e: TouchEvent) => e.preventDefault();
+		el.addEventListener('touchmove', onTouchMove, { passive: false });
+		return () => el.removeEventListener('touchmove', onTouchMove);
+	}, []);
+
 	// ── POINTER (mouse + touch + pen, unified) ───────────────────────────────────
 	const dragMoved = useRef(false);
 

@@ -31,7 +31,7 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 	return (
 		<footer className="mt-auto bg-[var(--brand-primary)] text-[var(--theme-bg)]">
 			<div className="mx-auto max-w-[1120px] px-4 py-14 sm:px-6 md:py-20">
-				<div className="grid grid-cols-2 gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+				<div className="grid grid-cols-2 gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
 					{/* Organizer info */}
 					<div className="col-span-2 md:col-span-1 md:pr-6">
 						<div className="flex items-center gap-3">
@@ -49,16 +49,6 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 								{organizerBio}
 							</p>
 						)}
-					</div>
-
-					{/* Links */}
-					<div>
-						<h3 className={heading}>Link-uri</h3>
-						<ul className="space-y-3 text-[0.8125rem]">
-							<li><Link href="/" className={link}>Bilete</Link></li>
-							<li><Link href="/" className={link}>Despre</Link></li>
-							<li><Link href="/" className={link}>Toate evenimentele</Link></li>
-						</ul>
 					</div>
 
 					{/* Legal — only pages the organizer has actually published */}

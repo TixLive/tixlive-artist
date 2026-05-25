@@ -133,7 +133,7 @@ export default function SeatSelection({
 	const [shortfall, setShortfall] = useState(initialShortfall);
 	const [repicking, setRepicking] = useState(false);
 	const [continuing, setContinuing] = useState(false);
-	const [highlightedTier, setHighlightedTier] = useState<number | null>(null);
+	const [highlightedPrice, setHighlightedPrice] = useState<number | null>(null);
 
 	const { isOpen: autopickOpen, onClose: closeAutopick, onOpen: openAutopick } = useDisclosure({
 		defaultOpen: !versionMismatch && initialSelectedSeatIds.length > 0,
@@ -162,16 +162,27 @@ export default function SeatSelection({
 		return withIdx.map((x) => x.item);
 	}, [selected, seatTier, tierMeta, seatById, tierColorBySeatId, priceBySeatId]);
 
-	// Dim seats that aren't in the highlighted tier
+	// One pill per unique price value (multiple tiers can share a price)
+	const uniquePrices = useMemo(() => {
+		const seen = new Map<number, { color: string }>();
+		for (const tier of tiers) {
+			if (!seen.has(tier.price)) {
+				seen.set(tier.price, { color: colorByTierId.get(tier.ticket_package_id) ?? '#888' });
+			}
+		}
+		return [...seen.entries()].map(([price, { color }]) => ({ price, color }));
+	}, [tiers, colorByTierId]);
+
+	// Dim seats whose price doesn't match the highlighted price
 	const displayColorBySeatId = useMemo(() => {
-		if (highlightedTier === null) return tierColorBySeatId;
+		if (highlightedPrice === null) return tierColorBySeatId;
 		const m = new Map<string, string>();
 		for (const [seatId, color] of tierColorBySeatId) {
-			const tierId = seatTier.get(seatId);
-			m.set(seatId, tierId === highlightedTier ? color : 'rgba(180,180,180,0.2)');
+			const price = priceBySeatId.get(seatId);
+			m.set(seatId, price === highlightedPrice ? color : 'rgba(180,180,180,0.2)');
 		}
 		return m;
-	}, [highlightedTier, tierColorBySeatId, seatTier]);
+	}, [highlightedPrice, tierColorBySeatId, priceBySeatId]);
 
 	const liveMessage = selected.size === 0
 		? t('seating.no_seats_yet')
@@ -333,14 +344,13 @@ export default function SeatSelection({
 
 			{/* ── Price tags ────────────────────────────────────────────────── */}
 			<div className="flex h-[44px] flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-				{tiers.map((tier) => {
-					const isActive = highlightedTier === tier.ticket_package_id;
-					const color = colorByTierId.get(tier.ticket_package_id) ?? '#888';
+				{uniquePrices.map(({ price, color }) => {
+					const isActive = highlightedPrice === price;
 					return (
 						<button
-							key={tier.ticket_package_id}
+							key={price}
 							type="button"
-							onClick={() => setHighlightedTier(isActive ? null : tier.ticket_package_id)}
+							onClick={() => setHighlightedPrice(isActive ? null : price)}
 							className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 font-[family-name:var(--font-body)] text-[0.75rem] font-[600] transition-all duration-150 ${
 								isActive
 									? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-[var(--theme-bg)]'
@@ -352,17 +362,16 @@ export default function SeatSelection({
 								style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.7)' : color }}
 								aria-hidden="true"
 							/>
-							{tier.name}
-							<span className={`font-[family-name:var(--font-mono)] text-[0.6875rem] ${isActive ? 'opacity-70' : 'text-[var(--theme-text-muted)]'}`}>
-								{tier.price} {currency}
+							<span className="font-[family-name:var(--font-mono)]">
+								{price} {currency}
 							</span>
 						</button>
 					);
 				})}
-				{highlightedTier !== null && (
+				{highlightedPrice !== null && (
 					<button
 						type="button"
-						onClick={() => setHighlightedTier(null)}
+						onClick={() => setHighlightedPrice(null)}
 						className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
 					>
 						× Toate

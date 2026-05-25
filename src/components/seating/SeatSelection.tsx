@@ -269,6 +269,18 @@ export default function SeatSelection({
 		return date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', hour12: false });
 	};
 
+	// Reset continuing when page is restored from bfcache (browser back button)
+	useEffect(() => {
+		const onPageShow = (e: PageTransitionEvent) => {
+			if (e.persisted) {
+				setContinuing(false);
+				closeCheckout();
+			}
+		};
+		window.addEventListener('pageshow', onPageShow);
+		return () => window.removeEventListener('pageshow', onPageShow);
+	}, [closeCheckout]);
+
 	// ── Version mismatch guard ────────────────────────────────────────────────
 	if (versionMismatch) {
 		return (
@@ -425,15 +437,33 @@ export default function SeatSelection({
 					className="flex-shrink-0 bg-[var(--brand-primary)] text-[var(--theme-bg)]"
 					style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
 				>
-					<div className="flex h-[64px] items-center gap-4 px-4">
+					{/* Seat chips — scrollable preview with hover-X to remove */}
+					<div className="flex items-center gap-1.5 overflow-x-auto px-4 pt-2.5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+						{selectedItems.map((item) => (
+							<div key={item.seatId} className="group relative shrink-0">
+								<div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.6875rem] font-[600] leading-none">
+									<span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+									{item.label}
+								</div>
+								<button
+									type="button"
+									onClick={() => handleRemove(item.seatId)}
+									className="absolute -right-1 -top-1 z-10 hidden h-4 w-4 items-center justify-center rounded-full bg-white text-[var(--brand-primary)] group-hover:flex"
+									aria-label="Șterge"
+								>
+									<Icon icon="mdi:close" width={9} />
+								</button>
+							</div>
+						))}
+					</div>
+
+					{/* Total + CTA */}
+					<div className="flex h-[56px] items-center gap-4 px-4">
 						<button
 							type="button"
 							onClick={openCheckout}
 							className="min-w-0 flex-1 text-left"
 						>
-							<p className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.15em] opacity-60">
-								{selected.size === 1 ? '1 loc selectat' : `${selected.size} locuri selectate`}
-							</p>
 							<p className="font-[family-name:var(--font-display)] text-[1.25rem] font-[800] leading-tight tracking-[-0.02em] tabular-nums">
 								{total} <span className="text-[0.875rem] font-[700] opacity-60">{currency}</span>
 							</p>

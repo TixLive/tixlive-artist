@@ -396,21 +396,26 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			ctx.fill();
 
 			if (isHovered && !isSelected) {
-				ctx.strokeStyle = pal.text;
-				ctx.globalAlpha = 0.35;
-				ctx.lineWidth = 1.5 / sc;
+				ctx.strokeStyle = '#fff';
+				ctx.lineWidth = Math.max(1.5, 2 / sc);
 				ctx.beginPath();
-				ctx.arc(seat.x, seat.y, r + 1.5 / sc, 0, Math.PI * 2);
+				ctx.arc(seat.x, seat.y, r + Math.max(1, 2 / sc), 0, Math.PI * 2);
 				ctx.stroke();
-				ctx.globalAlpha = 1;
 			}
 
 			if (isSelected) {
-				// brand-accent ring (non-color cue) + check glyph when large enough
+				// White gap ring (between fill and accent ring — Yandex-style double ring)
+				ctx.strokeStyle = '#fff';
+				ctx.lineWidth = Math.max(1.5, 2 / sc);
+				ctx.beginPath();
+				ctx.arc(seat.x, seat.y, r + Math.max(1, 1.5 / sc), 0, Math.PI * 2);
+				ctx.stroke();
+
+				// Accent outer ring
 				ctx.strokeStyle = pal.accent;
 				ctx.lineWidth = Math.max(1.5, 2.5 / sc);
 				ctx.beginPath();
-				ctx.arc(seat.x, seat.y, r + Math.max(1, 1.5 / sc), 0, Math.PI * 2);
+				ctx.arc(seat.x, seat.y, r + Math.max(3, 4 / sc), 0, Math.PI * 2);
 				ctx.stroke();
 
 				if (r * sc > 7) {
@@ -899,7 +904,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			onPointerUp={endPan}
 			onPointerLeave={handleMouseLeave}
 			onPointerCancel={endPan}
-			style={{ cursor: isPanning.current ? 'grabbing' : cursorPointer ? 'pointer' : 'grab', touchAction: 'none' }}
+			style={{ cursor: isPanning.current ? 'grabbing' : cursorPointer ? 'default' : 'grab', touchAction: 'none' }}
 		>
 			<canvas
 				ref={canvasEl}

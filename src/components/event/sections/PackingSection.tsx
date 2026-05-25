@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import SectionShell from '@/components/event/sections/SectionShell';
 import type { IPackingItem } from '@/types';
 
 interface PackingSectionProps {
@@ -12,26 +13,23 @@ export default function PackingSection({ items }: PackingSectionProps) {
 	const recommended = items.filter((i) => i.type === 'recommended');
 
 	return (
-		<section className="mt-10">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
-				What to Bring
-			</h2>
+		<SectionShell label="What to Bring">
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{essential.length > 0 && (
-					<div className="rounded-2xl bg-[var(--theme-surface)] p-4">
-						<p className="mb-3 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--brand-accent)]">
-							<Icon icon="mdi:alert-circle" width={18} />
+					<div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
+						<p className="mb-4 flex items-center gap-2 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[#D97706]">
+							<Icon icon="mdi:alert-circle" width={14} />
 							Essential
 						</p>
-						<ul className="space-y-2">
+						<ul className="space-y-3">
 							{essential.map((item) => (
-								<li key={item.id} className="flex items-start gap-2">
+								<li key={item.id} className="flex items-start gap-2.5">
 									<Icon
 										icon="mdi:checkbox-marked-circle"
 										width={16}
 										className="mt-0.5 shrink-0 text-[var(--brand-accent)]"
 									/>
-									<span className="text-[0.8125rem] text-[var(--theme-text)]">
+									<span className="text-[0.875rem] leading-relaxed text-[var(--theme-text)]">
 										{item.text}
 									</span>
 								</li>
@@ -41,20 +39,20 @@ export default function PackingSection({ items }: PackingSectionProps) {
 				)}
 
 				{recommended.length > 0 && (
-					<div className="rounded-2xl bg-[var(--theme-surface)] p-4">
-						<p className="mb-3 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--theme-text-muted)]">
-							<Icon icon="mdi:plus-circle" width={18} />
+					<div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
+						<p className="mb-4 flex items-center gap-2 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
+							<Icon icon="mdi:plus-circle" width={14} />
 							Recommended
 						</p>
-						<ul className="space-y-2">
+						<ul className="space-y-3">
 							{recommended.map((item) => (
-								<li key={item.id} className="flex items-start gap-2">
+								<li key={item.id} className="flex items-start gap-2.5">
 									<Icon
 										icon="mdi:circle-outline"
 										width={16}
-										className="mt-0.5 shrink-0 text-[var(--theme-text-muted)]"
+										className="mt-0.5 shrink-0 text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]"
 									/>
-									<span className="text-[0.8125rem] text-[var(--theme-text)]">
+									<span className="text-[0.875rem] leading-relaxed text-[var(--theme-text)]">
 										{item.text}
 									</span>
 								</li>
@@ -63,6 +61,6 @@ export default function PackingSection({ items }: PackingSectionProps) {
 					</div>
 				)}
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

@@ -99,13 +99,11 @@ export default function PriceBreakdown({
         </div>
       )}
 
-      <div className="border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-3">
-        <div className="flex items-center justify-between">
-          <span className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">Total</span>
-          <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
-            {formatPrice(total)} {currency}
-          </span>
-        </div>
+      <div className="mt-1 flex items-baseline justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-4">
+        <span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">Total</span>
+        <span className="font-[family-name:var(--font-display)] text-[1.625rem] font-[800] leading-none tracking-[-0.02em] tabular-nums text-[var(--theme-text)]">
+          {formatPrice(total)} <span className="text-[0.8125rem] font-[700]">{currency}</span>
+        </span>
       </div>
     </div>
   );

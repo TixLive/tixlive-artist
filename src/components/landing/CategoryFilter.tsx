@@ -17,11 +17,11 @@ export default function CategoryFilter({ active, onChange, availableTypes }: Cat
 
   return (
     <div
-      className="sticky top-16 z-30 border-b border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] backdrop-blur-md"
+      className="sticky top-16 z-30 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] backdrop-blur-md"
       style={{ backgroundColor: 'color-mix(in srgb, var(--theme-bg) 92%, transparent)' }}
     >
       <nav
-        className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 py-3 sm:px-6"
+        className="mx-auto flex max-w-[1120px] gap-2 overflow-x-auto px-4 py-3 sm:px-6"
         aria-label="Event categories"
         style={{ scrollbarWidth: 'none' }}
       >
@@ -32,11 +32,18 @@ export default function CategoryFilter({ active, onChange, availableTypes }: Cat
               key={cat}
               as="button"
               variant={isActive ? 'solid' : 'bordered'}
-              className="h-9 shrink-0 cursor-pointer px-4 font-[family-name:var(--font-body)] text-[0.8125rem] font-medium transition-colors duration-200"
+              radius="full"
+              className={`h-10 shrink-0 cursor-pointer px-5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] transition-all duration-200 ${
+                isActive ? 'shadow-[0_4px_12px_color-mix(in_srgb,var(--brand-primary)_28%,transparent)]' : ''
+              }`}
               style={
                 isActive
                   ? { backgroundColor: 'var(--brand-primary)', color: 'var(--theme-bg)', borderColor: 'var(--brand-primary)' }
-                  : { borderColor: 'color-mix(in srgb, var(--theme-text) 15%, transparent)', color: 'var(--theme-text)' }
+                  : {
+                      backgroundColor: 'var(--theme-surface)',
+                      borderColor: 'color-mix(in srgb, var(--theme-text) 8%, transparent)',
+                      color: 'var(--theme-text)',
+                    }
               }
               onClick={() => onChange(cat)}
             >

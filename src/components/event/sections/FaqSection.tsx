@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
+import SectionShell from '@/components/event/sections/SectionShell';
 import type { IFaq } from '@/types';
 
 interface FaqSectionProps {
@@ -12,34 +13,42 @@ export default function FaqSection({ items }: FaqSectionProps) {
 	if (!items.length) return null;
 
 	return (
-		<section className="mt-10">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
-				FAQ
-			</h2>
-			<div className="divide-y divide-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)]">
+		<SectionShell label="FAQ">
+			<div className="space-y-3">
 				{items.map((faq) => {
 					const isOpen = openId === faq.id;
 					return (
-						<div key={faq.id}>
+						<div
+							key={faq.id}
+							className="overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)]"
+						>
 							<button
-								className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--theme-surface)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-inset"
+								className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--theme-text)_4%,transparent)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-inset"
 								onClick={() => setOpenId(isOpen ? null : faq.id)}
 								aria-expanded={isOpen}
 							>
-								<span className="font-[family-name:var(--font-body)] text-[0.875rem] font-medium text-[var(--theme-text)]">
+								<span className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
 									{faq.question}
 								</span>
-								<Icon
-									icon="mdi:chevron-down"
-									width={20}
-									className={`shrink-0 text-[var(--theme-text-muted)] transition-transform duration-200 ${
-										isOpen ? 'rotate-180' : ''
+								<span
+									className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
+										isOpen
+											? 'bg-[var(--brand-accent)] text-[var(--theme-bg)]'
+											: 'bg-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] text-[var(--theme-text-muted)]'
 									}`}
-								/>
+								>
+									<Icon
+										icon="mdi:chevron-down"
+										width={18}
+										className={`transition-transform duration-200 ${
+											isOpen ? 'rotate-180' : ''
+										}`}
+									/>
+								</span>
 							</button>
 							{isOpen && (
-								<div className="px-4 pb-4">
-									<p className="text-[0.8125rem] leading-relaxed text-[var(--theme-text-muted)]">
+								<div className="px-5 pb-5">
+									<p className="text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
 										{faq.answer}
 									</p>
 								</div>
@@ -48,6 +57,6 @@ export default function FaqSection({ items }: FaqSectionProps) {
 					);
 				})}
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

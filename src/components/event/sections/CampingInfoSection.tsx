@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import SectionShell from '@/components/event/sections/SectionShell';
 
 interface CampingInfoSectionProps {
 	checkin?: string;
@@ -26,10 +27,7 @@ export default function CampingInfoSection(props: CampingInfoSectionProps) {
 	};
 
 	return (
-		<section className="mt-10">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
-				Camping Info
-			</h2>
+		<SectionShell label="Camping Info">
 			<div className="grid grid-cols-2 gap-3">
 				{infoItems.map((item) => {
 					const value = valueMap[item.key];
@@ -37,25 +35,25 @@ export default function CampingInfoSection(props: CampingInfoSectionProps) {
 					return (
 						<div
 							key={item.key}
-							className="rounded-2xl bg-[var(--theme-surface)] p-4"
+							className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4"
 						>
-							<div className="mb-2 flex items-center gap-2">
+							<div className="mb-2.5 flex items-center gap-2">
 								<Icon
 									icon={item.icon}
-									width={20}
+									width={16}
 									className="text-[var(--brand-accent)]"
 								/>
-								<span className="text-[0.6875rem] font-medium uppercase tracking-wider text-[var(--theme-text-muted)]">
+								<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
 									{item.label}
 								</span>
 							</div>
-							<p className="text-[0.8125rem] leading-relaxed text-[var(--theme-text)]">
+							<p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] leading-snug tracking-[-0.01em] text-[var(--theme-text)]">
 								{value}
 							</p>
 						</div>
 					);
 				})}
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

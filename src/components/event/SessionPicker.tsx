@@ -12,11 +12,10 @@ export default function SessionPicker({ sessions, activeSessionId, onSelect }: S
 
   const formatSessionDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return {
-      weekday: date.toLocaleDateString('en-US', { weekday: 'short' }),
-      day: date.getDate(),
-      month: date.toLocaleDateString('en-US', { month: 'short' }),
-    };
+    const weekday = date.toLocaleDateString('ro-RO', { weekday: 'short' });
+    const day = date.getDate();
+    const month = date.toLocaleDateString('ro-RO', { month: 'short' });
+    return `${weekday} ${day} ${month}`;
   };
 
   const handleKeyDown = useCallback(
@@ -48,13 +47,12 @@ export default function SessionPicker({ sessions, activeSessionId, onSelect }: S
       ref={containerRef}
       role="tablist"
       aria-label="Event sessions"
-      className="flex gap-2 overflow-x-auto"
+      className="inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-1.5"
       style={{ scrollbarWidth: 'none' }}
       onKeyDown={handleKeyDown}
     >
       {sessions.map((session) => {
         const isActive = session.id === activeSessionId;
-        const { weekday, day, month } = formatSessionDate(session.date);
 
         return (
           <button
@@ -62,17 +60,15 @@ export default function SessionPicker({ sessions, activeSessionId, onSelect }: S
             role="tab"
             aria-selected={isActive}
             tabIndex={isActive ? 0 : -1}
-            className={`flex min-w-[68px] shrink-0 flex-col items-center rounded-xl px-4 py-2.5 text-center transition-all duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 ${
+            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 font-[family-name:var(--font-body)] text-[0.875rem] font-[600] transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] ${
               isActive
                 ? 'text-[var(--theme-bg)]'
-                : 'border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] text-[var(--theme-text)] hover:border-[color-mix(in_srgb,var(--theme-text)_20%,transparent)]'
+                : 'text-[var(--theme-text)] hover:bg-[color-mix(in_srgb,var(--theme-text)_5%,transparent)]'
             }`}
-            style={isActive ? { backgroundColor: 'var(--brand-primary)' } : { backgroundColor: 'var(--theme-bg)' }}
+            style={isActive ? { backgroundColor: 'var(--brand-primary)' } : undefined}
             onClick={() => onSelect(session.id)}
           >
-            <span className="font-[family-name:var(--font-data)] text-[0.6875rem] font-medium uppercase tracking-wider">{weekday}</span>
-            <span className="font-[family-name:var(--font-display)] text-[1.125rem] font-[800] leading-tight">{day}</span>
-            <span className="font-[family-name:var(--font-data)] text-[0.6875rem]">{month}</span>
+            {session.label || formatSessionDate(session.date)}
           </button>
         );
       })}

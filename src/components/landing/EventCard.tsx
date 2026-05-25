@@ -26,9 +26,9 @@ export default function EventCard({ event }: EventCardProps) {
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+      className="group block rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
     >
-      <article className="relative overflow-hidden rounded-2xl aspect-[3/4] transition-transform duration-250 ease-out group-hover:-translate-y-1 active:scale-[0.98]">
+      <article className="relative aspect-[3/4] overflow-hidden rounded-[22px] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] transition-transform duration-250 ease-out group-hover:-translate-y-1 active:scale-[0.98]">
         {/* Poster — fills entire card */}
         {event.poster_url ? (
           <Image
@@ -36,10 +36,10 @@ export default function EventCard({ event }: EventCardProps) {
             alt={`${event.title} poster`}
             fill
             className="object-cover transition-transform duration-250 ease-out group-hover:scale-[1.02]"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-[var(--theme-text)] p-4">
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--brand-primary)] p-4">
             <span className="text-center font-[family-name:var(--font-display)] text-lg font-[800] text-[var(--theme-bg)]">
               {event.title}
             </span>
@@ -47,48 +47,62 @@ export default function EventCard({ event }: EventCardProps) {
         )}
 
         {/* Gradient overlay — bottom */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-
-        {/* Sold out overlay */}
-        {isSoldOut && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[var(--theme-text)]/60">
-            <span className="rounded-xl bg-[#DC2626] px-4 py-1.5 font-[family-name:var(--font-display)] text-sm font-[700] text-white">
-              {t('events.sold_out')}
-            </span>
-          </div>
-        )}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(0,0,0,0) 48%, rgba(0,0,0,.78) 100%)',
+          }}
+        />
 
         {/* Urgency badge (top-left) */}
         {isCritical && (
-          <div className="absolute top-3 left-3">
-            <span className="animate-urgency-pulse rounded-full bg-[#DC2626] px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-white">
+          <div className="absolute left-3 top-3 z-10">
+            <span className="animate-urgency-pulse inline-flex items-center rounded-full bg-[#DC2626] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] font-[500] text-white shadow-[0_4px_12px_rgba(0,0,0,0.18)]">
               {t('events.only_left', { count: event.remaining_capacity ?? 0 })}
             </span>
           </div>
         )}
         {isLowStock && !isCritical && (
-          <div className="absolute top-3 left-3">
-            <span className="rounded-full bg-[#D97706] px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-white">
+          <div className="absolute left-3 top-3 z-10">
+            <span className="inline-flex items-center rounded-full bg-[#D97706] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] font-[500] text-white shadow-[0_4px_12px_rgba(0,0,0,0.18)]">
               {t('events.low_stock', { count: event.remaining_capacity ?? 0 })}
             </span>
           </div>
         )}
 
         {/* Info overlay — bottom of card */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <h3 className="line-clamp-2 font-[family-name:var(--font-display)] text-[1.0625rem] font-[800] leading-tight text-white">
+        <div className="absolute inset-x-0 bottom-0 z-[2] p-4">
+          <h3 className="line-clamp-2 font-[family-name:var(--font-display)] text-[1.0625rem] font-[800] leading-tight tracking-[-0.01em] text-white">
             {event.title}
           </h3>
-          <p className="mt-1.5 font-[family-name:var(--font-data)] text-[0.6875rem] tracking-wide text-white/65">
+          <p className="mt-1.5 font-[family-name:var(--font-body)] text-[0.75rem] text-white/85">
             {formatDate(event.date_start)}
             {event.venue_name && ` · ${event.venue_name}`}
           </p>
-          {event.price_from != null && !isSoldOut && (
-            <span className="mt-2 inline-block rounded-lg bg-white/15 px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.75rem] font-semibold text-white backdrop-blur-sm">
+          {event.price_from != null && !isSoldOut && event.price_from > 0 && (
+            <span className="mt-2.5 inline-flex items-center rounded-full bg-white/95 px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.6875rem] tracking-[0.02em] text-[var(--theme-text)] backdrop-blur-sm">
               {t('events.price_from', { price: event.price_from, currency: event.currency ?? '' })}
             </span>
           )}
+          {event.price_from === 0 && !isSoldOut && (
+            <span className="mt-2.5 inline-flex items-center rounded-full bg-[#16A34A] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.15em] text-white">
+              FREE
+            </span>
+          )}
         </div>
+
+        {/* Sold out overlay */}
+        {isSoldOut && (
+          <div
+            className="absolute inset-0 z-[4] flex flex-col items-center justify-center px-4 backdrop-blur-[2px]"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--theme-text) 72%, transparent)' }}
+          >
+            <span className="font-[family-name:var(--font-display)] text-[1.75rem] font-[800] tracking-[-0.02em] text-white">
+              {t('events.sold_out')}
+            </span>
+          </div>
+        )}
       </article>
     </Link>
   );

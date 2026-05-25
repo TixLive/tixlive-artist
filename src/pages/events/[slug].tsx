@@ -8,13 +8,13 @@ import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { IOrganizer, IEventDetail, ICartItem, ITicketAddon } from '@/types';
+import { IOrganizer, IEventDetail, ICartItem } from '@/types';
 import { getSite, getEvent } from '@/lib/api';
 import Layout from '@/components/layout/Layout';
 import EventHero from '@/components/event/EventHero';
-import EventSidebar from '@/components/event/EventSidebar';
 import StickyBuyBar from '@/components/event/StickyBuyBar';
 import KeyFactsStrip from '@/components/event/KeyFactsStrip';
+import SectionShell from '@/components/event/sections/SectionShell';
 import EventCountdown from '@/components/event/EventCountdown';
 import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
@@ -113,6 +113,48 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
     ticketsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
+  const [copied, setCopied] = useState(false);
+
+  const maxPrice = useMemo(
+    () => (ticketTypes.length > 0 ? Math.max(...ticketTypes.map((tt) => tt.price)) : priceFrom),
+    [ticketTypes, priceFrom]
+  );
+
+  // Itemised addon lines for the cart summary (per-ticket addons multiply by ticket count at checkout).
+  const addonLines = useMemo(
+    () => addons.filter((a) => (addonQuantities[a.id] ?? 0) > 0).map((a) => ({ ...a, qty: addonQuantities[a.id] })),
+    [addons, addonQuantities]
+  );
+
+  const showSocial = !!(event.fomo_enabled && (event.fomo_live_viewers || event.fomo_recent_sales));
+  const showCountdown = !!(event.fomo_enabled && event.fomo_countdown);
+
+  const onShare = useCallback(async () => {
+    const url = window.location.href;
+    try {
+      if (typeof navigator.share === 'function') {
+        await navigator.share({ title: event.title, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+      }
+    } catch {
+      /* user dismissed the share sheet */
+    }
+  }, [event.title]);
+
+  const fmtDate = (d: string) =>
+    new Date(d).toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const fmtTime = (d: string) =>
+    new Date(d).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+  const buyCtaLabel = isSeated
+    ? t('seating.select_seats')
+    : totalQuantity > 0
+      ? `Checkout · ${totalPrice} ${currency}`
+      : 'Cumpără Bilet';
+
   const handleQuantityChange = useCallback((ticketTypeId: number, qty: number) => {
     setQuantities((prev) => ({ ...prev, [ticketTypeId]: qty }));
   }, []);
@@ -192,6 +234,9 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
     })),
   };
 
+  const hairline = 'border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)]';
+  const monoLabel = 'font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]';
+
   return (
     <>
       <Head>
@@ -216,334 +261,440 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
         onCartClick={handleBuy}
       >
         <EventHero event={event} />
-        <KeyFactsStrip event={event} />
 
-        {event.fomo_enabled && event.fomo_countdown && (
-          <div className="mt-3">
-            <EventCountdown target={event.sessions?.[0]?.date ?? event.date_start} />
-          </div>
-        )}
+        <div className="mx-auto flex max-w-[1120px] flex-col gap-10 px-4 py-10 sm:px-6 md:gap-[72px] md:py-16">
+          {/* Live status row */}
+          {(showSocial || showCountdown) && (
+            <div className="flex flex-wrap items-center gap-3">
+              {showSocial && <KeyFactsStrip event={event} />}
+              {showCountdown && <EventCountdown target={event.sessions?.[0]?.date ?? event.date_start} />}
+            </div>
+          )}
 
-        {/* Two-column layout: content left, sidebar right */}
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:flex md:gap-10">
-          {/* Left column — content */}
-          <div className="min-w-0 flex-1">
-            {/* Description */}
+          {/* About + buy card */}
+          <section
+            id="about"
+            className={`grid gap-8 md:items-start md:gap-14 ${
+              event.description ? 'md:grid-cols-[1.6fr_1fr]' : 'md:max-w-md'
+            }`}
+          >
             {event.description && (
-              <section id="about">
-                <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
+              <div>
+                <h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
                   Despre Eveniment
                 </h2>
-                <div className="relative">
-                  <p
-                    className={`text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)] ${
-                      !descriptionExpanded ? 'line-clamp-3' : ''
-                    }`}
+                <p
+                  className={`mt-4 whitespace-pre-line text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)] sm:text-[1.0625rem] ${
+                    descriptionExpanded ? '' : 'line-clamp-6'
+                  }`}
+                >
+                  {event.description}
+                </p>
+                {event.description.length > 200 && (
+                  <button
+                    className="mt-3 font-[family-name:var(--font-body)] text-[0.9375rem] font-[600] text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+                    onClick={() => setDescriptionExpanded((o) => !o)}
                   >
-                    {event.description}
-                  </p>
-                  {!descriptionExpanded && event.description.length > 200 && (
-                    <button
-                      className="mt-1.5 text-[0.875rem] font-medium text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] focus-visible:ring-2 focus-visible:ring-offset-2"
-                      onClick={() => setDescriptionExpanded(true)}
-                    >
-                      Arată mai mult
-                    </button>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* Tickets */}
-            <section className="mt-10" id="tickets" ref={ticketsRef}>
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                  Comandă Bilete
-                </h2>
-                {priceFrom > 0 && (
-                  <span className="font-[family-name:var(--font-data)] text-[0.8125rem] text-[var(--theme-text-muted)]">
-                    {priceFrom} - {Math.max(...ticketTypes.map(tt => tt.price))} {currency}
-                  </span>
+                    {descriptionExpanded ? 'Arată mai puțin' : 'Arată mai mult'}
+                  </button>
                 )}
               </div>
+            )}
 
-              {(event.sessions ?? []).length > 1 && (
-                <div className="mb-4 mt-3">
-                  <SessionPicker
-                    sessions={event.sessions ?? []}
-                    activeSessionId={activeSessionId}
-                    onSelect={(id) => {
-                      setActiveSessionId(id);
-                      setQuantities({});
-                    }}
-                  />
+            {/* Buy card */}
+            <div
+              className={`overflow-hidden rounded-[22px] border ${hairline} bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]`}
+            >
+              <div className="px-6">
+                <div className={`border-b ${hairline} py-4`}>
+                  <div className={monoLabel}>Data</div>
+                  <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                    {fmtDate(event.date_start)}
+                  </div>
+                  <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
+                    Porțile se deschid la {fmtTime(event.date_start)}
+                  </div>
                 </div>
+
+                {event.venue_name && (
+                  <div className={`border-b ${hairline} py-4`}>
+                    <div className={monoLabel}>Locație</div>
+                    <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                      {event.venue_name}
+                    </div>
+                    {event.venue_address && (
+                      <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">{event.venue_address}</div>
+                    )}
+                  </div>
+                )}
+
+                <div className="py-4">
+                  <div className={monoLabel}>Preț</div>
+                  <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                    {priceFrom > 0
+                      ? maxPrice > priceFrom
+                        ? `${priceFrom} – ${maxPrice} ${currency}`
+                        : `${priceFrom} ${currency}`
+                      : 'Gratuit'}
+                  </div>
+                  {ticketTypes.length > 0 && (
+                    <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
+                      {ticketTypes.length} {ticketTypes.length === 1 ? 'tip de bilet' : 'tipuri de bilete'}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className={`flex flex-col gap-2.5 border-t ${hairline} bg-[var(--theme-bg)] px-5 py-4`}>
+                {!salesOpen ? (
+                  <Button
+                    isDisabled
+                    variant="flat"
+                    size="lg"
+                    className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700]"
+                  >
+                    {event.status === 'soon' ? 'În curând' : 'Vânzări Încheiate'}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="solid"
+                    size="lg"
+                    className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]"
+                    style={{ backgroundColor: 'var(--brand-primary)' }}
+                    onPress={isSeated || totalQuantity > 0 ? handleBuy : scrollToTickets}
+                  >
+                    {buyCtaLabel}
+                    <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
+                  </Button>
+                )}
+                <Button
+                  variant="bordered"
+                  size="lg"
+                  onPress={onShare}
+                  className="w-full rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--theme-text)]"
+                >
+                  {copied ? (
+                    <>
+                      <Icon icon="mdi:check" width={16} className="text-[#16A34A]" /> Link copiat
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="mdi:share-variant-outline" width={16} /> Distribuie evenimentul
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </section>
+
+          {/* Order tickets */}
+          <SectionShell
+            id="tickets"
+            label="Comandă Bilete"
+            rightSlot={
+              priceFrom > 0 ? (
+                <span className="font-[family-name:var(--font-mono)] text-[0.75rem] tracking-[0.03em] text-[var(--theme-text-muted)]">
+                  {priceFrom} – {maxPrice} {currency}
+                </span>
+              ) : undefined
+            }
+          >
+            <div ref={ticketsRef} className="flex flex-col gap-6">
+              {(event.sessions ?? []).length > 1 && (
+                <SessionPicker
+                  sessions={event.sessions ?? []}
+                  activeSessionId={activeSessionId}
+                  onSelect={(id) => {
+                    setActiveSessionId(id);
+                    setQuantities({});
+                  }}
+                />
               )}
 
               {availabilityNotice === null ? (
-                <>
-                  {/* Seated events: skip category steppers — go directly to seat map */}
-                  {isSeated ? (
-                    salesOpen && (
-                      <Button
-                        variant="solid"
-                        size="lg"
-                        className="mt-5 w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
-                        style={{ backgroundColor: 'var(--brand-primary)' }}
-                        onPress={handleBuy}
-                      >
-                        {t('seating.select_seats')}
-                        <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-                      </Button>
-                    )
-                  ) : (
-                    <>
-                      <div className="mt-3 flex flex-col gap-3">
-                        {ticketTypes.map((ticket) => (
-                          <TicketTypeRow
-                            key={ticket.id}
-                            ticket={ticket}
-                            quantity={quantities[ticket.id] ?? 0}
-                            onQuantityChange={handleQuantityChange}
-                        	showLowStockUrgency={!!(event.fomo_enabled && event.fomo_low_stock)}
-                          />
-                        ))}
-                      </div>
+                isSeated ? (
+                  salesOpen && (
+                    <Button
+                      variant="solid"
+                      size="lg"
+                      className="w-full rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
+                      style={{ backgroundColor: 'var(--brand-primary)' }}
+                      onPress={handleBuy}
+                    >
+                      {t('seating.select_seats')}
+                      <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
+                    </Button>
+                  )
+                ) : (
+                  <>
+                    {/* Price ladder */}
+                    <div className="flex flex-col gap-3">
+                      {ticketTypes.map((ticket, i) => (
+                        <TicketTypeRow
+                          key={ticket.id}
+                          index={i + 1}
+                          ticket={ticket}
+                          quantity={quantities[ticket.id] ?? 0}
+                          onQuantityChange={handleQuantityChange}
+                          showLowStockUrgency={!!(event.fomo_enabled && event.fomo_low_stock)}
+                        />
+                      ))}
+                    </div>
 
-                      {/* GA: cart summary + continue */}
-                      {totalQuantity > 0 && (
-                        <div className="mt-5 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
-                          <div className="space-y-2 text-[0.8125rem]">
-                            {cartItems.map(item => (
-                              <div key={item.ticket_type_id} className="flex items-center justify-between">
-                                <span className="text-[var(--theme-text)]">
-                                  {item.quantity} {item.ticket_type_name}
-                                </span>
-                                <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text)]">
-                                  {item.price * item.quantity} {currency}
-                                </span>
-                              </div>
-                            ))}
-                            {addonTotal > 0 && (
-                              <div className="flex items-center justify-between">
-                                <span className="text-[var(--theme-text-muted)]">Extra</span>
-                                <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
-                                  +{addonTotal} {currency}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex items-center justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-3">
-                              <span className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">Total:</span>
-                              <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
-                                {totalPrice} {currency}
+                    {/* Add-ons */}
+                    {addons.length > 0 && totalQuantity > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Icon icon="mdi:auto-awesome" width={18} className="text-[var(--brand-accent)]" />
+                          <h3 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                            Îmbunătățește-ți Experiența
+                          </h3>
+                        </div>
+                        <p className="mt-1 text-[0.75rem] text-[var(--theme-text-muted)]">
+                          Preț per bilet · Aplicat la toate biletele din coș.
+                        </p>
+                        <div className="mt-3 flex flex-col gap-2.5">
+                          {addons.map((addon) => (
+                            <AddonRow
+                              key={addon.id}
+                              addon={addon}
+                              quantity={addonQuantities[addon.id] ?? 0}
+                              max={addon.per_ticket ? totalQuantity : addon.max_quantity ?? 4}
+                              onQuantityChange={handleAddonQuantityChange}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Cart summary */}
+                    {totalQuantity > 0 && (
+                      <div className="overflow-hidden rounded-[22px] bg-[var(--brand-primary)] text-[var(--theme-bg)]">
+                        <div className="flex items-center justify-between border-b border-[color-mix(in_srgb,var(--theme-bg)_12%,transparent)] px-6 py-4">
+                          <span className="font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.15em]">
+                            Coșul tău
+                          </span>
+                          <span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] opacity-55">
+                            Pasul 1 din 2
+                          </span>
+                        </div>
+                        <div className="px-6 py-4">
+                          {cartItems.map((item) => (
+                            <div key={item.ticket_type_id} className="flex items-center justify-between py-1.5">
+                              <span className="text-[0.875rem]">
+                                <b className="font-[family-name:var(--font-display)] font-[700]">{item.quantity}×</b>
+                                <span className="ml-2">{item.ticket_type_name}</span>
                               </span>
+                              <span className="font-[family-name:var(--font-data)] text-[0.875rem] tabular-nums">
+                                {item.price * item.quantity} {currency}
+                              </span>
+                            </div>
+                          ))}
+                          {addonLines.map((l) => (
+                            <div key={l.id} className="flex items-center justify-between py-1 opacity-80">
+                              <span className="text-[0.8125rem]">
+                                <b className="font-[family-name:var(--font-display)] font-[700]">{l.qty}×</b>
+                                <span className="ml-2">{l.name}</span>
+                              </span>
+                              <span className="font-[family-name:var(--font-data)] text-[0.8125rem] tabular-nums">
+                                +{l.price * l.qty * (l.per_ticket ? totalQuantity : 1)} {currency}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-between bg-[var(--theme-bg)] px-6 py-5 text-[var(--theme-text)]">
+                          <div>
+                            <div className={monoLabel}>Total</div>
+                            <div className="font-[family-name:var(--font-display)] text-[1.75rem] font-[800] leading-none tracking-[-0.02em] tabular-nums">
+                              {totalPrice} <span className="text-[0.875rem] font-[700]">{currency}</span>
                             </div>
                           </div>
                           <Button
                             variant="solid"
                             size="lg"
-                            className="mt-4 w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
-                            style={{ backgroundColor: 'var(--brand-primary)' }}
+                            className="rounded-full font-[family-name:var(--font-body)] font-[700] text-white"
+                            style={{ backgroundColor: 'var(--brand-accent)' }}
                             onPress={handleBuy}
                           >
                             Continuă la Plată
-                            <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
+                            <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
                           </Button>
                         </div>
-                      )}
-                    </>
-                  )}
-                </>
+                      </div>
+                    )}
+
+                    {/* Promo code — only for GA events; seated events apply promos at checkout */}
+                    <div className={`flex items-center gap-1.5 rounded-full border ${hairline} bg-[var(--theme-surface)] p-1.5`}>
+                      <Icon icon="mdi:tag-outline" width={18} className="ml-2 shrink-0 text-[var(--theme-text-muted)]" />
+                      <input
+                        type="text"
+                        placeholder="Cod promoțional"
+                        className="h-9 min-w-0 flex-1 bg-transparent px-2 font-[family-name:var(--font-mono)] text-[0.8125rem] tracking-[0.03em] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] focus:outline-none"
+                      />
+                      <button className="h-9 shrink-0 rounded-full bg-[var(--brand-primary)] px-5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[700] text-[var(--theme-bg)] transition-opacity duration-200 hover:opacity-90">
+                        Aplică
+                      </button>
+                    </div>
+                  </>
+                )
               ) : (
                 <TicketAvailabilityNotice variant={availabilityNotice} />
               )}
-            </section>
 
-            {/* Add-ons ("Enhance Your Experience") */}
-            {addons.length > 0 && totalQuantity > 0 && (
-              <section className="mt-10">
-                <div className="mb-1 flex items-center gap-2">
-                  <Icon icon="mdi:auto-awesome" width={20} className="text-[var(--brand-accent)]" />
-                  <h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                    Îmbunătățește-ți Experiența
-                  </h2>
-                </div>
-                <p className="mb-3 text-[0.75rem] text-[var(--theme-text-muted)]">
-                  Preț per bilet · Aplicat la toate biletele din coș.
-                </p>
-                <div className="flex flex-col gap-3">
-                  {addons.map((addon) => (
-                    <AddonRow
-                      key={addon.id}
-                      addon={addon}
-                      quantity={addonQuantities[addon.id] ?? 0}
-                      onQuantityChange={handleAddonQuantityChange}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Promo code — only for GA events; seated events apply promos at checkout */}
-            {!isSeated && (
-              <div className="mt-10 flex items-center gap-2">
-                <Icon icon="mdi:tag-outline" width={18} className="shrink-0 text-[var(--theme-text-muted)]" />
-                <input
-                  type="text"
-                  placeholder="Cod promoțional"
-                  className="h-10 flex-1 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-3 text-[0.875rem] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] transition-colors duration-200 focus:border-[var(--brand-accent)] focus:outline-none"
-                />
-                <button className="h-10 shrink-0 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] px-4 font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)] transition-colors duration-200 hover:bg-[var(--theme-surface)]">
-                  Aplică
-                </button>
-              </div>
-            )}
-
-            {/* Trust indicators */}
-            <div className="mt-10 flex items-start justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-10">
-              <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
-                <Icon icon="mdi:shield-check-outline" width={24} className="text-[var(--theme-text-muted)]" />
-                <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Plată securizată</span>
-                <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">SSL 256-bit</span>
-              </div>
-              <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
-                <Icon icon="mdi:flash-outline" width={24} className="text-[var(--theme-text-muted)]" />
-                <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Bilet instant</span>
-                <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">Email & telefon</span>
-              </div>
-              <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
-                <Icon icon="mdi:check-decagram-outline" width={24} className="text-[var(--theme-text-muted)]" />
-                <span className="text-[0.8125rem] font-medium text-[var(--theme-text)]">Garanție 100%</span>
-                <span className="text-[0.6875rem] text-[var(--theme-text-muted)]">Rambursare ușoară</span>
+              {/* Trust indicators */}
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                {[
+                  { icon: 'mdi:shield-check-outline', title: 'Plată securizată', sub: 'SSL 256-bit' },
+                  { icon: 'mdi:flash-outline', title: 'Bilet instant', sub: 'Email & telefon' },
+                  { icon: 'mdi:check-decagram-outline', title: 'Garanție 100%', sub: 'Rambursare ușoară' },
+                ].map((it) => (
+                  <div
+                    key={it.title}
+                    className={`flex items-center gap-3 rounded-2xl border ${hairline} bg-[var(--theme-surface)] px-4 py-3`}
+                  >
+                    <Icon icon={it.icon} width={22} className="shrink-0 text-[var(--theme-text-muted)]" />
+                    <div className="min-w-0">
+                      <div className="font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)]">
+                        {it.title}
+                      </div>
+                      <div className="font-[family-name:var(--font-mono)] text-[0.625rem] tracking-[0.05em] text-[var(--theme-text-muted)]">
+                        {it.sub}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+          </SectionShell>
 
-            {/* Event-type-specific sections */}
-            {event.active_sections && event.page_content && (
-              <>
-                {event.active_sections.map((section) => {
-                  const pc = event.page_content!;
-                  switch (section) {
-                    case 'lineup':
-                      return pc.lineup?.length ? <LineupSection key={section} artists={pc.lineup} /> : null;
-                    case 'teams':
-                      return pc.teams?.length ? <TeamsSection key={section} teams={pc.teams} /> : null;
-                    case 'speakers':
-                      return pc.speakers?.length ? <SpeakersSection key={section} speakers={pc.speakers} /> : null;
-                    case 'sponsors':
-                      return pc.sponsors?.length ? <SponsorsSection key={section} sponsors={pc.sponsors} /> : null;
-                    case 'program':
-                      return pc.program?.length ? <ProgramSection key={section} items={pc.program} /> : null;
-                    case 'rules':
-                      return pc.rules?.length ? <RulesSection key={section} rules={pc.rules} /> : null;
-                    case 'faq':
-                      return pc.faq?.length ? <FaqSection key={section} items={pc.faq} /> : null;
-                    case 'video':
-                      return pc.video_url ? <VideoSection key={section} videoUrl={pc.video_url} aftermovieUrl={pc.aftermovie_url} /> : null;
-                    case 'travel':
-                      return pc.travel?.length ? <TravelSection key={section} recommendations={pc.travel} /> : null;
-                    case 'packing':
-                      return pc.packing?.length ? <PackingSection key={section} items={pc.packing} /> : null;
-                    case 'dress_code':
-                      return (pc.dress_code_type || pc.dress_code_recommended || pc.dress_code_forbidden)
-                        ? <DressCodeSection key={section} type={pc.dress_code_type} recommended={pc.dress_code_recommended} forbidden={pc.dress_code_forbidden} />
-                        : null;
-                    case 'camping_info':
-                      return (pc.camping_checkin || pc.camping_checkout || pc.camping_showers || pc.camping_electricity)
-                        ? <CampingInfoSection key={section} checkin={pc.camping_checkin} checkout={pc.camping_checkout} showers={pc.camping_showers} electricity={pc.camping_electricity} />
-                        : null;
-                    case 'special_message':
-                      return pc.special_message ? <SpecialMessageSection key={section} message={pc.special_message} /> : null;
-                    default:
-                      return null;
-                  }
-                })}
-              </>
-            )}
+          {/* Event-type-specific sections */}
+          {event.active_sections && event.page_content && (
+            <>
+              {event.active_sections.map((section) => {
+                const pc = event.page_content!;
+                switch (section) {
+                  case 'lineup':
+                    return pc.lineup?.length ? <LineupSection key={section} artists={pc.lineup} /> : null;
+                  case 'teams':
+                    return pc.teams?.length ? <TeamsSection key={section} teams={pc.teams} /> : null;
+                  case 'speakers':
+                    return pc.speakers?.length ? <SpeakersSection key={section} speakers={pc.speakers} /> : null;
+                  case 'sponsors':
+                    return pc.sponsors?.length ? <SponsorsSection key={section} sponsors={pc.sponsors} /> : null;
+                  case 'program':
+                    return pc.program?.length ? <ProgramSection key={section} items={pc.program} /> : null;
+                  case 'rules':
+                    return pc.rules?.length ? <RulesSection key={section} rules={pc.rules} /> : null;
+                  case 'faq':
+                    return pc.faq?.length ? <FaqSection key={section} items={pc.faq} /> : null;
+                  case 'video':
+                    return pc.video_url ? <VideoSection key={section} videoUrl={pc.video_url} aftermovieUrl={pc.aftermovie_url} /> : null;
+                  case 'travel':
+                    return pc.travel?.length ? <TravelSection key={section} recommendations={pc.travel} /> : null;
+                  case 'packing':
+                    return pc.packing?.length ? <PackingSection key={section} items={pc.packing} /> : null;
+                  case 'dress_code':
+                    return (pc.dress_code_type || pc.dress_code_recommended || pc.dress_code_forbidden)
+                      ? <DressCodeSection key={section} type={pc.dress_code_type} recommended={pc.dress_code_recommended} forbidden={pc.dress_code_forbidden} />
+                      : null;
+                  case 'camping_info':
+                    return (pc.camping_checkin || pc.camping_checkout || pc.camping_showers || pc.camping_electricity)
+                      ? <CampingInfoSection key={section} checkin={pc.camping_checkin} checkout={pc.camping_checkout} showers={pc.camping_showers} electricity={pc.camping_electricity} />
+                      : null;
+                  case 'special_message':
+                    return pc.special_message ? <SpecialMessageSection key={section} message={pc.special_message} /> : null;
+                  default:
+                    return null;
+                }
+              })}
+            </>
+          )}
 
-            {/* Venue */}
-            {event.venue_name && (
-              <section className="mt-10" id="info">
-                <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                  Locație
-                </h2>
-                <div className="flex items-start gap-3">
-                  <Icon icon="mdi:map-marker" className="mt-0.5 shrink-0 text-[var(--theme-text-muted)]" width={22} />
-                  <div>
-                    <p className="text-[0.875rem] font-medium text-[var(--theme-text)]">{event.venue_name}</p>
-                    {event.venue_address && (
-                      <p className="text-[0.75rem] text-[var(--theme-text-muted)]">{event.venue_address}</p>
-                    )}
-                  </div>
-                </div>
-                {event.google_place_id && (
-                  <div className="mt-3">
-                    <AddressMap googlePlaceId={event.google_place_id} />
-                  </div>
+          {/* Venue */}
+          {event.venue_name && (
+            <SectionShell id="info" label="Locație">
+              <div className="mb-4">
+                <p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">
+                  {event.venue_name}
+                </p>
+                {event.venue_address && (
+                  <p className="mt-0.5 text-[0.8125rem] text-[var(--theme-text-muted)]">{event.venue_address}</p>
                 )}
-              </section>
+              </div>
+              {event.google_place_id && <AddressMap googlePlaceId={event.google_place_id} height={320} />}
+            </SectionShell>
+          )}
+
+          {/* Organizer card */}
+          <Link
+            href="/"
+            className="flex items-center gap-5 rounded-[22px] bg-[var(--brand-primary)] p-6 text-[var(--theme-bg)] transition-opacity duration-200 hover:opacity-95"
+          >
+            {organizer.logo_url ? (
+              <Image
+                src={organizer.logo_url}
+                alt={organizer.name}
+                width={56}
+                height={56}
+                className="shrink-0 rounded-2xl object-cover"
+              />
+            ) : (
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--theme-bg)] font-[family-name:var(--font-display)] text-[1.5rem] font-[800] text-[var(--theme-text)]">
+                {organizer.name.charAt(0)}
+              </div>
             )}
-
-            {/* Organizer card */}
-            <section className="mb-10 mt-10">
-              <h2 className="mb-3 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] text-[var(--theme-text)]">
-                Organizator
-              </h2>
-              <Link
-                href="/"
-                className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] p-5 transition-colors duration-200 hover:bg-[var(--theme-surface)]"
-              >
-                {organizer.logo_url ? (
-                  <Image
-                    src={organizer.logo_url}
-                    alt={organizer.name}
-                    width={48}
-                    height={48}
-                    className="rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--theme-surface)] font-[family-name:var(--font-display)] text-[1.125rem] font-[800] text-[var(--theme-text-muted)]">
-                    {organizer.name.charAt(0)}
-                  </div>
-                )}
-                <div>
-                  <p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
-                    {organizer.name}
-                  </p>
-                  <p className="text-[0.75rem] text-[var(--theme-text-muted)]">Toate evenimentele</p>
-                </div>
-              </Link>
-            </section>
-          </div>
-
-          {/* Right column — sticky CTA card (desktop only) */}
-          <EventSidebar
-            priceFrom={priceFrom}
-            currency={currency}
-            event={event}
-            salesOpen={salesOpen}
-            totalQuantity={totalQuantity}
-            totalPrice={totalPrice}
-            onScrollToTickets={isSeated ? handleBuy : scrollToTickets}
-            onBuy={handleBuy}
-            ctaLabel={isSeated ? t('seating.select_seats') : undefined}
-          />
+            <div className="min-w-0 flex-1">
+              <div className="font-[family-name:var(--font-display)] text-[1.375rem] font-[700] tracking-[-0.01em]">
+                {organizer.name}
+              </div>
+              <div className="mt-1 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em] opacity-60">
+                Toate evenimentele
+              </div>
+            </div>
+            <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--theme-bg)_25%,transparent)] px-5 py-2.5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] sm:inline-flex">
+              Vezi toate <Icon icon="mdi:arrow-right" width={16} />
+            </span>
+          </Link>
         </div>
+
+        {/* Desktop floating CTA — seated events (persistent buy entry, no inline selector) */}
+        {isSeated && salesOpen && (
+          <div className="pointer-events-none sticky bottom-7 z-40 -mt-24 hidden justify-center md:flex">
+            <button
+              onClick={handleBuy}
+              className="pointer-events-auto flex items-center gap-4 rounded-full bg-[var(--brand-primary)] py-2 pl-6 pr-2 text-[var(--theme-bg)] shadow-[0_24px_60px_rgba(20,19,18,0.35)]"
+            >
+              <span className="text-left">
+                <span className="block font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] opacity-55">
+                  Bilete
+                </span>
+                <span className="block font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em]">
+                  {priceFrom > 0 ? `De la ${priceFrom} ${currency}` : 'Locuri'}
+                </span>
+              </span>
+              <span
+                className="flex items-center gap-2 rounded-full px-6 py-3 font-[family-name:var(--font-body)] text-[0.875rem] font-[700] text-white"
+                style={{ backgroundColor: 'var(--brand-accent)' }}
+              >
+                {t('seating.select_seats')}
+                <Icon icon="mdi:arrow-right" width={16} />
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* Mobile sticky buy bar */}
-        <div className="md:hidden">
-          <StickyBuyBar
-            cartItems={cartItems}
-            currency={currency}
-            onBuy={handleBuy}
-            ctaLabel={isSeated ? t('seating.select_seats') : undefined}
-            isSeated={isSeated}
-            salesOpen={salesOpen}
-          />
-        </div>
+        <StickyBuyBar
+          cartItems={cartItems}
+          currency={currency}
+          onBuy={handleBuy}
+          ctaLabel={isSeated ? t('seating.select_seats') : undefined}
+          isSeated={isSeated}
+          salesOpen={salesOpen}
+        />
 
         {/* Bottom padding for mobile sticky bar */}
-        {cartItems.length > 0 && <div className="h-24 md:hidden" />}
+        {(cartItems.length > 0 || (isSeated && salesOpen)) && <div className="h-24 md:hidden" />}
       </Layout>
     </>
   );

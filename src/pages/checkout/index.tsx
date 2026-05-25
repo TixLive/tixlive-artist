@@ -222,39 +222,43 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
     : t('checkout.proceed_to_payment');
 
   return (
-    <Layout organizer={organizer}>
+    <Layout organizer={organizer} currentStep={2}>
       <Head>
         <title>{`Checkout - ${event.title}`}</title>
       </Head>
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto max-w-[1240px] px-4 py-8 sm:px-6 md:py-12">
         {/* Back link */}
         <Button
           variant="light"
           onPress={() => router.back()}
-          className="mb-8 inline-flex items-center gap-1 text-[0.875rem] text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
+          className="mb-5 inline-flex items-center gap-2 px-0 font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
         >
           <Icon icon="mdi:arrow-left" width={18} />
           {t('checkout.back')}
         </Button>
 
-        {/* Welcome banner for authed visitors */}
-        {isAuthed && me && (
-          <div className="mb-6 flex items-center gap-2">
-            <Icon icon="mdi:check-circle" width={20} className="text-[var(--brand-accent)]" />
-            <h2 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] text-[var(--theme-text)]">
+        {/* Heading */}
+        <div className="mb-8">
+          {isAuthed && me ? (
+            <h1 className="flex items-center gap-2.5 font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
+              <Icon icon="mdi:check-circle" width={26} className="text-[var(--brand-accent)]" />
               {t('checkout.welcome_back', { name: me.first_name || me.email })}
-            </h2>
-          </div>
-        )}
+            </h1>
+          ) : (
+            <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
+              {t('checkout.your_details')}
+            </h1>
+          )}
+        </div>
 
         {/* Two-column layout: form left, summary right */}
-        <div className="md:flex md:gap-10">
+        <div className="grid gap-6 md:grid-cols-[1fr_380px] md:items-start">
           {/* Left column — form */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             <FormProvider {...methods}>
               <form onSubmit={isAuthed ? (e) => { e.preventDefault(); onAuthedSubmit(); } : handleSubmit(onSubmit)} noValidate>
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {/* Mobile order summary (above form) */}
                   <div className="md:hidden">
                     <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} seatLabels={seatLabels} />
@@ -271,11 +275,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
                       )}
                     </section>
                   ) : (
-                    <section className="space-y-4">
-                      <h3 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] text-[var(--theme-text)]">
-                        {t('checkout.your_details')}
-                      </h3>
-
+                    <section className="space-y-4 rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5 shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] sm:p-6">
                       {meError && (
                         <div className="rounded-xl bg-[color-mix(in_srgb,var(--theme-text)_5%,transparent)] p-3 text-[0.8125rem] text-[var(--theme-text-muted)]">
                           {t('checkout.me_error_fallback')}
@@ -321,7 +321,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
                   )}
 
                   {/* Promo code */}
-                  <section>
+                  <section className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4">
                     <PromoCodeInput
                       eventId={event.id}
                       onApply={(d, code) => {
@@ -353,13 +353,13 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
 
                   {/* Error */}
                   {submitError && (
-                    <div className="rounded-2xl bg-[#DC2626]/8 p-4 text-center text-[0.875rem] text-[#DC2626]">
+                    <div className="rounded-[22px] bg-[#DC2626]/8 p-4 text-center text-[0.875rem] text-[#DC2626]">
                       {submitError}
                       {seatConflict && (
                         <Button
-                          variant="ghost"
+                          variant="bordered"
                           onPress={goPickSeats}
-                          className="mt-3 w-full rounded-xl font-[family-name:var(--font-display)] font-[700]"
+                          className="mt-3 w-full rounded-full font-[family-name:var(--font-body)] font-[700]"
                         >
                           {t('checkout.choose_different_seats')}
                         </Button>
@@ -369,16 +369,32 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
 
                   {/* Profile incomplete banner */}
                   {profileIncomplete && (
-                    <div className="rounded-2xl bg-[color-mix(in_srgb,var(--brand-accent)_8%,transparent)] p-4 text-center text-[0.875rem] text-[var(--theme-text)]">
+                    <div className="rounded-[22px] bg-[color-mix(in_srgb,var(--brand-accent)_8%,transparent)] p-4 text-center text-[0.875rem] text-[var(--theme-text)]">
                       {t('checkout.profile_incomplete')}
                     </div>
                   )}
 
+                  {/* Price breakdown — mobile only (desktop shows it in the sticky aside) */}
+                  <div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5 md:hidden">
+                    <PriceBreakdown
+                      items={cart}
+                      addonItems={addonCart}
+                      totalTicketQty={cart.reduce((s, i) => s + i.quantity, 0)}
+                      discount={discount}
+                      currency={cart[0]?.currency ?? 'USD'}
+                      platformFeePayer={event.platform_fee_payer}
+                      providerFeePayer={event.provider_fee_payer}
+                      platformFeePercent={event.platform_fee_percent}
+                      platformFeeFixed={event.platform_fee_fixed}
+                      providerFeePercent={selectedMethod?.fee_percent ?? 0}
+                    />
+                  </div>
+
                   {/* Submit CTA */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 pt-1">
                     <Button
                       type="submit"
-                      className="w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
+                      className="w-full rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
                       style={{ backgroundColor: 'var(--brand-primary)' }}
                       size="lg"
                       isLoading={submitting}
@@ -398,11 +414,11 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
           </div>
 
           {/* Right column — sticky order summary (desktop only) */}
-          <aside className="hidden w-[360px] flex-shrink-0 md:block">
-            <div className="sticky top-24">
+          <aside className="hidden flex-shrink-0 md:block">
+            <div className="sticky top-24 space-y-3">
               <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} seatLabels={seatLabels} />
 
-              <div className="mt-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
+              <div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5 shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
                 <PriceBreakdown
                   items={cart}
                   addonItems={addonCart}

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import type { ISponsor } from '@/types';
+import SectionShell from '@/components/event/sections/SectionShell';
 
 interface SponsorsSectionProps {
 	sponsors: ISponsor[];
@@ -28,22 +29,19 @@ export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 	});
 
 	return (
-		<section className="mt-10">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
-				Sponsors
-			</h2>
-			<div className="space-y-5">
+		<SectionShell label="Sponsors">
+			<div className="space-y-7">
 				{sortedCategories.map((category) => (
 					<div key={category}>
-						<p className="mb-2 text-[0.6875rem] font-medium uppercase tracking-wider text-[var(--theme-text-muted)]">
+						<p className="mb-3 text-center font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
 							{category}
 						</p>
-						<div className="flex flex-wrap gap-3">
+						<div className="flex flex-wrap justify-center gap-3">
 							{grouped[category].map((sponsor) => {
 								const content = (
 									<div
 										key={sponsor.id}
-										className="flex h-16 items-center justify-center rounded-lg border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-5 transition-colors hover:border-[color-mix(in_srgb,var(--theme-text)_20%,transparent)]"
+										className="flex h-16 items-center justify-center rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-6 transition-colors hover:border-[color-mix(in_srgb,var(--theme-text)_18%,transparent)]"
 									>
 										{sponsor.logo_url ? (
 											<Image
@@ -54,7 +52,7 @@ export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 												className="max-h-10 w-auto object-contain"
 											/>
 										) : (
-											<span className="font-[family-name:var(--font-display)] text-[0.8125rem] font-medium text-[var(--theme-text)]">
+											<span className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--theme-text)]">
 												{sponsor.name}
 											</span>
 										)}
@@ -68,6 +66,7 @@ export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 											href={sponsor.website_url}
 											target="_blank"
 											rel="noopener noreferrer"
+											className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
 										>
 											{content}
 										</a>
@@ -79,6 +78,6 @@ export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 					</div>
 				))}
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

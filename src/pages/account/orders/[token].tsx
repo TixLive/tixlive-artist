@@ -39,9 +39,9 @@ export default function OrderDetailPage({
 		>
 			<Link
 				href="/account/orders"
-				className="mb-6 inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
+				className="mb-6 inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-2 pl-2.5 pr-4 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
 			>
-				<Icon icon="mdi:arrow-left" width={16} />
+				<Icon icon="mdi:arrow-left" width={14} />
 				{t('order_detail.back_to_orders')}
 			</Link>
 

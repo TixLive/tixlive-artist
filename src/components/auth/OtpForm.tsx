@@ -110,17 +110,17 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 				type="button"
 				onClick={onBack}
 				disabled={loading}
-				className="inline-flex items-center gap-1.5 self-start text-[0.8125rem] font-medium text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)] disabled:opacity-60"
+				className="inline-flex items-center gap-1.5 self-start font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] disabled:opacity-60"
 			>
 				<Icon icon="mdi:arrow-left" width={16} />
 				{t('auth.back')}
 			</button>
 
 			<div className="w-full text-center">
-				<p className="text-[0.875rem] text-[var(--theme-text-muted)]">
+				<div className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
 					{t('auth.please_enter_code')}
-				</p>
-				<p className="mt-1 font-[family-name:var(--font-data)] text-[0.875rem] font-medium text-[var(--theme-text)]">
+				</div>
+				<p className="mt-1.5 font-[family-name:var(--font-data)] text-[0.9375rem] font-[600] text-[var(--theme-text)]">
 					{email}
 				</p>
 			</div>
@@ -135,14 +135,16 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 			/>
 
 			{error && (
-				<p className="text-[0.8125rem] text-[#DC2626]">{t('auth.otp_invalid')}</p>
+				<p className="font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.05em] text-[#DC2626]">
+					{t('auth.otp_invalid')}
+				</p>
 			)}
 
 			<div className="flex w-full items-center justify-between gap-3">
 				<Button
 					variant="bordered"
 					size="sm"
-					className="rounded-xl border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-medium"
+					className="rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
 					startContent={<Icon icon="mdi:content-paste" width={16} />}
 					onPress={handlePaste}
 					isDisabled={loading}
@@ -153,7 +155,7 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 				<Button
 					variant="light"
 					size="sm"
-					className="font-medium text-[var(--brand-accent)]"
+					className="rounded-full font-[family-name:var(--font-body)] font-[600] text-[var(--brand-accent)]"
 					onPress={handleResend}
 					isDisabled={resendTime > 0 || loading || resending}
 					isLoading={resending}

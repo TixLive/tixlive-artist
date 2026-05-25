@@ -51,6 +51,26 @@ body {
 	animation: urgency-pulse 1.5s ease-in-out infinite;
 }
 
+/* V2 event page — soft entrance + live-status pulses */
+@keyframes v2-fade-in {
+	from { opacity: 0; transform: translateY(4px); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes v2-pulse-dot {
+	0% { box-shadow: 0 0 0 0 color-mix(in srgb, #16A34A 55%, transparent); }
+	70% { box-shadow: 0 0 0 6px transparent; }
+	100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.animate-v2-fade-in {
+	animation: v2-fade-in 0.18s ease-out;
+}
+
+.animate-v2-pulse-dot {
+	animation: v2-pulse-dot 1.6s ease-out infinite;
+}
+
 /* Reduced motion: disable all animations */
 @media (prefers-reduced-motion: reduce) {
 	.animate-urgency-pulse {

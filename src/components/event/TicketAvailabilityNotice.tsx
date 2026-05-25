@@ -39,12 +39,12 @@ export default function TicketAvailabilityNotice({ variant }: TicketAvailability
   const { icon, title, subtitle, color } = VARIANTS[variant];
 
   return (
-    <div className="mt-3 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-8 text-center">
-      <Icon icon={icon} className="mx-auto mb-2" width={32} style={{ color }} />
-      <p className="font-[family-name:var(--font-display)] text-[1rem] font-[700]" style={{ color }}>
+    <div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-10 text-center">
+      <Icon icon={icon} className="mx-auto mb-2.5" width={34} style={{ color }} />
+      <p className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em]" style={{ color }}>
         {title}
       </p>
-      <p className="mt-1 text-[0.8125rem] text-[var(--theme-text-muted)]">{subtitle}</p>
+      <p className="mt-1.5 text-[0.875rem] text-[var(--theme-text-muted)]">{subtitle}</p>
     </div>
   );
 }

@@ -18,27 +18,23 @@ export default function StickyBuyBar({ cartItems, currency, onBuy, ctaLabel, isS
   if (totalQuantity === 0 && !(isSeated && salesOpen)) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/95 px-4 py-3 shadow-[0_-4px_20px_rgba(20,19,18,0.06)] backdrop-blur-xl md:hidden"
+    <div
+      className="fixed inset-x-0 bottom-0 z-50 bg-[var(--brand-primary)] px-4 py-3 text-[var(--theme-bg)] shadow-[0_-4px_24px_rgba(20,19,18,0.18)] md:hidden"
       style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
     >
       <div className="flex items-center justify-between gap-3">
-        {totalQuantity > 0 ? (
-          <div>
-            <p className="text-[0.75rem] text-[var(--theme-text-muted)]">
-              {totalQuantity} {totalQuantity === 1 ? 'ticket' : 'tickets'}
-            </p>
-            <p className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums text-[var(--theme-text)]">
-              {totalPrice} {currency}
-            </p>
-          </div>
-        ) : (
-          <div />
-        )}
+        <div className="min-w-0">
+          <p className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] opacity-65">
+            {totalQuantity > 0 ? `${totalQuantity} ${totalQuantity === 1 ? 'ticket' : 'tickets'}` : 'Tickets'}
+          </p>
+          <p className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] tabular-nums">
+            {totalQuantity > 0 ? `${totalPrice} ${currency}` : 'Bilete'}
+          </p>
+        </div>
         <Button
           variant="solid"
           size="lg"
-          className="rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
-          style={{ backgroundColor: 'var(--brand-primary)' }}
+          className="shrink-0 rounded-full bg-[var(--brand-accent)] font-[family-name:var(--font-body)] font-[700] text-white"
           onPress={onBuy}
         >
           {ctaLabel ?? 'Checkout'}

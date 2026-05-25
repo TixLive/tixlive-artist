@@ -888,12 +888,12 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	}, [canvasW, canvasH, startAnimation]);
 
 	const zoomBtn =
-		'flex h-11 w-11 items-center justify-center rounded-[10px] border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-bg)]/90 text-[1.25rem] leading-none text-[var(--theme-text)] backdrop-blur transition-colors hover:bg-[var(--theme-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]';
+		'flex h-11 w-11 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/90 text-[1.25rem] leading-none text-[var(--theme-text)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] backdrop-blur transition-colors hover:bg-[var(--theme-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]';
 
 	return (
 		<div
 			ref={containerRef}
-			className="relative h-full w-full select-none overflow-hidden rounded-[20px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)]"
+			className="relative h-full w-full select-none overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]"
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={endPan}
@@ -919,14 +919,14 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 				width={MINIMAP_W}
 				height={MINIMAP_H}
 				aria-hidden="true"
-				className="pointer-events-none absolute hidden rounded-[10px] sm:block"
+				className="pointer-events-none absolute hidden rounded-xl sm:block"
 				style={{ bottom: MINIMAP_PAD, right: MINIMAP_PAD, opacity: 0.95 }}
 			/>
 
 			{/* Tooltip */}
 			{tooltip && (
 				<div
-					className="pointer-events-none absolute z-20 whitespace-nowrap rounded-[10px] border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-bg)]/95 px-3 py-1.5 shadow-[0_2px_12px_rgba(20,19,18,0.1)] backdrop-blur"
+					className="pointer-events-none absolute z-20 whitespace-nowrap rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/95 px-3 py-1.5 shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] backdrop-blur"
 					style={{ left: tooltip.x, top: tooltip.y }}
 				>
 					<div className="font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)]">
@@ -960,7 +960,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			</div>
 
 			{/* Zoom % */}
-			<div className="absolute left-3 top-3 z-10 font-[family-name:var(--font-data)] text-[0.6875rem] tabular-nums text-[var(--theme-text-muted)]">
+			<div className="absolute left-3 top-3 z-10 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/90 px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] tabular-nums tracking-[0.05em] text-[var(--theme-text-muted)] backdrop-blur">
 				{Math.round(displayScale * 100)}%
 			</div>
 		</div>

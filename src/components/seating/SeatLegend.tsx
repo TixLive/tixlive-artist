@@ -13,33 +13,37 @@ interface SeatLegendProps {
 }
 
 /**
- * Category legend: a color/price KEY for the hall. One row per tier (dot + name +
- * price). A small brand-accent "selected" badge appears ONLY on tiers the buyer has
- * picked from (count > 0) — 0-selected tiers stay a clean key, so picked categories
- * pop and the row isn't a cluttered scoreboard. Per-seat detail lives in YOUR SEATS.
+ * Category legend: a color/price KEY for the hall, rendered as color-dot pills. One
+ * pill per tier (dot + name + price). A small brand-accent "selected" badge appears
+ * ONLY on tiers the buyer has picked from (count > 0) — 0-selected tiers stay a clean
+ * key, so picked categories pop and the row isn't a cluttered scoreboard. Per-seat
+ * detail lives in YOUR SEATS.
  */
 export default function SeatLegend({ tiers, counts, colorByTierId, currency }: SeatLegendProps) {
 	const { t } = useTranslation('common');
 
 	return (
 		<div>
-			<h3 className="mb-3 font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] uppercase tracking-[0.06em] text-[var(--theme-text-muted)]">
+			<h3 className="mb-3 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
 				{t('seating.categories')}
 			</h3>
-			<ul className="space-y-2.5">
+			<ul className="flex flex-wrap gap-2">
 				{tiers.map((tier, i) => {
 					const selected = counts.get(tier.ticket_package_id) ?? 0;
 					return (
-						<li key={tier.ticket_package_id} className="flex items-center gap-3">
+						<li
+							key={tier.ticket_package_id}
+							className="inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-1.5 pl-2.5 pr-3"
+						>
 							<span
-								className="h-3.5 w-3.5 shrink-0 rounded-full"
+								className="h-2.5 w-2.5 shrink-0 rounded-full"
 								style={{ backgroundColor: colorByTierId.get(tier.ticket_package_id) ?? tierColor(tier, i) }}
 								aria-hidden="true"
 							/>
-							<div className="min-w-0 flex-1">
-								<p className="truncate text-[0.875rem] font-medium text-[var(--theme-text)]">{tier.name}</p>
-							</div>
-							<span className="shrink-0 font-[family-name:var(--font-data)] text-[0.8125rem] tabular-nums text-[var(--theme-text-muted)]">
+							<span className="font-[family-name:var(--font-body)] text-[0.75rem] font-[600] text-[var(--theme-text)]">
+								{tier.name}
+							</span>
+							<span className="font-[family-name:var(--font-mono)] text-[0.6875rem] tracking-[0.03em] text-[var(--theme-text-muted)]">
 								{tier.price} {currency}
 							</span>
 							{selected > 0 && (

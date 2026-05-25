@@ -30,33 +30,30 @@ export default function KeyFactsStrip({ event }: KeyFactsStripProps) {
   const recentSales = seededValue(event.id + 23, 12, 48);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.8125rem]">
-        {/* Live viewers */}
-        {showViewers && (
-          <div className="flex items-center gap-1.5">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#16A34A] opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
-            </span>
-            <span className="font-medium text-[var(--theme-text)]">
-              {viewers} people viewing now
-            </span>
-          </div>
-        )}
+    <div className="inline-flex flex-wrap items-center gap-x-4 gap-y-2 self-start rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-4 py-2.5 text-[0.8125rem] text-[var(--theme-text-muted)]">
+      {/* Live viewers */}
+      {showViewers && (
+        <span className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#16A34A] animate-v2-pulse-dot" />
+          <span>
+            <b className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">{viewers}</b> people viewing now
+          </span>
+        </span>
+      )}
 
-        {showViewers && showRecentSales && (
-          <span className="text-[var(--theme-text-muted)]">·</span>
-        )}
+      {showViewers && showRecentSales && (
+        <span className="h-4 w-px bg-[color-mix(in_srgb,var(--theme-text)_12%,transparent)]" />
+      )}
 
-        {/* Recent sales */}
-        {showRecentSales && (
-          <div className="flex items-center gap-1.5 text-[var(--theme-text-muted)]">
-            <Icon icon="mdi:fire" width={15} className="text-[#D97706]" />
-            <span>{recentSales} tickets sold recently</span>
-          </div>
-        )}
-      </div>
+      {/* Recent sales */}
+      {showRecentSales && (
+        <span className="flex items-center gap-1.5">
+          <Icon icon="mdi:fire" width={15} className="text-[#D97706]" />
+          <span>
+            <b className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">{recentSales}</b> tickets sold recently
+          </span>
+        </span>
+      )}
     </div>
   );
 }

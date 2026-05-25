@@ -90,7 +90,7 @@ export default function Home({
         <HeroCarousel events={events} />
         <OrganizerIdentityBar organizer={organizer} eventCount={total} />
         <CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
-        <section className="py-6">
+        <section className="py-10 md:py-12">
           <EventGrid
             events={filteredEvents}
             total={filteredTotal}

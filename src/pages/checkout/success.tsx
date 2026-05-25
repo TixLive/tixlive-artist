@@ -106,7 +106,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
   };
 
   return (
-    <Layout organizer={organizer}>
+    <Layout organizer={organizer} currentStep={3}>
       <Head>
         <title>Payment Successful!</title>
       </Head>
@@ -117,52 +117,58 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
           <div className="animate-checkmark mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#16A34A]/10">
             <Icon icon="mdi:check-bold" width={40} className="text-[#16A34A]" />
           </div>
-          <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[900] tracking-tight text-[var(--theme-text)] sm:text-[2.25rem]">
+          <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2.25rem]">
             Payment successful!
           </h1>
-          <p className="mt-2 text-[0.9375rem] text-[var(--theme-text-muted)]">
+          <p className="mt-3 text-[0.9375rem] text-[var(--theme-text-muted)]">
             Your tickets are confirmed. Check your email for details.
           </p>
         </div>
 
         {/* 2. Order details */}
         {loading ? (
-          <div className="space-y-4 rounded-2xl bg-[var(--theme-surface)] p-6">
+          <div className="space-y-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6">
             <Skeleton className="h-6 w-3/4 rounded-lg" />
             <Skeleton className="h-4 w-1/2 rounded-lg" />
             <Skeleton className="h-4 w-2/3 rounded-lg" />
           </div>
         ) : notFound ? (
-          <div className="rounded-2xl bg-[var(--theme-surface)] p-6 text-center">
+          <div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6 text-center">
             <p className="text-[0.875rem] text-[var(--theme-text-muted)]">Order not found</p>
             <Link
               href="/"
-              className="mt-2 inline-block text-[0.875rem] font-medium text-[var(--brand-accent)] underline underline-offset-2"
+              className="mt-2 inline-block font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--brand-accent)] underline underline-offset-2"
             >
               Contact the organizer
             </Link>
           </div>
         ) : order ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Order summary */}
-            <div className="rounded-2xl bg-[var(--theme-surface)] p-6">
-              <h2 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] text-[var(--theme-text)]">{order.event_title}</h2>
-              {order.session_date && (
-                <p className="mt-1 font-[family-name:var(--font-data)] text-[0.875rem] text-[var(--theme-text-muted)]">
-                  {new Date(order.session_date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </p>
-              )}
+            <div className="overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
+              <div className="px-6 py-5">
+                <div className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
+                  {order.id}
+                </div>
+                <h2 className="mt-1.5 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">{order.event_title}</h2>
+                {order.session_date && (
+                  <p className="mt-1 font-[family-name:var(--font-data)] text-[0.875rem] tabular-nums text-[var(--theme-text-muted)]">
+                    {new Date(order.session_date).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+                )}
+              </div>
               {order.items && order.items.length > 0 && (
-                <div className="mt-3 space-y-1">
+                <div className="border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] px-6 py-4">
                   {order.items.map((item, i) => (
-                    <p key={i} className="text-[0.875rem] text-[var(--theme-text-muted)]">
-                      {item.quantity}x {item.name}
-                    </p>
+                    <div key={i} className="flex items-baseline justify-between gap-3 py-1 text-[0.875rem] text-[var(--theme-text)]">
+                      <span>{item.name}</span>
+                      <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">×{item.quantity}</span>
+                    </div>
                   ))}
                 </div>
               )}
@@ -170,9 +176,9 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
 
             {/* 3. Download tickets */}
             {order.pdf_url && (
-              <a href={order.pdf_url} target="_blank" rel="noopener noreferrer">
+              <a href={order.pdf_url} target="_blank" rel="noopener noreferrer" className="block">
                 <Button
-                  className="w-full rounded-xl font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
+                  className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]"
                   style={{ backgroundColor: 'var(--brand-primary)' }}
                   size="lg"
                 >
@@ -183,8 +189,8 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
             )}
 
             {/* 4. Save tickets section */}
-            <div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] p-6">
-              <h3 className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">
+            <div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6">
+              <h3 className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
                 Save tickets to your account
               </h3>
               <p className="mt-1 text-[0.875rem] text-[var(--theme-text-muted)]">
@@ -211,8 +217,9 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
                     size="sm"
                   />
                   <Button
-                    variant="flat"
-                    className="shrink-0 rounded-xl font-[family-name:var(--font-display)] font-[700]"
+                    variant="solid"
+                    className="shrink-0 rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
+                    style={{ backgroundColor: 'var(--brand-primary)' }}
                     onPress={handleSendMagicLink}
                     isLoading={sendingLink}
                     isDisabled={!magicEmail.trim()}
@@ -237,10 +244,10 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
             </div>
 
             {/* 5. Share */}
-            <div className="flex justify-center">
+            <div className="flex justify-center pt-2">
               <Button
                 variant="bordered"
-                className="rounded-xl border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]"
+                className="rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
                 onPress={handleShare}
               >
                 Share this event

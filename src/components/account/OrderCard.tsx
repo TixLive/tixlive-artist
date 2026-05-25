@@ -31,23 +31,25 @@ export default function OrderCard({ order, locale = 'en' }: OrderCardProps) {
 
 	return (
 		<Link href={`/account/orders/${order.id}`} className="group block">
-			<article className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4 transition-all duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] hover:shadow-[0_4px_12px_rgba(20,19,18,0.06)]">
+			<article className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4 transition-all duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_18%,transparent)] hover:shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
 				<div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--theme-text)_6%,transparent)]">
 					<Icon icon="mdi:receipt-text-outline" width={24} className="text-[var(--theme-text-muted)]" />
 				</div>
 
 				<div className="min-w-0 flex-1">
-					<h3 className="truncate font-[family-name:var(--font-display)] text-[1rem] font-[700] text-[var(--theme-text)]">
+					{formattedDate && (
+						<div className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
+							{formattedDate}
+						</div>
+					)}
+					<h3 className="mt-1 truncate font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
 						{order.event_title}
 					</h3>
-					<p className="mt-0.5 font-[family-name:var(--font-data)] text-[0.8125rem] text-[var(--theme-text-muted)]">
-						{formattedDate}
-					</p>
 					<div className="mt-1.5 flex items-center gap-2 text-[0.75rem] text-[var(--theme-text-muted)]">
 						<span className="font-[family-name:var(--font-data)] tabular-nums">
 							{t('orders.items_count', { count: itemsCount })}
 						</span>
-						<span>·</span>
+						<span className="opacity-50">·</span>
 						<span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text)]">
 							{order.total} {order.currency}
 						</span>
@@ -56,7 +58,7 @@ export default function OrderCard({ order, locale = 'en' }: OrderCardProps) {
 
 				<div className="flex shrink-0 flex-col items-end gap-2">
 					<span
-						className="rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold"
+						className="rounded-full px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] font-[600] uppercase tracking-[0.1em]"
 						style={{ backgroundColor: statusColor.bg, color: statusColor.fg }}
 					>
 						{t(`orders.status_${status}`)}
@@ -64,7 +66,7 @@ export default function OrderCard({ order, locale = 'en' }: OrderCardProps) {
 					<Icon
 						icon="mdi:chevron-right"
 						width={18}
-						className="text-[var(--theme-text-muted)] transition-colors duration-200 group-hover:text-[var(--theme-text)]"
+						className="text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)] transition-colors duration-200 group-hover:text-[var(--theme-text)]"
 					/>
 				</div>
 			</article>

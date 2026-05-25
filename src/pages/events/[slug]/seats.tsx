@@ -12,8 +12,11 @@ interface SeatsPageProps {
 	organizer: IOrganizer;
 	slug: string;
 	eventTitle: string;
+	venueName: string;
+	venueAddress: string;
 	sessionId: number;
 	sessionDate: string;
+	sessionStart: string;
 	maxPerCategory: number;
 	/** Event-page quantities — only used to SEED the auto-pick. May be empty. */
 	seedCart: Array<{ ticket_package_id: number; quantity: number }>;
@@ -28,8 +31,11 @@ export default function SeatsPage({
 	organizer,
 	slug,
 	eventTitle,
+	venueName,
+	venueAddress,
 	sessionId,
 	sessionDate,
+	sessionStart,
 	maxPerCategory,
 	seedCart,
 	addonCart,
@@ -39,7 +45,7 @@ export default function SeatsPage({
 	currency,
 }: SeatsPageProps) {
 	return (
-		<Layout organizer={organizer}>
+		<Layout organizer={organizer} currentStep={1}>
 			<Head>
 				<title>{`Select seats — ${eventTitle}`}</title>
 				<meta name="robots" content="noindex" />
@@ -48,7 +54,10 @@ export default function SeatsPage({
 				slug={slug}
 				sessionId={sessionId}
 				sessionDate={sessionDate}
+				sessionStart={sessionStart}
 				eventTitle={eventTitle}
+				venueName={venueName}
+				venueAddress={venueAddress}
 				maxPerCategory={maxPerCategory}
 				seedCart={seedCart}
 				addonCart={addonCart}
@@ -157,8 +166,11 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 				organizer,
 				slug,
 				eventTitle: event.title,
+				venueName: event.venue_name ?? '',
+				venueAddress: event.venue_address ?? '',
 				sessionId,
 				sessionDate: session?.label ?? '',
+				sessionStart: session?.date ?? event.date_start ?? '',
 				maxPerCategory,
 				seedCart,
 				addonCart,

@@ -36,8 +36,8 @@ export default function OrdersPage({
 			active="orders"
 			title={t('account.orders')}
 		>
-			<div className="mb-6">
-				<h1 className="font-[family-name:var(--font-display)] text-[1.5rem] font-[800] tracking-tight text-[var(--theme-text)]">
+			<div className="mb-8">
+				<h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
 					{t('account.orders')}
 				</h1>
 			</div>

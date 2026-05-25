@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import SectionShell from '@/components/event/sections/SectionShell';
 
 interface DressCodeSectionProps {
 	type?: string;
@@ -10,27 +11,26 @@ export default function DressCodeSection({ type, recommended, forbidden }: Dress
 	if (!type && !recommended && !forbidden) return null;
 
 	return (
-		<section className="mt-10">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
-				Dress Code
-			</h2>
-			<div className="rounded-2xl bg-[var(--theme-surface)] p-4">
+		<SectionShell label="Dress Code">
+			<div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5 sm:p-6">
 				{type && (
-					<div className="mb-3 flex items-center gap-2">
-						<Icon icon="mdi:hanger" width={20} className="text-[var(--brand-accent)]" />
-						<span className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
+					<div className="mb-5 flex items-center gap-3">
+						<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--brand-accent)_6%,transparent)]">
+							<Icon icon="mdi:hanger" width={20} className="text-[var(--brand-accent)]" />
+						</span>
+						<span className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
 							{type}
 						</span>
 					</div>
 				)}
 
 				{recommended && (
-					<div className="mb-3">
-						<p className="mb-1 flex items-center gap-1.5 text-[0.75rem] font-medium uppercase tracking-wider text-emerald-600">
+					<div className="mb-4">
+						<p className="mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[#16A34A]">
 							<Icon icon="mdi:check" width={14} />
 							Recommended
 						</p>
-						<p className="text-[0.8125rem] leading-relaxed text-[var(--theme-text-muted)]">
+						<p className="text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
 							{recommended}
 						</p>
 					</div>
@@ -38,16 +38,16 @@ export default function DressCodeSection({ type, recommended, forbidden }: Dress
 
 				{forbidden && (
 					<div>
-						<p className="mb-1 flex items-center gap-1.5 text-[0.75rem] font-medium uppercase tracking-wider text-red-500">
+						<p className="mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[#DC2626]">
 							<Icon icon="mdi:close" width={14} />
 							Not Allowed
 						</p>
-						<p className="text-[0.8125rem] leading-relaxed text-[var(--theme-text-muted)]">
+						<p className="text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
 							{forbidden}
 						</p>
 					</div>
 				)}
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

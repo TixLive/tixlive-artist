@@ -1,3 +1,4 @@
+import SectionShell from '@/components/event/sections/SectionShell';
 import type { IAgendaItem } from '@/types';
 
 interface ProgramSectionProps {
@@ -8,35 +9,33 @@ export default function ProgramSection({ items }: ProgramSectionProps) {
 	if (!items.length) return null;
 
 	return (
-		<section className="mt-10">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
-				Program
-			</h2>
-			<div className="relative space-y-0">
+		<SectionShell label="Program">
+			<div className="overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
 				{items.map((item, idx) => (
-					<div key={item.id} className="relative flex gap-4 pb-4 last:pb-0">
-						{/* Timeline line */}
-						<div className="flex w-14 shrink-0 flex-col items-center">
+					<div
+						key={item.id}
+						className={`flex gap-4 p-4 sm:gap-5 sm:p-5 ${
+							idx < items.length - 1
+								? 'border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)]'
+								: ''
+						}`}
+					>
+						{/* Time */}
+						<div className="w-16 shrink-0">
 							{item.start_time && (
 								<span className="font-[family-name:var(--font-data)] text-[0.8125rem] font-medium tabular-nums text-[var(--brand-accent)]">
 									{item.start_time}
 								</span>
 							)}
-							{/* Dot */}
-							<div className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--brand-accent)]" />
-							{/* Connecting line */}
-							{idx < items.length - 1 && (
-								<div className="w-px flex-1 bg-[color-mix(in_srgb,var(--brand-accent)_25%,transparent)]" />
-							)}
 						</div>
 
 						{/* Content */}
-						<div className="min-w-0 flex-1 pb-2">
-							<p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">
+						<div className="min-w-0 flex-1">
+							<p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
 								{item.title}
 							</p>
 							{item.description && (
-								<p className="mt-1 text-[0.8125rem] leading-relaxed text-[var(--theme-text-muted)]">
+								<p className="mt-1.5 text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
 									{item.description}
 								</p>
 							)}
@@ -44,6 +43,6 @@ export default function ProgramSection({ items }: ProgramSectionProps) {
 					</div>
 				))}
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

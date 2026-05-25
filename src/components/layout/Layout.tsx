@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import AppHeader from '@/components/layout/AppHeader';
 import AppFooter from '@/components/layout/AppFooter';
+import BuyFlowSteps from '@/components/layout/BuyFlowSteps';
 import type { IOrganizer } from '@/types';
 
 interface LayoutProps {
@@ -14,6 +15,8 @@ interface LayoutProps {
 	cartTotal?: number;
 	currency?: string;
 	onCartClick?: () => void;
+	/** When set, renders the buy-flow step bar (1 seats · 2 checkout · 3 ticket). */
+	currentStep?: 1 | 2 | 3;
 }
 
 export default function Layout({
@@ -27,6 +30,7 @@ export default function Layout({
 	cartTotal,
 	currency,
 	onCartClick,
+	currentStep,
 }: LayoutProps) {
 	const name = organizerName ?? organizer?.name ?? '';
 	const logo = logoUrl ?? organizer?.logo_url;
@@ -44,6 +48,7 @@ export default function Layout({
 				currency={currency}
 				onCartClick={onCartClick}
 			/>
+			{currentStep && <BuyFlowSteps currentStep={currentStep} />}
 			<main className="flex-1">{children}</main>
 			<AppFooter
 				organizerName={name}

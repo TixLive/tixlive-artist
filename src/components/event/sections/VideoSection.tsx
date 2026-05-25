@@ -1,3 +1,5 @@
+import SectionShell from '@/components/event/sections/SectionShell';
+
 interface VideoSectionProps {
 	videoUrl: string;
 	aftermovieUrl?: string;
@@ -24,11 +26,11 @@ function VideoEmbed({ url, label }: { url: string; label?: string }) {
 	return (
 		<div>
 			{label && (
-				<p className="mb-2 text-[0.6875rem] font-medium uppercase tracking-wider text-[var(--theme-text-muted)]">
+				<p className="mb-3 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
 					{label}
 				</p>
 			)}
-			<div className="relative aspect-video overflow-hidden rounded-2xl">
+			<div className="relative aspect-video overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--brand-primary)]">
 				<iframe
 					src={embedUrl}
 					title={label || 'Event video'}
@@ -50,16 +52,13 @@ export default function VideoSection({ videoUrl, aftermovieUrl }: VideoSectionPr
 	if (!hasVideo && !hasAftermovie) return null;
 
 	return (
-		<section className="mt-10">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
-				Video
-			</h2>
-			<div className="space-y-4">
+		<SectionShell label="Video">
+			<div className="space-y-5">
 				{hasVideo && <VideoEmbed url={videoUrl} />}
 				{hasAftermovie && (
 					<VideoEmbed url={aftermovieUrl} label="Aftermovie" />
 				)}
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

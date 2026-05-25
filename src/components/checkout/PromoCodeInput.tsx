@@ -57,7 +57,7 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
       <Button
         variant="light"
         onPress={() => setExpanded(true)}
-        className="px-0 text-[0.875rem] font-medium text-[var(--brand-accent)] underline underline-offset-2"
+        className="px-0 font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--brand-accent)] underline underline-offset-2"
       >
         Have a discount code?
       </Button>
@@ -75,7 +75,7 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
           }}
           placeholder="Enter promo code"
           isReadOnly={applied}
-          classNames={{ inputWrapper: 'rounded-xl' }}
+          classNames={{ inputWrapper: 'rounded-full' }}
           size="sm"
           endContent={
             applied ? (
@@ -86,8 +86,9 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
         {!applied ? (
           <Button
             type="button"
-            variant="flat"
-            className="shrink-0 rounded-xl font-[family-name:var(--font-display)] font-[700]"
+            variant="solid"
+            className="shrink-0 rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
+            style={{ backgroundColor: 'var(--brand-primary)' }}
             onPress={handleApply}
             isLoading={loading}
             isDisabled={!code.trim()}

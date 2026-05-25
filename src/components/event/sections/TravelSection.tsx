@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import SectionShell from '@/components/event/sections/SectionShell';
 import type { ITravelRec } from '@/types';
 
 interface TravelSectionProps {
@@ -29,55 +30,61 @@ export default function TravelSection({ recommendations }: TravelSectionProps) {
 	);
 
 	return (
-		<section className="mt-10">
-			<h2 className="mb-4 font-[family-name:var(--font-display)] text-[1.5rem] font-[700] text-[var(--theme-text)]">
-				Travel & Stay
-			</h2>
-			<div className="space-y-5">
+		<SectionShell label="Travel & Stay">
+			<div className="space-y-6">
 				{sortedTypes.map((type) => {
 					const config = typeConfig[type] || typeConfig.other;
 					return (
 						<div key={type}>
-							<p className="mb-2 flex items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-wider text-[var(--theme-text-muted)]">
-								<Icon icon={config.icon} width={16} />
+							<p className="mb-3 flex items-center gap-2 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
+								<Icon
+									icon={config.icon}
+									width={14}
+									className="text-[var(--brand-accent)]"
+								/>
 								{config.label}
 							</p>
-							<div className="space-y-2">
+							<div className="space-y-3">
 								{grouped[type].map((rec) => (
 									<div
 										key={rec.id}
-										className="rounded-lg bg-[var(--theme-surface)] p-3"
+										className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4"
 									>
-										<div className="flex items-start justify-between gap-2">
+										<div className="flex items-start justify-between gap-3">
 											<div className="min-w-0">
 												{rec.url && /^https?:\/\//i.test(rec.url) ? (
 													<a
 														href={rec.url}
 														target="_blank"
 														rel="noopener noreferrer"
-														className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--brand-accent)] hover:underline"
+														className="rounded-sm font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--brand-accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
 													>
 														{rec.name}
 													</a>
 												) : (
-													<p className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--theme-text)]">
+													<p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
 														{rec.name}
 													</p>
 												)}
 												{rec.address && (
-													<p className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
+													<p className="mt-1 flex items-center gap-1 text-[0.8125rem] text-[var(--theme-text-muted)]">
+														<Icon
+															icon="mdi:map-marker-outline"
+															width={14}
+															className="shrink-0 text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]"
+														/>
 														{rec.address}
 													</p>
 												)}
 											</div>
 											{rec.price_range && (
-												<span className="shrink-0 font-[family-name:var(--font-data)] text-[0.75rem] font-medium text-[var(--theme-text-muted)]">
+												<span className="shrink-0 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.75rem] font-medium tabular-nums text-[var(--theme-text-muted)]">
 													{rec.price_range}
 												</span>
 											)}
 										</div>
 										{rec.description && (
-											<p className="mt-1.5 text-[0.8125rem] leading-relaxed text-[var(--theme-text-muted)]">
+											<p className="mt-2.5 text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
 												{rec.description}
 											</p>
 										)}
@@ -88,6 +95,6 @@ export default function TravelSection({ recommendations }: TravelSectionProps) {
 					);
 				})}
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

@@ -51,24 +51,22 @@ export default function EventCountdown({ target }: EventCountdownProps) {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-4 py-3">
-        <div className="flex items-center gap-1.5 text-[0.8125rem] font-medium text-[var(--theme-text-muted)]">
-          <Icon icon="mdi:timer-outline" width={16} className="text-[var(--brand-accent)]" />
-          <span>Event starts in</span>
-        </div>
-        <div className="flex items-center gap-3">
-          {units.map((unit) => (
-            <div key={unit.label} className="flex flex-col items-center">
-              <span className="font-[family-name:var(--font-data)] text-[1.125rem] font-bold tabular-nums leading-none text-[var(--theme-text)]">
-                {String(unit.value).padStart(2, '0')}
-              </span>
-              <span className="mt-0.5 text-[0.5625rem] font-semibold uppercase tracking-wider text-[var(--theme-text-muted)]">
-                {unit.label}
-              </span>
-            </div>
-          ))}
-        </div>
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 self-start rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-5 py-3.5">
+      <div className="flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
+        <Icon icon="mdi:timer-outline" width={15} className="text-[var(--brand-accent)]" />
+        <span>Event starts in</span>
+      </div>
+      <div className="flex items-center gap-4">
+        {units.map((unit) => (
+          <div key={unit.label} className="flex flex-col items-center">
+            <span className="font-[family-name:var(--font-data)] text-[1.25rem] font-bold leading-none tabular-nums text-[var(--theme-text)]">
+              {String(unit.value).padStart(2, '0')}
+            </span>
+            <span className="mt-1 font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)]">
+              {unit.label}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -55,17 +55,18 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
         const data: OrderDetails = await res.json();
         if (cancelled) return;
 
-        if (data.status === 'pending' && pollCount < MAX_POLLS) {
+        // Keep polling while payment is pending, or while paid but PDF not yet generated
+        const stillWaiting = data.status === 'pending' || (data.status === 'paid' && !data.pdf_url);
+        if (stillWaiting && pollCount < MAX_POLLS) {
           pollCount++;
           setTimeout(fetchOrder, 3000);
           return;
         }
 
         setOrder(data);
+        setLoading(false);
       } catch {
-        if (!cancelled) setNotFound(true);
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) { setNotFound(true); setLoading(false); }
       }
     };
 

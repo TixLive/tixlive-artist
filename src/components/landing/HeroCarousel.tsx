@@ -31,11 +31,6 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
     <section className="bg-[var(--theme-bg)]">
       {/* Featured hero — cinematic rounded media card */}
       <div className="mx-auto max-w-[1120px] px-4 pt-8 sm:px-6 md:pt-12">
-        <div className="mb-4 flex items-center gap-3 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
-          <span className="h-px w-6 bg-[color-mix(in_srgb,var(--theme-text)_18%,transparent)]" />
-          FEATURED
-        </div>
-
         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[22px] bg-[var(--brand-primary)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] sm:aspect-[16/9] sm:rounded-[28px] lg:aspect-[21/9]">
           {/* Blurred backdrop fill */}
           {featured.poster_url ? (
@@ -69,18 +64,6 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
                 'linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 52%, rgba(0,0,0,.82) 100%)',
             }}
           />
-
-          {/* Top-left pills */}
-          <div className="absolute left-4 top-4 z-10 flex gap-2 sm:left-7 sm:top-7">
-            <span className="inline-flex items-center rounded-full bg-[var(--brand-accent)] px-3.5 py-1.5 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.15em] text-white">
-              FEATURED
-            </span>
-            {featured.event_type && (
-              <span className="inline-flex items-center rounded-full bg-[var(--theme-bg)]/95 px-3.5 py-1.5 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.15em] text-[var(--theme-text)] backdrop-blur-sm">
-                {featured.event_type}
-              </span>
-            )}
-          </div>
 
           {/* Title + meta + CTA — bottom */}
           <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-5 sm:px-7 sm:pb-8">

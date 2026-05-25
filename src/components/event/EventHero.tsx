@@ -28,9 +28,7 @@ export default function EventHero({ event }: EventHeroProps) {
 
 	const priceFrom = event.price_from ?? event.ticket_types?.[0]?.price ?? 0;
 	const currency = event.currency ?? event.ticket_types?.[0]?.currency ?? 'MDL';
-	const maxPrice = event.ticket_types?.length
-		? Math.max(...event.ticket_types.map((tt) => tt.price))
-		: priceFrom;
+	const maxPrice = event.ticket_types?.length ? Math.max(...event.ticket_types.map((tt) => tt.price)) : priceFrom;
 
 	const hasPortrait = !!event.poster_portrait_url;
 	// Background fill prefers the landscape cover; a portrait-only event uses its
@@ -64,12 +62,12 @@ export default function EventHero({ event }: EventHeroProps) {
 					/>
 				)}
 
-				{/* Cinematic gradient — subtle at top for badge legibility, strong at bottom */}
+				{/* Gradient for top badge legibility */}
 				<div
 					className="absolute inset-0"
 					style={{
 						background:
-							'linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 52%, rgba(0,0,0,.82) 100%)',
+							'linear-gradient(180deg, rgba(0,0,0,.32) 0%, rgba(0,0,0,0) 28%, rgba(0,0,0,0) 100%)',
 					}}
 				/>
 
@@ -97,72 +95,24 @@ export default function EventHero({ event }: EventHeroProps) {
 					</div>
 				)}
 
-				{/* Title + chips — bottom left */}
-				<div
-					className={`absolute inset-x-0 bottom-0 z-10 px-4 pb-5 sm:px-7 sm:pb-8 ${
-						hasPortrait ? 'pr-[38%] sm:pr-[30%]' : ''
-					}`}
-				>
-					<h1 className="font-[family-name:var(--font-display)] font-[900] leading-[0.95] tracking-[-0.03em] text-white text-[clamp(2.25rem,8vw,3rem)] [text-shadow:0_6px_28px_rgba(0,0,0,0.45)] sm:text-[clamp(3rem,6vw,5.5rem)]">
-						{event.title}
-					</h1>
-
-					{/* Desktop chips */}
-					<div className="mt-6 hidden flex-wrap gap-2.5 sm:flex">
-						<HeroChip label="CÂND" value={formatDate(event.date_start)} sub={`Porți ${formatTime(event.date_start)}`} />
-						{event.venue_name && (
-							<HeroChip label="UNDE" value={event.venue_name} sub={event.venue_address || undefined} />
-						)}
-						{priceFrom > 0 && (
-							<HeroChip
-								label="DE LA"
-								value={`${priceFrom} ${currency}`}
-								sub={maxPrice > priceFrom ? `până la ${maxPrice} ${currency}` : undefined}
-								accent
-							/>
-						)}
-					</div>
-				</div>
 			</div>
 
-			{/* Mobile meta pills — below frame */}
-			<div className="grid grid-cols-2 gap-2.5 px-4 pt-4 sm:hidden">
-				<MetaPill label="Când" value={formatDate(event.date_start)} sub={`Porți ${formatTime(event.date_start)}`} />
-				{event.venue_name && <MetaPill label="Unde" value={event.venue_name} sub={event.venue_address || undefined} />}
+			{/* Title + meta — below image, all screen sizes */}
+			<div className="mx-auto max-w-[1600px] px-4 pt-5 sm:px-0 sm:pt-6">
+				<h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,6vw,3.5rem)] font-[900] leading-[0.95] tracking-[-0.03em] text-[var(--theme-text)]">
+					{event.title}
+				</h1>
+				<div className="mt-4 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap">
+					<MetaPill label="Când" value={formatDate(event.date_start)} sub={`Porți ${formatTime(event.date_start)}`} />
+					{event.venue_name && (
+						<MetaPill label="Unde" value={event.venue_name} sub={event.venue_address || undefined} />
+					)}
+					{priceFrom > 0 && (
+						<MetaPill label="De la" value={`${priceFrom} ${currency}`} sub={maxPrice > priceFrom ? `până la ${maxPrice} ${currency}` : undefined} />
+					)}
+				</div>
 			</div>
 		</section>
-	);
-}
-
-function HeroChip({
-	label,
-	value,
-	sub,
-	accent,
-}: {
-	label: string;
-	value: string;
-	sub?: string;
-	accent?: boolean;
-}) {
-	return (
-		<div
-			className={`max-w-[15rem] rounded-2xl px-4 py-2.5 backdrop-blur-md ${
-				accent ? 'bg-[var(--brand-accent)] text-white' : 'bg-white/92 text-[var(--theme-text)]'
-			}`}
-		>
-			<div className={`font-[family-name:var(--font-mono)] text-[0.625rem] tracking-[0.15em] ${accent ? 'text-white/70' : 'text-[var(--theme-text-muted)]'}`}>
-				{label}
-			</div>
-			<div className="mt-0.5 truncate font-[family-name:var(--font-display)] text-[1rem] font-[700] tracking-[-0.01em]">
-				{value}
-			</div>
-			{sub && (
-				<div className={`truncate text-[0.6875rem] ${accent ? 'text-white/75' : 'text-[var(--theme-text-muted)]'}`}>
-					{sub}
-				</div>
-			)}
-		</div>
 	);
 }
 

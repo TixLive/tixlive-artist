@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
-import Link from 'next/link';
-import { Button, Input, Skeleton } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';
@@ -34,11 +33,6 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  // Magic link state
-  const [magicEmail, setMagicEmail] = useState('');
-  const [sendingLink, setSendingLink] = useState(false);
-  const [linkSent, setLinkSent] = useState(false);
-  const [linkError, setLinkError] = useState('');
 
   useEffect(() => {
     if (!orderId) {
@@ -93,29 +87,6 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
       }
     } else {
       await navigator.clipboard.writeText(shareData.url);
-    }
-  };
-
-  const handleSendMagicLink = async () => {
-    if (!magicEmail.trim()) return;
-
-    setSendingLink(true);
-    setLinkError('');
-    setLinkSent(false);
-
-    try {
-      const res = await fetch('/api/auth/email-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: magicEmail.trim() }),
-      });
-
-      if (!res.ok) throw new Error('Failed to send');
-      setLinkSent(true);
-    } catch {
-      setLinkError('Couldn\'t send email. Please try again.');
-    } finally {
-      setSendingLink(false);
     }
   };
 
@@ -216,62 +187,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
               </a>
             )}
 
-            {/* 4. Save tickets section */}
-            <div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6">
-              <h3 className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-                Save tickets to your account
-              </h3>
-              <p className="mt-1 text-[0.875rem] text-[var(--theme-text-muted)]">
-                Enter your email and we&apos;ll send you a 6-digit code. Use it on the sign-in page to access your tickets anytime.
-              </p>
-
-              {linkSent ? (
-                <div className="mt-4 rounded-xl bg-[#16A34A]/8 p-4 text-[0.875rem] text-[#16A34A]">
-                  <Icon icon="mdi:check" className="mr-1 inline" width={16} />
-                  Code sent to {magicEmail}. Check your inbox, then{' '}
-                  <Link href={`/login?next=%2Fmy-tickets`} className="underline">
-                    sign in here
-                  </Link>
-                  .
-                </div>
-              ) : (
-                <div className="mt-4 flex gap-2">
-                  <Input
-                    type="email"
-                    placeholder="Your email"
-                    value={magicEmail}
-                    onValueChange={setMagicEmail}
-                    classNames={{ inputWrapper: 'rounded-xl' }}
-                    size="sm"
-                  />
-                  <Button
-                    variant="solid"
-                    className="shrink-0 rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
-                    style={{ backgroundColor: 'var(--brand-primary)' }}
-                    onPress={handleSendMagicLink}
-                    isLoading={sendingLink}
-                    isDisabled={!magicEmail.trim()}
-                  >
-                    Send code
-                  </Button>
-                </div>
-              )}
-
-              {linkError && (
-                <p className="mt-2 text-[0.875rem] text-[#DC2626]">
-                  {linkError}
-                  <button
-                    type="button"
-                    onClick={handleSendMagicLink}
-                    className="ml-2 underline"
-                  >
-                    Retry
-                  </button>
-                </p>
-              )}
-            </div>
-
-            {/* 5. Share */}
+            {/* 4. Share */}
             <div className="flex justify-center pt-2">
               <Button
                 variant="bordered"

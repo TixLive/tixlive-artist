@@ -50,7 +50,7 @@ export default function LegalPage({ organizer, pageType, sanitizedHtml, contentL
 					</h1>
 					<div
 						lang={contentLocale}
-						className="prose-page text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)]
+						className="prose-page break-words text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)]
 							[&_a]:font-medium [&_a]:text-[var(--brand-accent)] [&_a]:underline [&_a]:underline-offset-2 [&_a]:transition-colors [&_a]:duration-200 hover:[&_a]:text-[var(--theme-text)]
 							[&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:font-[family-name:var(--font-display)] [&_h2]:text-[1.25rem] [&_h2]:font-[700] [&_h2]:text-[var(--theme-text)]
 							[&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-[family-name:var(--font-display)] [&_h3]:text-[1.0625rem] [&_h3]:font-[700] [&_h3]:text-[var(--theme-text)]

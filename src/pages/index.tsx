@@ -10,7 +10,6 @@ import Layout from '@/components/layout/Layout';
 import HeroCarousel from '@/components/landing/HeroCarousel';
 import CategoryFilter, { Category } from '@/components/landing/CategoryFilter';
 import EventGrid from '@/components/landing/EventGrid';
-import OrganizerIdentityBar from '@/components/landing/OrganizerIdentityBar';
 
 interface HomeProps {
 	organizer: IOrganizer;
@@ -88,7 +87,6 @@ export default function Home({
         pages={organizer.pages}
       >
         <HeroCarousel events={events} />
-        <OrganizerIdentityBar organizer={organizer} eventCount={total} />
         <CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
         <section className="py-10 md:py-12">
           <EventGrid

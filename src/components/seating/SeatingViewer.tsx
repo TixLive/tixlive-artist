@@ -904,7 +904,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			onPointerUp={endPan}
 			onPointerLeave={handleMouseLeave}
 			onPointerCancel={endPan}
-			style={{ cursor: isPanning.current ? 'grabbing' : cursorPointer ? 'default' : 'grab', touchAction: 'none', transform: 'translateZ(0)' }}
+			style={{ cursor: isPanning.current ? 'grabbing' : 'default', touchAction: 'none', transform: 'translateZ(0)' }}
 		>
 			<canvas
 				ref={canvasEl}

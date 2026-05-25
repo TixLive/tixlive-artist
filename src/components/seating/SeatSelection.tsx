@@ -405,43 +405,51 @@ export default function SeatSelection({
 			{/* Live region */}
 			<div aria-live="polite" className="sr-only">{liveMessage}</div>
 
-			{/* ── Bottom bar ────────────────────────────────────────────────── */}
-			<div
-				className="flex-shrink-0 bg-[var(--brand-primary)] text-[var(--theme-bg)]"
-				style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-			>
-				<div className="flex h-[64px] items-center gap-4 px-4">
-					{selected.size === 0 ? (
-						<p className="flex-1 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.12em] opacity-50">
+			{/* ── Bottom ───────────────────────────────────────────────────── */}
+			{selected.size === 0 ? (
+				<div
+					className="flex-shrink-0 border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]"
+					style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+				>
+					<div className="flex h-[40px] items-center justify-between px-4">
+						<span className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)]">
 							{t('seating.no_seats_yet')}
-						</p>
-					) : (
-						<>
-							<button
-								type="button"
-								onClick={openCheckout}
-								className="min-w-0 flex-1 text-left"
-							>
-								<p className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.15em] opacity-60">
-									{selected.size === 1 ? '1 loc selectat' : `${selected.size} locuri selectate`}
-								</p>
-								<p className="font-[family-name:var(--font-display)] text-[1.25rem] font-[800] leading-tight tracking-[-0.02em] tabular-nums">
-									{total} <span className="text-[0.875rem] font-[700] opacity-60">{currency}</span>
-								</p>
-							</button>
-							<Button
-								size="lg"
-								onPress={openCheckout}
-								className="shrink-0 rounded-full font-[family-name:var(--font-body)] font-[700] text-white"
-								style={{ backgroundColor: 'var(--brand-accent)' }}
-							>
-								{t('seating.continue')}
-								<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-							</Button>
-						</>
-					)}
+						</span>
+						<span className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)] opacity-40">
+							TixLive
+						</span>
+					</div>
 				</div>
-			</div>
+			) : (
+				<div
+					className="flex-shrink-0 bg-[var(--brand-primary)] text-[var(--theme-bg)]"
+					style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+				>
+					<div className="flex h-[64px] items-center gap-4 px-4">
+						<button
+							type="button"
+							onClick={openCheckout}
+							className="min-w-0 flex-1 text-left"
+						>
+							<p className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.15em] opacity-60">
+								{selected.size === 1 ? '1 loc selectat' : `${selected.size} locuri selectate`}
+							</p>
+							<p className="font-[family-name:var(--font-display)] text-[1.25rem] font-[800] leading-tight tracking-[-0.02em] tabular-nums">
+								{total} <span className="text-[0.875rem] font-[700] opacity-60">{currency}</span>
+							</p>
+						</button>
+						<Button
+							size="lg"
+							onPress={openCheckout}
+							className="shrink-0 rounded-full font-[family-name:var(--font-body)] font-[700] text-white"
+							style={{ backgroundColor: 'var(--brand-accent)' }}
+						>
+							{t('seating.continue')}
+							<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
+						</Button>
+					</div>
+				</div>
+			)}
 
 			{/* ── Auto-pick arrival modal ───────────────────────────────────── */}
 			<Modal isOpen={autopickOpen} onClose={closeAutopick} placement="center" backdrop="opaque" size="sm">

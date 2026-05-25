@@ -37,7 +37,7 @@ export default function EventHero({ event }: EventHeroProps) {
 
 	return (
 		<section className="bg-[var(--theme-bg)] sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">
-			<div className="relative mx-auto aspect-[4/5] w-full max-w-[1600px] overflow-hidden bg-[var(--brand-primary)] sm:aspect-[16/9] sm:rounded-[28px] lg:aspect-[21/9]">
+			<div className="relative mx-auto aspect-[16/9] w-full max-w-[1600px] overflow-hidden bg-[var(--brand-primary)] sm:rounded-[28px] lg:aspect-[21/9]">
 				{/* Blurred background fill */}
 				{heroBg ? (
 					<Image

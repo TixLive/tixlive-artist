@@ -31,7 +31,7 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
     <section className="bg-[var(--theme-bg)]">
       {/* Featured hero — cinematic rounded media card */}
       <div className="mx-auto max-w-[1120px] px-4 pt-8 sm:px-6 md:pt-12">
-        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[22px] bg-[var(--brand-primary)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] sm:aspect-[16/9] sm:rounded-[28px] lg:aspect-[21/9]">
+        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[22px] bg-[var(--brand-primary)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] sm:rounded-[28px] lg:aspect-[21/9]">
           {/* Blurred backdrop fill */}
           {featured.poster_url ? (
             <Image
@@ -55,43 +55,33 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
               priority
             />
           )}
+        </div>
 
-          {/* Cinematic gradient */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                'linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 52%, rgba(0,0,0,.82) 100%)',
-            }}
-          />
-
-          {/* Title + meta + CTA — bottom */}
-          <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-5 sm:px-7 sm:pb-8">
-            <h2 className="max-w-3xl font-[family-name:var(--font-display)] font-[900] leading-[0.95] tracking-[-0.03em] text-white text-[clamp(2.25rem,8vw,3rem)] [text-shadow:0_6px_28px_rgba(0,0,0,0.45)] sm:text-[clamp(3rem,6vw,5rem)]">
-              {featured.title}
-            </h2>
-
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <p className="font-[family-name:var(--font-data)] text-[0.8125rem] tracking-wide text-white/80">
-                {formatDate(featured.date_start)}
-                {featured.venue_name && ` · ${featured.venue_name}`}
-              </p>
-
-              <Link href={`/events/${featured.slug}`} className="sm:ml-auto">
-                <Button
-                  variant="solid"
-                  size="lg"
-                  className="rounded-full bg-white pl-6 pr-1.5 font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)] shadow-[0_12px_30px_rgba(0,0,0,0.35)] transition-opacity duration-200 hover:opacity-95"
-                >
-                  {t('events.get_tickets')}
-                  {featured.price_from != null && (
-                    <span className="ml-3 inline-flex items-center rounded-full bg-[var(--brand-accent)] px-3.5 py-1.5 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em] text-white">
-                      {t('events.price_from', { price: featured.price_from, currency: featured.currency ?? '' })}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-            </div>
+        {/* Title + meta + CTA — below image */}
+        <div className="pt-4">
+          <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,6vw,2.5rem)] font-[900] leading-[0.95] tracking-[-0.03em] text-[var(--theme-text)]">
+            {featured.title}
+          </h2>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <p className="font-[family-name:var(--font-data)] text-[0.875rem] text-[var(--theme-text-muted)]">
+              {formatDate(featured.date_start)}
+              {featured.venue_name && ` · ${featured.venue_name}`}
+            </p>
+            <Link href={`/events/${featured.slug}`} className="sm:ml-auto">
+              <Button
+                variant="solid"
+                size="lg"
+                className="rounded-full pl-6 pr-1.5 font-[family-name:var(--font-display)] font-[700] text-[var(--theme-bg)]"
+                style={{ backgroundColor: 'var(--brand-primary)' }}
+              >
+                {t('events.get_tickets')}
+                {featured.price_from != null && (
+                  <span className="ml-3 inline-flex items-center rounded-full bg-[var(--brand-accent)] px-3.5 py-1.5 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em] text-white">
+                    {t('events.price_from', { price: featured.price_from, currency: featured.currency ?? '' })}
+                  </span>
+                )}
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

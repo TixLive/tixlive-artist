@@ -30,7 +30,7 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 
 	return (
 		<footer className="mt-auto bg-[var(--brand-primary)] text-[var(--theme-bg)]">
-			<div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-20">
+			<div className="mx-auto max-w-[1120px] px-4 py-14 sm:px-6 md:py-20">
 				<div className="grid grid-cols-2 gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
 					{/* Organizer info */}
 					<div className="col-span-2 md:col-span-1 md:pr-6">
@@ -91,7 +91,7 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 
 			{/* Bottom bar */}
 			<div className="border-t border-[color-mix(in_srgb,var(--theme-bg)_14%,transparent)]">
-				<div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-5 sm:px-6">
+				<div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-2 px-4 py-5 sm:px-6">
 					<p className="text-[0.75rem] text-[color-mix(in_srgb,var(--theme-bg)_55%,transparent)]">
 						© {new Date().getFullYear()} {organizerName}
 					</p>

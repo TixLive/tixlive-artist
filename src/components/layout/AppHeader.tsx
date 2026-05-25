@@ -23,7 +23,7 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 
 	return (
 		<header className="sticky top-0 z-50 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/95 backdrop-blur-md">
-			<div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-10">
+			<div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-4 sm:px-6">
 				{/* Logo / mark */}
 				<Link href="/" className="flex shrink-0 items-center gap-2.5">
 					{logoUrl ? (

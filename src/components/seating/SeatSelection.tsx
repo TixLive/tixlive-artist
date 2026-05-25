@@ -117,7 +117,12 @@ export default function SeatSelection({
 	const bookedSet = useMemo(() => new Set(seating.booked), [seating.booked]);
 	const tierMeta = useMemo(() => {
 		const m = new Map<number, { name: string; index: number }>();
-		tiers.forEach((tier, index) => m.set(tier.ticket_package_id, { name: tier.name, index }));
+		tiers.forEach((tier, index) =>
+			m.set(tier.ticket_package_id, {
+				name: tier.name.split(' — ')[0].split(' (')[0].trim(),
+				index,
+			})
+		);
 		return m;
 	}, [tiers]);
 	const availableCount = useMemo(() => {
@@ -453,7 +458,7 @@ export default function SeatSelection({
 												aria-hidden="true"
 											/>
 											<span className="truncate font-[family-name:var(--font-display)] text-[0.6875rem] font-[700] leading-none">
-												{item.tierName.split(' — ')[0].split(' (')[0].trim()}
+												{item.tierName}
 											</span>
 										</div>
 										{/* Row + Seat — spelled out */}
@@ -534,7 +539,7 @@ export default function SeatSelection({
 													style={{ backgroundColor: colorByTierId.get(tier.ticket_package_id) ?? 'var(--theme-text-muted)' }}
 													aria-hidden="true"
 												/>
-												<span className="font-medium text-[var(--theme-text)]">{tier.name}</span>
+												<span className="font-medium text-[var(--theme-text)]">{tier.name.split(' — ')[0].split(' (')[0].trim()}</span>
 												<span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
 													{seatsForTier.map((s) => s.label).join(', ')}
 												</span>

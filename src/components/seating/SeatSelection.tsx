@@ -443,7 +443,7 @@ export default function SeatSelection({
 							<div key={item.seatId} className="group relative shrink-0">
 								{/* Card */}
 								<div className="flex min-w-[112px] flex-col gap-0.5 rounded-2xl bg-white/15 px-3 py-2.5 backdrop-blur-sm">
-									{/* Tier name + color dot */}
+									{/* Tier name + color dot — strip price/row suffix from verbose names */}
 									<div className="flex items-center gap-1.5">
 										<span
 											className="h-2 w-2 shrink-0 rounded-full"
@@ -451,7 +451,7 @@ export default function SeatSelection({
 											aria-hidden="true"
 										/>
 										<span className="truncate font-[family-name:var(--font-display)] text-[0.6875rem] font-[700] leading-none">
-											{item.tierName}
+											{item.tierName.split(' — ')[0].split(' (')[0].trim()}
 										</span>
 									</div>
 									{/* Seat label (row · seat) */}

@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'next-i18next';
 import { ITicket } from '@/types';
+import { parseSeatId } from '@/lib/seat';
 
 interface TicketDetailViewProps {
 	ticket: ITicket;
@@ -71,15 +72,13 @@ export default function TicketDetailView({ ticket, locale = 'en' }: TicketDetail
 						<Icon icon="mdi:ticket-confirmation" width={18} />
 						<span className="text-[0.875rem]">{ticket.ticket_type}</span>
 					</div>
-					{ticket.seat_id && (() => {
-						const parts = ticket.seat_id.split('-');
-						const row = parts[parts.length - 2];
-						const seat = parts[parts.length - 1];
-						return row && seat ? (
+					{(() => {
+						const parsed = parseSeatId(ticket.seat_id);
+						return parsed ? (
 							<div className="flex items-center gap-2">
 								<Icon icon="mdi:seat" width={18} />
 								<span className="font-[family-name:var(--font-data)] text-[0.875rem]">
-									Rând {row} · Loc {seat}
+									{t('seating.seat_label', { row: parsed.row, seat: parsed.seat })}
 								</span>
 							</div>
 						) : null;

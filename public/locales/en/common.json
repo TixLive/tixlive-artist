@@ -143,6 +143,7 @@
 	},
 	"seating": {
 		"select_seats": "Select seats",
+		"seat_label": "Row {{row}} · Seat {{seat}}",
 		"back_to_event": "Back to event",
 		"categories": "Categories",
 		"your_seats": "Your seats",

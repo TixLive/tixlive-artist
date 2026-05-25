@@ -2,6 +2,7 @@ import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import type { IOrderDetail } from '@/types';
+import { parseSeatId } from '@/lib/seat';
 
 interface OrderDetailViewProps {
 	order: IOrderDetail;
@@ -74,22 +75,32 @@ export default function OrderDetailView({ order, locale = 'en' }: OrderDetailVie
 						{t('order_detail.items')}
 					</h2>
 					<div className="space-y-2">
-						{order.items.map((item, i) => (
+						{order.items.map((item, i) => {
+							const seat = parseSeatId(item.seat_id);
+							return (
 							<div
 								key={i}
 								className="flex items-baseline justify-between gap-4 rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-4 py-3"
 							>
 								<div className="min-w-0">
 									<p className="truncate font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">{item.name}</p>
-									<p className="mt-0.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] tabular-nums text-[var(--theme-text-muted)]">
-										× {item.quantity}
-									</p>
+									{seat ? (
+										<p className="mt-0.5 flex items-center gap-1 font-[family-name:var(--font-data)] text-[0.75rem] text-[var(--theme-text-muted)]">
+											<Icon icon="mdi:seat" width={13} className="flex-shrink-0" />
+											{t('seating.seat_label', { row: seat.row, seat: seat.seat })}
+										</p>
+									) : (
+										<p className="mt-0.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] tabular-nums text-[var(--theme-text-muted)]">
+											× {item.quantity}
+										</p>
+									)}
 								</div>
 								<p className="font-[family-name:var(--font-data)] text-[0.9375rem] tabular-nums text-[var(--theme-text)]">
 									{item.price} {order.currency}
 								</p>
 							</div>
-						))}
+							);
+						})}
 					</div>
 				</div>
 

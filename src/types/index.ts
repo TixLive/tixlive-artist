@@ -247,7 +247,7 @@ export interface IOrderDetail {
 	event_title: string;
 	event_slug: string;
 	session_date: string;
-	items: Array<{ name: string; quantity: number; price: number }>;
+	items: Array<{ name: string; quantity: number; price: number; seat_id?: string | null }>;
 	total: number;
 	currency: string;
 	pdf_url: string | null;

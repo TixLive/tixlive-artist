@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import { ITicket } from '@/types';
+import { parseSeatId } from '@/lib/seat';
 
 interface TicketCardProps {
 	ticket: ITicket;
@@ -9,6 +11,9 @@ interface TicketCardProps {
 }
 
 export default function TicketCard({ ticket, locale = 'en' }: TicketCardProps) {
+	const { t } = useTranslation('common');
+	const seat = parseSeatId(ticket.seat_id);
+
 	const formatDate = (dateStr: string) => {
 		const date = new Date(dateStr);
 		return date.toLocaleDateString(locale, {
@@ -46,6 +51,12 @@ export default function TicketCard({ ticket, locale = 'en' }: TicketCardProps) {
 						</Chip>
 						<span className="truncate text-[0.6875rem] text-[var(--theme-text-muted)]">{ticket.attendee_name}</span>
 					</div>
+					{seat && (
+						<p className="mt-1 flex items-center gap-1 font-[family-name:var(--font-data)] text-[0.6875rem] text-[var(--theme-text-muted)]">
+							<Icon icon="mdi:seat" width={13} className="flex-shrink-0" />
+							{t('seating.seat_label', { row: seat.row, seat: seat.seat })}
+						</p>
+					)}
 				</div>
 
 				{/* Arrow */}

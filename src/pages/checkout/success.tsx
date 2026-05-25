@@ -9,6 +9,7 @@ import { useTranslation } from 'next-i18next';
 
 import Layout from '@/components/layout/Layout';
 import { getSite } from '@/lib/api';
+import { parseSeatId } from '@/lib/seat';
 import { IOrganizer } from '@/types';
 
 interface OrderDetails {
@@ -16,7 +17,7 @@ interface OrderDetails {
   status: 'paid' | 'pending' | 'failed';
   event_title: string;
   session_date: string;
-  items: { name: string; quantity: number }[];
+  items: { name: string; quantity: number; seat_id?: string | null }[];
   pdf_url?: string;
 }
 
@@ -164,12 +165,22 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
               </div>
               {order.items && order.items.length > 0 && (
                 <div className="border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] px-6 py-4">
-                  {order.items.map((item, i) => (
+                  {order.items.map((item, i) => {
+                    const seat = parseSeatId(item.seat_id);
+                    return (
                     <div key={i} className="flex items-baseline justify-between gap-3 py-1 text-[0.875rem] text-[var(--theme-text)]">
-                      <span>{item.name}</span>
+                      <span>
+                        {item.name}
+                        {seat && (
+                          <span className="ml-2 font-[family-name:var(--font-data)] text-[0.8125rem] text-[var(--theme-text-muted)]">
+                            · {t('seating.seat_label', { row: seat.row, seat: seat.seat })}
+                          </span>
+                        )}
+                      </span>
                       <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">×{item.quantity}</span>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

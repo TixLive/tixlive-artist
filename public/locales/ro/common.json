@@ -145,6 +145,7 @@
 	},
 	"seating": {
 		"select_seats": "Alege locurile",
+		"seat_label": "Rând {{row}} · Loc {{seat}}",
 		"back_to_event": "Inapoi la eveniment",
 		"categories": "Categorii",
 		"your_seats": "Locurile tale",

@@ -276,6 +276,8 @@ export interface ITicket {
 	attendee_name: string;
 	qr_code_data: string;
 	pdf_url: string | null;
+	/** Seated events: raw seat id, e.g. "104-3-12" → sector 104, row 3, seat 12. */
+	seat_id?: string | null;
 }
 
 export interface IAttendeeSession {

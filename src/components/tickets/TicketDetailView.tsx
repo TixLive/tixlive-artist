@@ -71,6 +71,19 @@ export default function TicketDetailView({ ticket, locale = 'en' }: TicketDetail
 						<Icon icon="mdi:ticket-confirmation" width={18} />
 						<span className="text-[0.875rem]">{ticket.ticket_type}</span>
 					</div>
+					{ticket.seat_id && (() => {
+						const parts = ticket.seat_id.split('-');
+						const row = parts[parts.length - 2];
+						const seat = parts[parts.length - 1];
+						return row && seat ? (
+							<div className="flex items-center gap-2">
+								<Icon icon="mdi:seat" width={18} />
+								<span className="font-[family-name:var(--font-data)] text-[0.875rem]">
+									Rând {row} · Loc {seat}
+								</span>
+							</div>
+						) : null;
+					})()}
 				</div>
 			</div>
 

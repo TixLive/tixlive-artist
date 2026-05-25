@@ -14,6 +14,7 @@ import { IOrganizer } from '@/types';
 
 interface OrderDetails {
   id: string;
+  status: 'paid' | 'pending' | 'failed';
   event_title: string;
   session_date: string;
   items: { name: string; quantity: number }[];
@@ -46,23 +47,36 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
       return;
     }
 
+    let cancelled = false;
+    let pollCount = 0;
+    const MAX_POLLS = 20; // ~60s total
+
     const fetchOrder = async () => {
       try {
         const res = await fetch(`/api/order/${orderId}`);
         if (!res.ok) {
-          setNotFound(true);
+          if (!cancelled) { setNotFound(true); setLoading(false); }
           return;
         }
-        const data = await res.json();
+        const data: OrderDetails = await res.json();
+        if (cancelled) return;
+
+        if (data.status === 'pending' && pollCount < MAX_POLLS) {
+          pollCount++;
+          setTimeout(fetchOrder, 3000);
+          return;
+        }
+
         setOrder(data);
       } catch {
-        setNotFound(true);
+        if (!cancelled) setNotFound(true);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchOrder();
+    return () => { cancelled = true; };
   }, [orderId]);
 
   const handleShare = async () => {
@@ -112,37 +126,51 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
       </Head>
 
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-20">
-        {/* 1. Checkmark animation */}
-        <div className="mb-10 flex flex-col items-center text-center">
-          <div className="animate-checkmark mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#16A34A]/10">
-            <Icon icon="mdi:check-bold" width={40} className="text-[#16A34A]" />
+        {/* 1. Status banner */}
+        {loading || (order && order.status === 'pending') ? (
+          <div className="mb-10 flex flex-col items-center text-center">
+            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--theme-surface)]">
+              <Icon icon="mdi:loading" width={40} className="animate-spin text-[var(--brand-primary)]" />
+            </div>
+            <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2.25rem]">
+              Se procesează plata...
+            </h1>
+            <p className="mt-3 text-[0.9375rem] text-[var(--theme-text-muted)]">
+              Așteptăm confirmarea de la bancă. Nu închideți pagina.
+            </p>
           </div>
-          <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2.25rem]">
-            Payment successful!
-          </h1>
-          <p className="mt-3 text-[0.9375rem] text-[var(--theme-text-muted)]">
-            Your tickets are confirmed. Check your email for details.
-          </p>
-        </div>
+        ) : order && order.status === 'failed' ? (
+          <div className="mb-10 flex flex-col items-center text-center">
+            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#DC2626]/10">
+              <Icon icon="mdi:close-circle-outline" width={40} className="text-[#DC2626]" />
+            </div>
+            <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2.25rem]">
+              Plata nu a reușit
+            </h1>
+            <p className="mt-3 text-[0.9375rem] text-[var(--theme-text-muted)]">
+              Cardul a fost refuzat de bancă. Întoarce-te și încearcă din nou.
+            </p>
+            <a href="/" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-6 py-3 font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]">
+              <Icon icon="mdi:arrow-left" width={18} />
+              Înapoi la evenimente
+            </a>
+          </div>
+        ) : (
+          <div className="mb-10 flex flex-col items-center text-center">
+            <div className="animate-checkmark mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#16A34A]/10">
+              <Icon icon="mdi:check-bold" width={40} className="text-[#16A34A]" />
+            </div>
+            <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2.25rem]">
+              Plată reușită!
+            </h1>
+            <p className="mt-3 text-[0.9375rem] text-[var(--theme-text-muted)]">
+              Biletele tale sunt confirmate. Verifică email-ul pentru detalii.
+            </p>
+          </div>
+        )}
 
-        {/* 2. Order details */}
-        {loading ? (
-          <div className="space-y-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6">
-            <Skeleton className="h-6 w-3/4 rounded-lg" />
-            <Skeleton className="h-4 w-1/2 rounded-lg" />
-            <Skeleton className="h-4 w-2/3 rounded-lg" />
-          </div>
-        ) : notFound ? (
-          <div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6 text-center">
-            <p className="text-[0.875rem] text-[var(--theme-text-muted)]">Order not found</p>
-            <Link
-              href="/"
-              className="mt-2 inline-block font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--brand-accent)] underline underline-offset-2"
-            >
-              Contact the organizer
-            </Link>
-          </div>
-        ) : order ? (
+        {/* 2. Order details — only for paid orders */}
+        {order && order.status === 'paid' ? (
           <div className="space-y-4">
             {/* Order summary */}
             <div className="overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">

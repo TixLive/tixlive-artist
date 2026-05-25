@@ -339,6 +339,18 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                     </div>
                   </div>
 
+                  {event.venue_name && (
+                    <div className={`border-b ${hairline} py-4`}>
+                      <div className={monoLabel}>Locație</div>
+                      <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                        {event.venue_name}
+                      </div>
+                      {event.venue_address && (
+                        <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">{event.venue_address}</div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="py-4">
                     <div className={monoLabel}>Preț</div>
                     <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">

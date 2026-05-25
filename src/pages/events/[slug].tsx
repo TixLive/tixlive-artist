@@ -317,7 +317,13 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                         <p className="mt-0.5 text-[0.8125rem] text-[var(--theme-text-muted)]">{event.venue_address}</p>
                       )}
                     </div>
-                    {event.google_place_id && <AddressMap googlePlaceId={event.google_place_id} height={280} />}
+                    {event.google_place_id && (
+                      <AddressMap
+                        googlePlaceId={event.google_place_id}
+                        address={[event.venue_name, event.venue_address].filter(Boolean).join(', ')}
+                        height={280}
+                      />
+                    )}
                   </div>
                 )}
               </div>
@@ -410,7 +416,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
               </div>
 
               {/* Trust badges */}
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="flex flex-col gap-2">
                 {[
                   { icon: 'mdi:shield-check-outline', title: 'Plată securizată', sub: 'SSL 256-bit' },
                   { icon: 'mdi:flash-outline', title: 'Bilet instant', sub: 'Email & telefon' },

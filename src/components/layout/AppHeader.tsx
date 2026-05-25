@@ -91,6 +91,7 @@ function LanguageSwitcher() {
 
 	const change = (locale: string) => {
 		setOpen(false);
+		document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000; SameSite=Lax`;
 		router.push({ pathname: router.pathname, query: router.query }, router.asPath, { locale });
 	};
 

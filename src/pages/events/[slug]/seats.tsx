@@ -3,13 +3,11 @@ import Head from 'next/head';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';
 
-import Layout from '@/components/layout/Layout';
 import SeatSelection from '@/components/seating/SeatSelection';
 import { getSite, getEvent, getSeating, suggestSeats } from '@/lib/api';
-import type { IOrganizer, ICartItem, IAddonCartItem, ISeatingResponse } from '@/types';
+import type { ICartItem, IAddonCartItem, ISeatingResponse } from '@/types';
 
 interface SeatsPageProps {
-	organizer: IOrganizer;
 	slug: string;
 	eventTitle: string;
 	venueName: string;
@@ -18,7 +16,6 @@ interface SeatsPageProps {
 	sessionDate: string;
 	sessionStart: string;
 	maxPerCategory: number;
-	/** Event-page quantities — only used to SEED the auto-pick. May be empty. */
 	seedCart: Array<{ ticket_package_id: number; quantity: number }>;
 	addonCart: IAddonCartItem[];
 	seating: ISeatingResponse;
@@ -28,7 +25,6 @@ interface SeatsPageProps {
 }
 
 export default function SeatsPage({
-	organizer,
 	slug,
 	eventTitle,
 	venueName,
@@ -45,10 +41,11 @@ export default function SeatsPage({
 	currency,
 }: SeatsPageProps) {
 	return (
-		<Layout organizer={organizer} currentStep={1}>
+		<>
 			<Head>
-				<title>{`Select seats — ${eventTitle}`}</title>
+				<title>{`Alege locul — ${eventTitle}`}</title>
 				<meta name="robots" content="noindex" />
+				<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 			</Head>
 			<SeatSelection
 				slug={slug}
@@ -66,18 +63,16 @@ export default function SeatsPage({
 				initialShortfall={initialShortfall}
 				currency={currency}
 			/>
-		</Layout>
+		</>
 	);
 }
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
 	const { req, params, query, locale } = ctx;
 	const slug = params?.slug as string;
-	// Next i18n localizes GSSP redirect destinations automatically, so keep this bare.
 	const eventUrl = `/events/${slug}`;
 
 	try {
-		// Read session + cart from POST (form) or GET (query) — mirrors /checkout.
 		let sessionRaw: string | undefined;
 		let cartJson: string | undefined;
 		let addonsJson: string | undefined;
@@ -97,13 +92,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
 		const [organizer, event] = await Promise.all([getSite(), getEvent(slug)]);
 
-		// Only seated, purchasable events have a seat page. Anything else → event page.
 		if (!event || !event.is_seated || event.status !== 'open') {
 			return { redirect: { destination: eventUrl, permanent: false } };
 		}
 
-		// Seat-first: the seat page is the selection surface, so an EMPTY cart is fine
-		// (the buyer didn't pre-pick quantities). We only use the cart to seed auto-pick.
 		let seedCart: Array<{ ticket_package_id: number; quantity: number }> = [];
 		try {
 			const parsed: ICartItem[] = cartJson ? JSON.parse(cartJson) : [];
@@ -131,9 +123,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 			}
 		}
 
-		// A provided-but-unmatched session means the POST got garbled — redirect
-		// rather than silently showing the wrong date's hall. Only default to the
-		// first session when no session was specified at all.
 		const matched = sessionRaw ? event.sessions?.find((s) => String(s.id) === sessionRaw) : undefined;
 		const session = matched ?? (sessionRaw ? undefined : event.sessions?.[0]);
 		if (!session) {
@@ -143,8 +132,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
 		const seating = await getSeating(slug, sessionId);
 
-		// Seed the arrival auto-pick from the event-page quantities (if any). Non-fatal:
-		// a suggest failure (or no seed) just lands the buyer on the map to pick freely.
 		let initialSelectedSeatIds: string[] = [];
 		let initialShortfall = false;
 		if (seedCart.length > 0) {

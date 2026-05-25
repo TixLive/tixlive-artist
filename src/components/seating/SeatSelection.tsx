@@ -6,9 +6,6 @@ import Link from 'next/link';
 import {
 	addToast,
 	Button,
-	Drawer,
-	DrawerBody,
-	DrawerContent,
 	Modal,
 	ModalContent,
 	ModalHeader,
@@ -37,10 +34,10 @@ import type { IAddonCartItem, ISeatingResponse } from '@/types';
 const SeatingViewer = dynamic(() => import('@/components/seating/SeatingViewer'), {
 	ssr: false,
 	loading: () => (
-		<div className="flex h-full w-full items-center justify-center rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
+		<div className="flex h-full w-full items-center justify-center bg-[var(--theme-surface)]">
 			<div className="flex flex-col items-center gap-3 text-[var(--theme-text-muted)]">
-				<Icon icon="mdi:seat-outline" width={32} className="animate-pulse" />
-				<span className="text-[0.8125rem]">Loading hall…</span>
+				<Icon icon="mdi:seat-outline" width={36} className="animate-pulse" />
+				<span className="font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-[0.1em]">Se încarcă harta…</span>
 			</div>
 		</div>
 	),
@@ -54,9 +51,7 @@ interface SeatSelectionProps {
 	eventTitle: string;
 	venueName: string;
 	venueAddress: string;
-	/** Per-category cap (event.max_tickets_per_user). Applies to EACH tier independently. */
 	maxPerCategory: number;
-	/** Quantities the buyer pre-picked on the event page — only used to SEED the auto-pick. */
 	seedCart: Array<{ ticket_package_id: number; quantity: number }>;
 	addonCart: IAddonCartItem[];
 	seating: ISeatingResponse;
@@ -66,9 +61,6 @@ interface SeatSelectionProps {
 }
 
 function useReducedMotion(): boolean {
-	// Lazy initial read (SSR-safe) so we never setState synchronously inside the
-	// effect; the effect only subscribes to later changes. The viewer is ssr:false,
-	// so there's no hydration mismatch from the client-only initial value.
 	const [reduced, setReduced] = useState(
 		() => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 	);
@@ -103,11 +95,10 @@ export default function SeatSelection({
 
 	const versionMismatch = seating.geometry_version !== GEOMETRY_VERSION;
 
-	// ── Derived, stable maps ─────────────────────────────────────────────────────
+	// ── Derived stable maps ───────────────────────────────────────────────────
 	const tiers = seating.tiers;
 	const seatTier = useMemo(() => buildSeatTierMap(tiers), [tiers]);
 	const colorByTierId = useMemo(() => buildTierColorById(tiers), [tiers]);
-	// Seat-first: ALL priced tiers are coloured + selectable (no cart-tier filter).
 	const tierColorBySeatId = useMemo(() => buildTierColorBySeatId(tiers, colorByTierId), [tiers, colorByTierId]);
 	const priceBySeatId = useMemo(() => {
 		const priceByTierId = new Map(tiers.map((t) => [t.ticket_package_id, t.price]));
@@ -135,22 +126,21 @@ export default function SeatSelection({
 		return n;
 	}, [seatTier, bookedSet]);
 
-	// ── State ────────────────────────────────────────────────────────────────────
-	// Sanitize the server-suggested seed against what's selectable (priced, not
-	// booked, within the per-category cap). No cart-tier filter — any tier is fair game.
+	// ── State ─────────────────────────────────────────────────────────────────
 	const [selected, setSelected] = useState<Set<string>>(
 		() => new Set(sanitizeSeats(initialSelectedSeatIds, seatTier, bookedSet, maxPerCategory))
 	);
 	const [shortfall, setShortfall] = useState(initialShortfall);
 	const [repicking, setRepicking] = useState(false);
 	const [continuing, setContinuing] = useState(false);
+	const [highlightedTier, setHighlightedTier] = useState<number | null>(null);
 
-	const { isOpen: modalOpen, onClose: closeModal, onOpen: openModal } = useDisclosure({
+	const { isOpen: autopickOpen, onClose: closeAutopick, onOpen: openAutopick } = useDisclosure({
 		defaultOpen: !versionMismatch && initialSelectedSeatIds.length > 0,
 	});
-	const { isOpen: sheetOpen, onOpen: openSheet, onOpenChange: onSheetOpenChange } = useDisclosure();
+	const { isOpen: checkoutOpen, onOpen: openCheckout, onClose: closeCheckout } = useDisclosure();
 
-	// ── Derived selection views ──────────────────────────────────────────────────
+	// ── Derived selection ─────────────────────────────────────────────────────
 	const total = useMemo(() => selectionTotal(selected, seatTier, tiers), [selected, seatTier, tiers]);
 	const complete = isSelectionValid(selected.size);
 
@@ -172,11 +162,22 @@ export default function SeatSelection({
 		return withIdx.map((x) => x.item);
 	}, [selected, seatTier, tierMeta, seatById, tierColorBySeatId, priceBySeatId]);
 
+	// Dim seats that aren't in the highlighted tier
+	const displayColorBySeatId = useMemo(() => {
+		if (highlightedTier === null) return tierColorBySeatId;
+		const m = new Map<string, string>();
+		for (const [seatId, color] of tierColorBySeatId) {
+			const tierId = seatTier.get(seatId);
+			m.set(seatId, tierId === highlightedTier ? color : 'rgba(180,180,180,0.2)');
+		}
+		return m;
+	}, [highlightedTier, tierColorBySeatId, seatTier]);
+
 	const liveMessage = selected.size === 0
 		? t('seating.no_seats_yet')
 		: t('seating.live_complete', { count: selected.size, total, currency });
 
-	// ── Handlers ─────────────────────────────────────────────────────────────────
+	// ── Handlers ─────────────────────────────────────────────────────────────
 	const handleSeatToggle = useCallback(
 		(seat: Seat) => {
 			const r = toggleSeat(seat.id, selected, seatTier, maxPerCategory);
@@ -201,19 +202,20 @@ export default function SeatSelection({
 	const handleClearAll = useCallback(() => setSelected(new Set()), []);
 
 	const handleRepick = useCallback(async () => {
-		if (seedCart.length === 0) return; // nothing to auto-pick from
+		if (seedCart.length === 0) return;
 		setRepicking(true);
 		try {
 			const res = await requestSuggest(slug, sessionId, seedCart);
 			setSelected(new Set(sanitizeSeats(res.items.flatMap((i) => i.seat_ids), seatTier, bookedSet, maxPerCategory)));
 			setShortfall(res.shortfall);
-			openModal();
+			closeCheckout();
+			openAutopick();
 		} catch {
 			addToast({ title: t('seating.repick_error'), color: 'danger' });
 		} finally {
 			setRepicking(false);
 		}
-	}, [seedCart, slug, sessionId, seatTier, bookedSet, maxPerCategory, openModal, t]);
+	}, [seedCart, slug, sessionId, seatTier, bookedSet, maxPerCategory, openAutopick, closeCheckout, t]);
 
 	const handleContinue = useCallback(() => {
 		if (!complete || continuing) return;
@@ -256,296 +258,184 @@ export default function SeatSelection({
 		return date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', hour12: false });
 	};
 
-	// ── Geometry version guard (deploy-skew, D12) ────────────────────────────────
+	// ── Version mismatch guard ────────────────────────────────────────────────
 	if (versionMismatch) {
 		return (
-			<div className="mx-auto max-w-md py-20 text-center">
-				<Icon icon="mdi:update" width={40} className="mx-auto mb-4 text-[var(--theme-text-muted)]" />
-				<h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-					{t('seating.version_mismatch_title')}
-				</h2>
-				<p className="mb-6 text-[0.875rem] text-[var(--theme-text-muted)]">{t('seating.version_mismatch_body')}</p>
-				<div className="flex justify-center gap-3">
-					<Button
-						onPress={() => window.location.reload()}
-						className="rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
-						style={{ backgroundColor: 'var(--brand-primary)' }}
-					>
-						{t('seating.refresh')}
-					</Button>
-					<Button
-						as={Link}
-						href={`/events/${slug}`}
-						variant="bordered"
-						className="rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
-					>
-						{t('seating.back_to_event')}
-					</Button>
+			<div className="flex min-h-screen items-center justify-center bg-[var(--theme-bg)] px-4">
+				<div className="max-w-md text-center">
+					<Icon icon="mdi:update" width={40} className="mx-auto mb-4 text-[var(--theme-text-muted)]" />
+					<h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+						{t('seating.version_mismatch_title')}
+					</h2>
+					<p className="mb-6 text-[0.875rem] text-[var(--theme-text-muted)]">{t('seating.version_mismatch_body')}</p>
+					<div className="flex justify-center gap-3">
+						<Button
+							onPress={() => window.location.reload()}
+							className="rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
+							style={{ backgroundColor: 'var(--brand-primary)' }}
+						>
+							{t('seating.refresh')}
+						</Button>
+						<Button
+							as={Link}
+							href={`/events/${slug}`}
+							variant="bordered"
+							className="rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
+						>
+							{t('seating.back_to_event')}
+						</Button>
+					</div>
 				</div>
 			</div>
 		);
 	}
 
-	// ── Cart panel (shared by desktop sidebar + mobile drawer) ───────────────────
-	const cartPanel = (
-		<div className="flex flex-col overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
-			{/* Header — cart title + clear all */}
-			<div className="flex items-start justify-between gap-3 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] px-6 pb-4 pt-5">
-				<div className="min-w-0">
-					<h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-						{t('seating.your_seats')}
-					</h2>
-					{selected.size > 0 && (
-						<p className="mt-1 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
-							{t('seating.seats_count', { count: selected.size })}
-						</p>
-					)}
-				</div>
-				{selected.size > 0 && (
-					<button
-						type="button"
-						onClick={handleClearAll}
-						className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
-					>
-						Golește
-					</button>
-				)}
-			</div>
+	const dateStr = sessionStart ? `${fmtDate(sessionStart)}${fmtTime(sessionStart) ? ` · ${fmtTime(sessionStart)}` : ''}` : sessionDate;
 
-			{/* Body */}
-			<div className="max-h-[42vh] space-y-4 overflow-y-auto px-6 py-5 md:max-h-none">
-				<SelectedSeatsList items={selectedItems} currency={currency} onRemove={handleRemove} />
-
-				{seedCart.length > 0 && (
-					<button
-						type="button"
-						onClick={handleRepick}
-						disabled={repicking}
-						className="flex w-full items-center justify-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] py-2.5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] text-[var(--theme-text)] transition-colors hover:bg-[color-mix(in_srgb,var(--theme-text)_4%,transparent)] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
-					>
-						<Icon icon={repicking ? 'mdi:loading' : 'mdi:auto-fix'} width={16} className={repicking ? 'animate-spin' : ''} />
-						{t('seating.pick_best')}
-					</button>
-				)}
-			</div>
-
-			{/* Subtotal */}
-			{selected.size > 0 && (
-				<div className="border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] px-6 py-4">
-					<div className="flex items-baseline justify-between">
-						<span className="text-[0.8125rem] text-[var(--theme-text-muted)]">Subtotal</span>
-						<span className="font-[family-name:var(--font-data)] text-[0.875rem] tabular-nums text-[var(--theme-text)]">
-							{total} {currency}
-						</span>
-					</div>
-					<p className="mt-1 font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
-						Comisioane calculate la plată
-					</p>
-				</div>
-			)}
-
-			{/* Total + CTA — dark brand surface */}
-			<div className="bg-[var(--brand-primary)] px-6 py-5 text-[var(--theme-bg)]">
-				<div className="mb-3 flex items-baseline justify-between">
-					<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] opacity-60">
-						{t('seating.total')}
-					</span>
-					<span className="font-[family-name:var(--font-display)] text-[1.75rem] font-[800] leading-none tracking-[-0.02em] tabular-nums">
-						{total} <span className="text-[0.875rem] font-[700] opacity-60">{currency}</span>
-					</span>
-				</div>
-				<Button
-					size="lg"
-					isDisabled={!complete || continuing}
-					isLoading={continuing}
-					onPress={handleContinue}
-					className="w-full rounded-full font-[family-name:var(--font-body)] font-[700] text-white disabled:opacity-45"
-					style={{ backgroundColor: 'var(--brand-accent)' }}
-				>
-					{t('seating.continue')}
-					<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-				</Button>
-				{!complete ? (
-					<p className="mt-2.5 text-center font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] opacity-60">
-						{t('seating.continue_hint')}
-					</p>
-				) : (
-					<p className="mt-2.5 flex items-center justify-center gap-1.5 text-center font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.1em] opacity-60">
-						<Icon icon="mdi:lock-outline" width={11} />
-						{t('checkout.secure_payment_note')}
-					</p>
-				)}
-			</div>
-		</div>
-	);
-
-	const trustChips = (
-		<div className="space-y-2.5 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4">
-			{[
-				{ icon: 'mdi:shield-check-outline', label: 'Plată securizată' },
-				{ icon: 'mdi:flash-outline', label: 'Bilet instant' },
-				{ icon: 'mdi:check-decagram-outline', label: 'Garanție 100%' },
-			].map((c) => (
-				<div key={c.label} className="flex items-center gap-2.5 text-[0.8125rem] text-[var(--theme-text-muted)]">
-					<Icon icon={c.icon} width={18} className="shrink-0 text-[var(--theme-text-muted)]" />
-					{c.label}
-				</div>
-			))}
-		</div>
-	);
-
+	// ── Render ────────────────────────────────────────────────────────────────
 	return (
-		<div className="mx-auto max-w-[1120px] px-4 py-6 sm:px-6 md:py-8">
-			{/* Event strip — back link + big title + meta tiles */}
-			<div className="mb-6">
+		<div className="fixed inset-0 flex flex-col overflow-hidden bg-[var(--theme-bg)]">
+
+			{/* ── Top bar ───────────────────────────────────────────────────── */}
+			<header className="flex h-[52px] flex-shrink-0 items-center gap-3 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-4">
 				<Link
 					href={`/events/${slug}`}
-					className="mb-3 inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+					className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
+					aria-label={t('seating.back_to_event')}
 				>
-					<Icon icon="mdi:arrow-left" width={14} />
-					{t('seating.back_to_event')}
+					<Icon icon="mdi:arrow-left" width={18} />
 				</Link>
-				<div className="flex flex-wrap items-end justify-between gap-4">
-					<h1 className="font-[family-name:var(--font-display)] text-[2rem] font-[800] leading-[1] tracking-[-0.03em] text-[var(--theme-text)] sm:text-[3rem]">
-						{eventTitle}
-					</h1>
-					{(sessionStart || venueName) && (
-						<div className="hidden gap-2.5 sm:flex">
-							{sessionStart && (
-								<MetaTile label="Data" value={fmtDate(sessionStart)} sub={fmtTime(sessionStart) ? `Porți ${fmtTime(sessionStart)}` : sessionDate} />
-							)}
-							{venueName && <MetaTile label="Locul" value={venueName} />}
-						</div>
-					)}
-				</div>
-				{/* Mobile meta pills */}
-				{(sessionStart || venueName) && (
-					<div className="mt-3 flex gap-2 overflow-x-auto sm:hidden">
-						{sessionStart && <MobileMetaPill label={`${fmtDate(sessionStart)}${fmtTime(sessionStart) ? ` · ${fmtTime(sessionStart)}` : ''}`} />}
-						{venueName && <MobileMetaPill label={venueName} />}
-					</div>
-				)}
-			</div>
 
-			{/* Live region for assistive tech */}
-			<div aria-live="polite" className="sr-only">
-				{liveMessage}
-			</div>
-
-			<div className="md:flex md:gap-6">
-				{/* Canvas */}
 				<div className="min-w-0 flex-1">
-					{/* Toolbar */}
-					<div className="mb-3 flex flex-wrap items-center gap-2.5">
-						<h2 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)] sm:text-[1.5rem]">
-							Alege locul
-						</h2>
-						<span className="font-[family-name:var(--font-mono)] text-[0.6875rem] tracking-[0.03em] text-[var(--theme-text-muted)]">
-							· {availableCount} locuri disponibile
-						</span>
-					</div>
-
-					<div className="h-[56vh] w-full md:h-[calc(100vh-15rem)]">
-						<SeatingViewer
-							sections={seating.sections}
-							canvasW={seating.canvas_w}
-							canvasH={seating.canvas_h}
-							bookedSeatIds={bookedSet}
-							selectedSeatIds={selected}
-							tierColorBySeatId={tierColorBySeatId}
-							priceBySeatId={priceBySeatId}
-							currency={currency}
-							onSeatToggle={handleSeatToggle}
-							reducedMotion={reducedMotion}
-						/>
-					</div>
-
-					{/* Compact tier color legend — color-dot pills */}
-					<div className="mt-4 flex flex-wrap gap-2">
-						{tiers.map((tier) => (
-							<div
-								key={tier.ticket_package_id}
-								className="inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-1.5 pl-2.5 pr-3"
-							>
-								<span
-									className="h-2.5 w-2.5 shrink-0 rounded-full"
-									style={{ backgroundColor: colorByTierId.get(tier.ticket_package_id) ?? 'var(--theme-text-muted)' }}
-									aria-hidden="true"
-								/>
-								<span className="font-[family-name:var(--font-body)] text-[0.75rem] font-[600] text-[var(--theme-text)]">{tier.name}</span>
-								<span className="font-[family-name:var(--font-mono)] text-[0.6875rem] tracking-[0.03em] text-[var(--theme-text-muted)]">
-									{tier.price} {currency}
-								</span>
-							</div>
-						))}
-					</div>
-
-					<p className="mt-3 hidden text-center font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)] md:block">
-						{t('seating.canvas_hint')}
+					<p className="truncate font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] leading-tight tracking-[-0.01em] text-[var(--theme-text)]">
+						{eventTitle}
 					</p>
 				</div>
 
-				{/* Sidebar — desktop sticky */}
-				<aside className="hidden w-[360px] flex-shrink-0 md:block">
-					<div className="sticky top-32 space-y-3">
-						{cartPanel}
-						{trustChips}
+				{(dateStr || venueName) && (
+					<div className="hidden shrink-0 items-center gap-1.5 sm:flex">
+						{dateStr && (
+							<span className="font-[family-name:var(--font-mono)] text-[0.6875rem] text-[var(--theme-text-muted)]">
+								{dateStr}
+							</span>
+						)}
+						{dateStr && venueName && (
+							<span className="text-[var(--theme-text-muted)] opacity-30">·</span>
+						)}
+						{venueName && (
+							<span className="font-[family-name:var(--font-mono)] text-[0.6875rem] text-[var(--theme-text-muted)]">
+								{venueName}
+							</span>
+						)}
 					</div>
-				</aside>
-			</div>
+				)}
+			</header>
 
-			{/* Bottom padding so the mobile sticky bar never covers the content */}
-			<div className="h-24 md:hidden" />
-
-			{/* Mobile sticky bar — tap left to open the cart drawer */}
-			<div
-				className="fixed inset-x-0 bottom-0 z-40 bg-[var(--brand-primary)] px-4 py-3 text-[var(--theme-bg)] shadow-[0_-24px_60px_rgba(20,19,18,0.35)] md:hidden"
-				style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
-			>
-				<div className="flex items-center justify-between gap-3">
+			{/* ── Price tags ────────────────────────────────────────────────── */}
+			<div className="flex h-[44px] flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+				{tiers.map((tier) => {
+					const isActive = highlightedTier === tier.ticket_package_id;
+					const color = colorByTierId.get(tier.ticket_package_id) ?? '#888';
+					return (
+						<button
+							key={tier.ticket_package_id}
+							type="button"
+							onClick={() => setHighlightedTier(isActive ? null : tier.ticket_package_id)}
+							className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 font-[family-name:var(--font-body)] text-[0.75rem] font-[600] transition-all duration-150 ${
+								isActive
+									? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-[var(--theme-bg)]'
+									: 'border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-surface)] text-[var(--theme-text)] hover:border-[color-mix(in_srgb,var(--theme-text)_22%,transparent)]'
+							}`}
+						>
+							<span
+								className="h-2 w-2 shrink-0 rounded-full"
+								style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.7)' : color }}
+								aria-hidden="true"
+							/>
+							{tier.name}
+							<span className={`font-[family-name:var(--font-mono)] text-[0.6875rem] ${isActive ? 'opacity-70' : 'text-[var(--theme-text-muted)]'}`}>
+								{tier.price} {currency}
+							</span>
+						</button>
+					);
+				})}
+				{highlightedTier !== null && (
 					<button
 						type="button"
-						onClick={openSheet}
-						disabled={selected.size === 0}
-						className="flex min-w-0 items-center gap-2 text-left disabled:opacity-80"
+						onClick={() => setHighlightedTier(null)}
+						className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
 					>
-						<div className="min-w-0">
-							<p className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] opacity-60">
-								{selected.size > 0 ? t('seating.seats_count', { count: selected.size }) : t('seating.no_seats_yet')}
-							</p>
-							<p className="font-[family-name:var(--font-display)] text-[1.25rem] font-[800] leading-tight tracking-[-0.02em] tabular-nums">
-								{total} <span className="text-[0.8125rem] font-[700] opacity-60">{currency}</span>
-							</p>
-						</div>
-						{selected.size > 0 && <Icon icon="mdi:chevron-up" width={18} className="shrink-0 opacity-60" />}
+						× Toate
 					</button>
-					<Button
-						size="lg"
-						isDisabled={!complete || continuing}
-						isLoading={continuing}
-						onPress={handleContinue}
-						className="rounded-full font-[family-name:var(--font-body)] font-[700] text-white disabled:opacity-45"
-						style={{ backgroundColor: 'var(--brand-accent)' }}
-					>
-						{t('seating.continue')}
-						<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-					</Button>
+				)}
+			</div>
+
+			{/* ── Canvas ────────────────────────────────────────────────────── */}
+			<div className="relative min-h-0 flex-1">
+				<SeatingViewer
+					sections={seating.sections}
+					canvasW={seating.canvas_w}
+					canvasH={seating.canvas_h}
+					bookedSeatIds={bookedSet}
+					selectedSeatIds={selected}
+					tierColorBySeatId={displayColorBySeatId}
+					priceBySeatId={priceBySeatId}
+					currency={currency}
+					onSeatToggle={handleSeatToggle}
+					reducedMotion={reducedMotion}
+				/>
+
+				{/* Available count overlay */}
+				<div className="pointer-events-none absolute left-3 top-3">
+					<span className="rounded-full bg-[var(--theme-bg)]/80 px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)] backdrop-blur-sm">
+						{availableCount} locuri disponibile
+					</span>
 				</div>
 			</div>
 
-			{/* Mobile cart drawer (bottom sheet) */}
-			<Drawer isOpen={sheetOpen} onOpenChange={onSheetOpenChange} placement="bottom" size="lg" className="md:hidden">
-				<DrawerContent className="bg-transparent shadow-none">
-					{() => (
-						<DrawerBody className="p-4">
-							{cartPanel}
-						</DrawerBody>
-					)}
-				</DrawerContent>
-			</Drawer>
+			{/* Live region */}
+			<div aria-live="polite" className="sr-only">{liveMessage}</div>
 
-			{/* Auto-pick arrival modal */}
-			<Modal isOpen={modalOpen} onClose={closeModal} placement="center" backdrop="opaque" size="sm">
+			{/* ── Bottom bar ────────────────────────────────────────────────── */}
+			<div
+				className="flex-shrink-0 bg-[var(--brand-primary)] text-[var(--theme-bg)]"
+				style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+			>
+				<div className="flex h-[64px] items-center gap-4 px-4">
+					{selected.size === 0 ? (
+						<p className="flex-1 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.12em] opacity-50">
+							{t('seating.no_seats_yet')}
+						</p>
+					) : (
+						<>
+							<button
+								type="button"
+								onClick={openCheckout}
+								className="min-w-0 flex-1 text-left"
+							>
+								<p className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.15em] opacity-60">
+									{selected.size === 1 ? '1 loc selectat' : `${selected.size} locuri selectate`}
+								</p>
+								<p className="font-[family-name:var(--font-display)] text-[1.25rem] font-[800] leading-tight tracking-[-0.02em] tabular-nums">
+									{total} <span className="text-[0.875rem] font-[700] opacity-60">{currency}</span>
+								</p>
+							</button>
+							<Button
+								size="lg"
+								onPress={openCheckout}
+								className="shrink-0 rounded-full font-[family-name:var(--font-body)] font-[700] text-white"
+								style={{ backgroundColor: 'var(--brand-accent)' }}
+							>
+								{t('seating.continue')}
+								<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
+							</Button>
+						</>
+					)}
+				</div>
+			</div>
+
+			{/* ── Auto-pick arrival modal ───────────────────────────────────── */}
+			<Modal isOpen={autopickOpen} onClose={closeAutopick} placement="center" backdrop="opaque" size="sm">
 				<ModalContent>
 					{() => (
 						<>
@@ -591,7 +481,7 @@ export default function SeatSelection({
 									</Button>
 								)}
 								<Button
-									onPress={closeModal}
+									onPress={closeAutopick}
 									className="rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
 									style={{ backgroundColor: 'var(--brand-primary)' }}
 								>
@@ -602,24 +492,111 @@ export default function SeatSelection({
 					)}
 				</ModalContent>
 			</Modal>
-		</div>
-	);
-}
 
-function MetaTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
-	return (
-		<div className="min-w-[140px] rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-3.5 py-2.5">
-			<div className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">{label}</div>
-			<div className="mt-1 truncate font-[family-name:var(--font-display)] text-[0.875rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">{value}</div>
-			{sub && <div className="truncate text-[0.6875rem] text-[var(--theme-text-muted)]">{sub}</div>}
-		</div>
-	);
-}
+			{/* ── Checkout confirmation modal ───────────────────────────────── */}
+			<Modal isOpen={checkoutOpen} onClose={closeCheckout} placement="center" backdrop="opaque" size="sm" scrollBehavior="inside">
+				<ModalContent>
+					{() => (
+						<>
+							<ModalHeader className="flex items-start justify-between gap-3">
+								<div>
+									<h2 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+										Locurile tale
+									</h2>
+									<p className="mt-0.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
+										{selected.size === 1 ? '1 loc selectat' : `${selected.size} locuri selectate`}
+									</p>
+								</div>
+								<button
+									type="button"
+									onClick={handleClearAll}
+									className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
+								>
+									Golește
+								</button>
+							</ModalHeader>
 
-function MobileMetaPill({ label }: { label: string }) {
-	return (
-		<div className="shrink-0 whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-3.5 py-2 font-[family-name:var(--font-mono)] text-[0.6875rem] tracking-[0.03em] text-[var(--theme-text)]">
-			{label}
+							<ModalBody className="pb-1">
+								<div className="space-y-3">
+									{selectedItems.map((item) => (
+										<div key={item.seatId} className="flex items-center gap-3">
+											<span
+												className="h-2.5 w-2.5 shrink-0 rounded-full"
+												style={{ backgroundColor: item.color }}
+												aria-hidden="true"
+											/>
+											<div className="min-w-0 flex-1">
+												<p className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--theme-text)]">
+													{item.tierName}
+												</p>
+												<p className="font-[family-name:var(--font-mono)] text-[0.6875rem] text-[var(--theme-text-muted)]">
+													{item.label}
+												</p>
+											</div>
+											<div className="flex shrink-0 items-center gap-2">
+												<span className="font-[family-name:var(--font-data)] text-[0.875rem] tabular-nums text-[var(--theme-text)]">
+													{item.price} {currency}
+												</span>
+												<button
+													type="button"
+													onClick={() => handleRemove(item.seatId)}
+													className="text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
+													aria-label="Șterge"
+												>
+													<Icon icon="mdi:close" width={14} />
+												</button>
+											</div>
+										</div>
+									))}
+								</div>
+							</ModalBody>
+
+							<ModalFooter className="flex-col gap-3">
+								{/* Total */}
+								<div className="flex w-full items-baseline justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-3">
+									<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
+										Total
+									</span>
+									<span className="font-[family-name:var(--font-display)] text-[1.5rem] font-[800] leading-none tracking-[-0.02em] tabular-nums text-[var(--theme-text)]">
+										{total} <span className="text-[0.9375rem] font-[700] opacity-50">{currency}</span>
+									</span>
+								</div>
+
+								{/* Repick option */}
+								{seedCart.length > 0 && (
+									<Button
+										variant="bordered"
+										onPress={handleRepick}
+										isLoading={repicking}
+										className="w-full rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
+									>
+										<Icon icon="mdi:auto-fix" width={16} className="mr-1" />
+										{t('seating.pick_best')}
+									</Button>
+								)}
+
+								{/* Confirm CTA */}
+								<Button
+									size="lg"
+									isDisabled={!complete || continuing}
+									isLoading={continuing}
+									onPress={handleContinue}
+									className="w-full rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
+									style={{ backgroundColor: 'var(--brand-primary)' }}
+								>
+									Confirmă & Plătește
+									<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
+								</Button>
+
+								<p className="flex items-center justify-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
+									<Icon icon="mdi:lock-outline" width={11} />
+									{t('checkout.secure_payment_note')}
+								</p>
+							</ModalFooter>
+						</>
+					)}
+				</ModalContent>
+			</Modal>
 		</div>
 	);
 }

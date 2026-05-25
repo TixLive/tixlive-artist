@@ -437,21 +437,41 @@ export default function SeatSelection({
 					className="flex-shrink-0 bg-[var(--brand-primary)] text-[var(--theme-bg)]"
 					style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
 				>
-					{/* Seat chips — scrollable preview with hover-X to remove */}
-					<div className="flex items-center gap-1.5 overflow-x-auto px-4 pt-2.5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+					{/* Seat cards — scrollable, one card per seat */}
+					<div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 						{selectedItems.map((item) => (
 							<div key={item.seatId} className="group relative shrink-0">
-								<div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.6875rem] font-[600] leading-none">
-									<span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-									{item.label}
+								{/* Card */}
+								<div className="flex min-w-[112px] flex-col gap-0.5 rounded-2xl bg-white/15 px-3 py-2.5 backdrop-blur-sm">
+									{/* Tier name + color dot */}
+									<div className="flex items-center gap-1.5">
+										<span
+											className="h-2 w-2 shrink-0 rounded-full"
+											style={{ backgroundColor: item.color }}
+											aria-hidden="true"
+										/>
+										<span className="truncate font-[family-name:var(--font-display)] text-[0.6875rem] font-[700] leading-none">
+											{item.tierName}
+										</span>
+									</div>
+									{/* Seat label (row · seat) */}
+									<p className="font-[family-name:var(--font-mono)] text-[0.8125rem] font-[700] leading-tight tabular-nums">
+										{item.label}
+									</p>
+									{/* Price */}
+									<p className="font-[family-name:var(--font-mono)] text-[0.6875rem] tabular-nums opacity-60">
+										{item.price} {currency}
+									</p>
 								</div>
+								{/* Hover X */}
 								<button
 									type="button"
 									onClick={() => handleRemove(item.seatId)}
-									className="absolute -right-1 -top-1 z-10 hidden h-4 w-4 items-center justify-center rounded-full bg-white text-[var(--brand-primary)] group-hover:flex"
+									className="absolute -right-1.5 -top-1.5 z-10 hidden h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm group-hover:flex"
+									style={{ color: 'var(--brand-primary)' }}
 									aria-label="Șterge"
 								>
-									<Icon icon="mdi:close" width={9} />
+									<Icon icon="mdi:close" width={11} />
 								</button>
 							</div>
 						))}

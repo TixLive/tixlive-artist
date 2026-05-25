@@ -275,157 +275,182 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
           <section
             id="about"
             className={`grid gap-8 md:items-start md:gap-14 ${
-              event.description ? 'md:grid-cols-[1.6fr_1fr]' : 'md:max-w-md'
+              (event.description || event.venue_name) ? 'md:grid-cols-[1.6fr_1fr]' : 'md:max-w-md'
             }`}
           >
-            {event.description && (
-              <div>
-                <h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
-                  Despre Eveniment
-                </h2>
-                <p
-                  className={`mt-4 whitespace-pre-line text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)] sm:text-[1.0625rem] ${
-                    descriptionExpanded ? '' : 'line-clamp-6'
-                  }`}
-                >
-                  {event.description}
-                </p>
-                {event.description.length > 200 && (
-                  <button
-                    className="mt-3 font-[family-name:var(--font-body)] text-[0.9375rem] font-[600] text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
-                    onClick={() => setDescriptionExpanded((o) => !o)}
-                  >
-                    {descriptionExpanded ? 'Arată mai puțin' : 'Arată mai mult'}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Buy card */}
-            <div
-              className={`overflow-hidden rounded-[22px] border ${hairline} bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]`}
-            >
-              <div className="px-6">
-                <div className={`border-b ${hairline} py-4`}>
-                  <div className={monoLabel}>Data</div>
-                  <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-                    {fmtDate(event.date_start)}
-                  </div>
-                  <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
-                    Porțile se deschid la {fmtTime(event.date_start)}
-                  </div>
-                </div>
-
-                {event.venue_name && (
-                  <div className={`border-b ${hairline} py-4`}>
-                    <div className={monoLabel}>Locație</div>
-                    <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-                      {event.venue_name}
-                    </div>
-                    {event.venue_address && (
-                      <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">{event.venue_address}</div>
+            {/* Left column: description + location */}
+            {(event.description || event.venue_name) && (
+              <div className="flex flex-col gap-10">
+                {event.description && (
+                  <div>
+                    <h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
+                      Despre Eveniment
+                    </h2>
+                    <p
+                      className={`mt-4 whitespace-pre-line text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)] sm:text-[1.0625rem] ${
+                        descriptionExpanded ? '' : 'line-clamp-6'
+                      }`}
+                    >
+                      {event.description}
+                    </p>
+                    {event.description.length > 200 && (
+                      <button
+                        className="mt-3 font-[family-name:var(--font-body)] text-[0.9375rem] font-[600] text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+                        onClick={() => setDescriptionExpanded((o) => !o)}
+                      >
+                        {descriptionExpanded ? 'Arată mai puțin' : 'Arată mai mult'}
+                      </button>
                     )}
                   </div>
                 )}
 
-                <div className="py-4">
-                  <div className={monoLabel}>Preț</div>
-                  <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-                    {priceFrom > 0
-                      ? maxPrice > priceFrom
-                        ? `${priceFrom} – ${maxPrice} ${currency}`
-                        : `${priceFrom} ${currency}`
-                      : 'Gratuit'}
-                  </div>
-                  {ticketTypes.length > 0 && (
-                    <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
-                      {ticketTypes.length} {ticketTypes.length === 1 ? 'tip de bilet' : 'tipuri de bilete'}
+                {event.venue_name && (
+                  <div>
+                    <h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
+                      Locație
+                    </h2>
+                    <div className="mt-4">
+                      <p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">
+                        {event.venue_name}
+                      </p>
+                      {event.venue_address && (
+                        <p className="mt-0.5 text-[0.8125rem] text-[var(--theme-text-muted)]">{event.venue_address}</p>
+                      )}
                     </div>
+                    {event.google_place_id && <AddressMap googlePlaceId={event.google_place_id} height={280} />}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Right column: buy card + trust badges */}
+            <div className="flex flex-col gap-4">
+              <div
+                className={`overflow-hidden rounded-[22px] border ${hairline} bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]`}
+              >
+                <div className="px-6">
+                  <div className={`border-b ${hairline} py-4`}>
+                    <div className={monoLabel}>Data</div>
+                    <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                      {fmtDate(event.date_start)}
+                    </div>
+                    <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
+                      Porțile se deschid la {fmtTime(event.date_start)}
+                    </div>
+                  </div>
+
+                  <div className="py-4">
+                    <div className={monoLabel}>Preț</div>
+                    <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                      {priceFrom > 0
+                        ? maxPrice > priceFrom
+                          ? `${priceFrom} – ${maxPrice} ${currency}`
+                          : `${priceFrom} ${currency}`
+                        : 'Gratuit'}
+                    </div>
+                    {ticketTypes.length > 0 && (
+                      <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
+                        {ticketTypes.length} {ticketTypes.length === 1 ? 'tip de bilet' : 'tipuri de bilete'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className={`flex flex-col gap-2.5 border-t ${hairline} bg-[var(--theme-bg)] px-5 py-4`}>
+                  {!salesOpen ? (
+                    <Button
+                      isDisabled
+                      variant="flat"
+                      size="lg"
+                      className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700]"
+                    >
+                      {event.status === 'soon' ? 'În curând' : 'Vânzări Încheiate'}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="solid"
+                      size="lg"
+                      className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]"
+                      style={{ backgroundColor: 'var(--brand-primary)' }}
+                      onPress={isSeated || totalQuantity > 0 ? handleBuy : scrollToTickets}
+                    >
+                      {buyCtaLabel}
+                      <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
+                    </Button>
                   )}
+                  <Button
+                    variant="bordered"
+                    size="lg"
+                    onPress={onShare}
+                    className="w-full rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--theme-text)]"
+                  >
+                    {copied ? (
+                      <>
+                        <Icon icon="mdi:check" width={16} className="text-[#16A34A]" /> Link copiat
+                      </>
+                    ) : (
+                      <>
+                        <Icon icon="mdi:share-variant-outline" width={16} /> Distribuie evenimentul
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
 
-              <div className={`flex flex-col gap-2.5 border-t ${hairline} bg-[var(--theme-bg)] px-5 py-4`}>
-                {!salesOpen ? (
-                  <Button
-                    isDisabled
-                    variant="flat"
-                    size="lg"
-                    className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700]"
+              {/* Trust badges */}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {[
+                  { icon: 'mdi:shield-check-outline', title: 'Plată securizată', sub: 'SSL 256-bit' },
+                  { icon: 'mdi:flash-outline', title: 'Bilet instant', sub: 'Email & telefon' },
+                  { icon: 'mdi:check-decagram-outline', title: 'Garanție 100%', sub: 'Rambursare ușoară' },
+                ].map((it) => (
+                  <div
+                    key={it.title}
+                    className={`flex items-center gap-3 rounded-2xl border ${hairline} bg-[var(--theme-surface)] px-4 py-3`}
                   >
-                    {event.status === 'soon' ? 'În curând' : 'Vânzări Încheiate'}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="solid"
-                    size="lg"
-                    className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]"
-                    style={{ backgroundColor: 'var(--brand-primary)' }}
-                    onPress={isSeated || totalQuantity > 0 ? handleBuy : scrollToTickets}
-                  >
-                    {buyCtaLabel}
-                    <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
-                  </Button>
-                )}
-                <Button
-                  variant="bordered"
-                  size="lg"
-                  onPress={onShare}
-                  className="w-full rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--theme-text)]"
-                >
-                  {copied ? (
-                    <>
-                      <Icon icon="mdi:check" width={16} className="text-[#16A34A]" /> Link copiat
-                    </>
-                  ) : (
-                    <>
-                      <Icon icon="mdi:share-variant-outline" width={16} /> Distribuie evenimentul
-                    </>
-                  )}
-                </Button>
+                    <Icon icon={it.icon} width={22} className="shrink-0 text-[var(--theme-text-muted)]" />
+                    <div className="min-w-0">
+                      <div className="font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)]">
+                        {it.title}
+                      </div>
+                      <div className="font-[family-name:var(--font-mono)] text-[0.625rem] tracking-[0.05em] text-[var(--theme-text-muted)]">
+                        {it.sub}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Order tickets */}
-          <SectionShell
-            id="tickets"
-            label="Comandă Bilete"
-            rightSlot={
-              priceFrom > 0 ? (
-                <span className="font-[family-name:var(--font-mono)] text-[0.75rem] tracking-[0.03em] text-[var(--theme-text-muted)]">
-                  {priceFrom} – {maxPrice} {currency}
-                </span>
-              ) : undefined
-            }
-          >
-            <div ref={ticketsRef} className="flex flex-col gap-6">
-              {(event.sessions ?? []).length > 1 && (
-                <SessionPicker
-                  sessions={event.sessions ?? []}
-                  activeSessionId={activeSessionId}
-                  onSelect={(id) => {
-                    setActiveSessionId(id);
-                    setQuantities({});
-                  }}
-                />
-              )}
+          {/* Order tickets — GA events always; seated events only when multi-session (for the session picker) */}
+          {(!isSeated || (event.sessions ?? []).length > 1) && (
+            <SectionShell
+              id="tickets"
+              label="Comandă Bilete"
+              rightSlot={
+                priceFrom > 0 && !isSeated ? (
+                  <span className="font-[family-name:var(--font-mono)] text-[0.75rem] tracking-[0.03em] text-[var(--theme-text-muted)]">
+                    {priceFrom} – {maxPrice} {currency}
+                  </span>
+                ) : undefined
+              }
+            >
+              <div ref={ticketsRef} className="flex flex-col gap-6">
+                {(event.sessions ?? []).length > 1 && (
+                  <SessionPicker
+                    sessions={event.sessions ?? []}
+                    activeSessionId={activeSessionId}
+                    onSelect={(id) => {
+                      setActiveSessionId(id);
+                      setQuantities({});
+                    }}
+                  />
+                )}
 
-              {availabilityNotice === null ? (
-                isSeated ? (
-                  salesOpen && (
-                    <Button
-                      variant="solid"
-                      size="lg"
-                      className="w-full rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
-                      style={{ backgroundColor: 'var(--brand-primary)' }}
-                      onPress={handleBuy}
-                    >
-                      {t('seating.select_seats')}
-                      <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
-                    </Button>
-                  )
-                ) : (
+                {availabilityNotice !== null ? (
+                  <TicketAvailabilityNotice variant={availabilityNotice} />
+                ) : !isSeated ? (
                   <>
                     {/* Price ladder */}
                     <div className="flex flex-col gap-3">
@@ -536,36 +561,10 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                       </button>
                     </div>
                   </>
-                )
-              ) : (
-                <TicketAvailabilityNotice variant={availabilityNotice} />
-              )}
-
-              {/* Trust indicators */}
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-                {[
-                  { icon: 'mdi:shield-check-outline', title: 'Plată securizată', sub: 'SSL 256-bit' },
-                  { icon: 'mdi:flash-outline', title: 'Bilet instant', sub: 'Email & telefon' },
-                  { icon: 'mdi:check-decagram-outline', title: 'Garanție 100%', sub: 'Rambursare ușoară' },
-                ].map((it) => (
-                  <div
-                    key={it.title}
-                    className={`flex items-center gap-3 rounded-2xl border ${hairline} bg-[var(--theme-surface)] px-4 py-3`}
-                  >
-                    <Icon icon={it.icon} width={22} className="shrink-0 text-[var(--theme-text-muted)]" />
-                    <div className="min-w-0">
-                      <div className="font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)]">
-                        {it.title}
-                      </div>
-                      <div className="font-[family-name:var(--font-mono)] text-[0.625rem] tracking-[0.05em] text-[var(--theme-text-muted)]">
-                        {it.sub}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                ) : null}
               </div>
-            </div>
-          </SectionShell>
+            </SectionShell>
+          )}
 
           {/* Event-type-specific sections */}
           {event.active_sections && event.page_content && (
@@ -608,21 +607,6 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
                 }
               })}
             </>
-          )}
-
-          {/* Venue */}
-          {event.venue_name && (
-            <SectionShell id="info" label="Locație">
-              <div className="mb-4">
-                <p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">
-                  {event.venue_name}
-                </p>
-                {event.venue_address && (
-                  <p className="mt-0.5 text-[0.8125rem] text-[var(--theme-text-muted)]">{event.venue_address}</p>
-                )}
-              </div>
-              {event.google_place_id && <AddressMap googlePlaceId={event.google_place_id} height={320} />}
-            </SectionShell>
           )}
 
           {/* Organizer card */}

@@ -395,7 +395,7 @@ export default function SeatSelection({
 	);
 
 	return (
-		<div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 md:py-8">
+		<div className="mx-auto max-w-[1120px] px-4 py-6 sm:px-6 md:py-8">
 			{/* Event strip — back link + big title + meta tiles */}
 			<div className="mb-6">
 				<Link
@@ -414,7 +414,7 @@ export default function SeatSelection({
 							{sessionStart && (
 								<MetaTile label="Data" value={fmtDate(sessionStart)} sub={fmtTime(sessionStart) ? `Porți ${fmtTime(sessionStart)}` : sessionDate} />
 							)}
-							{venueName && <MetaTile label="Locul" value={venueName} sub={venueAddress} />}
+							{venueName && <MetaTile label="Locul" value={venueName} />}
 						</div>
 					)}
 				</div>

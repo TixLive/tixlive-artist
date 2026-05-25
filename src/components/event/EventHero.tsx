@@ -26,10 +26,6 @@ export default function EventHero({ event }: EventHeroProps) {
 			hour12: false,
 		});
 
-	const priceFrom = event.price_from ?? event.ticket_types?.[0]?.price ?? 0;
-	const currency = event.currency ?? event.ticket_types?.[0]?.currency ?? 'MDL';
-	const maxPrice = event.ticket_types?.length ? Math.max(...event.ticket_types.map((tt) => tt.price)) : priceFrom;
-
 	const hasPortrait = !!event.poster_portrait_url;
 	// Background fill prefers the landscape cover; a portrait-only event uses its
 	// poster as a blurred fill behind the sharp floating card.
@@ -89,36 +85,14 @@ export default function EventHero({ event }: EventHeroProps) {
 					)}
 				</div>
 
-				{/* Title + meta — below image */}
+				{/* Title — below image */}
 				<div className="pt-5">
 					<h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,6vw,3.5rem)] font-[900] leading-[0.95] tracking-[-0.03em] text-[var(--theme-text)]">
 						{event.title}
 					</h1>
-					<div className="mt-4 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap">
-						<MetaPill label="Când" value={formatDate(event.date_start)} sub={`Porți ${formatTime(event.date_start)}`} />
-						{event.venue_name && (
-							<MetaPill label="Unde" value={event.venue_name} sub={event.venue_address || undefined} />
-						)}
-						{priceFrom > 0 && (
-							<MetaPill label="De la" value={`${priceFrom} ${currency}`} sub={maxPrice > priceFrom ? `până la ${maxPrice} ${currency}` : undefined} />
-						)}
-					</div>
 				</div>
 			</div>
 		</section>
 	);
 }
 
-function MetaPill({ label, value, sub }: { label: string; value: string; sub?: string }) {
-	return (
-		<div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-3.5 py-3">
-			<div className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
-				{label}
-			</div>
-			<div className="mt-1 truncate font-[family-name:var(--font-display)] text-[0.875rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-				{value}
-			</div>
-			{sub && <div className="truncate text-[0.6875rem] text-[var(--theme-text-muted)]">{sub}</div>}
-		</div>
-	);
-}

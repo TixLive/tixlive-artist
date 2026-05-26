@@ -61,24 +61,20 @@ export default function EventDetailPage() {
   const [addonQuantities, setAddonQuantities] = useState<Record<number, number>>({});
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
-  if (notFound) return <Layout organizer={organizer ?? undefined}><div className="py-32 text-center text-[var(--theme-muted)]">Event not found.</div></Layout>;
-  if (!event) return <Layout organizer={organizer ?? undefined}><div className="py-32" /></Layout>;
-
-  const ticketTypes = event.ticket_types ?? [];
-  const addons = event.ticket_addons ?? [];
-  const isSeated = !!event.is_seated;
+  // Derived state — safe with null event (empty arrays/false until loaded)
+  const ticketTypes = event?.ticket_types ?? [];
+  const addons = event?.ticket_addons ?? [];
+  const isSeated = !!event?.is_seated;
+  const salesOpen = event?.status === 'open';
 
   const isEventSoldOut = useMemo(() => {
     return ticketTypes.length > 0 && ticketTypes.every((tt) => tt.remaining_capacity !== null && tt.remaining_capacity === 0);
   }, [ticketTypes]);
 
-  // Only `open` events can be purchased. `soon`/`closed` (and sold out) are viewable
-  // but the ticket selector is replaced by a notice and every buy entry point is disabled.
-  const salesOpen = event.status === 'open';
   const availabilityNotice: TicketAvailabilityVariant | null =
-    event.status === 'soon'
+    event?.status === 'soon'
       ? 'coming_soon'
-      : event.status === 'closed'
+      : event?.status === 'closed'
         ? 'closed'
         : isEventSoldOut
           ? 'sold_out'
@@ -96,7 +92,7 @@ export default function EventDetailPage() {
       }));
   }, [ticketTypes, quantities]);
 
-  const currency = ticketTypes[0]?.currency ?? event.currency ?? 'MDL';
+  const currency = ticketTypes[0]?.currency ?? event?.currency ?? 'MDL';
   const ticketsRef = useRef<HTMLDivElement>(null);
 
   const totalQuantity = useMemo(
@@ -132,20 +128,19 @@ export default function EventDetailPage() {
     [ticketTypes, priceFrom]
   );
 
-  // Itemised addon lines for the cart summary (per-ticket addons multiply by ticket count at checkout).
   const addonLines = useMemo(
     () => addons.filter((a) => (addonQuantities[a.id] ?? 0) > 0).map((a) => ({ ...a, qty: addonQuantities[a.id] })),
     [addons, addonQuantities]
   );
 
-  const showSocial = !!(event.fomo_enabled && (event.fomo_live_viewers || event.fomo_recent_sales));
-  const showCountdown = !!(event.fomo_enabled && event.fomo_countdown);
+  const showSocial = !!(event?.fomo_enabled && (event?.fomo_live_viewers || event?.fomo_recent_sales));
+  const showCountdown = !!(event?.fomo_enabled && event?.fomo_countdown);
 
   const onShare = useCallback(async () => {
     const url = window.location.href;
     try {
       if (typeof navigator.share === 'function') {
-        await navigator.share({ title: event.title, url });
+        await navigator.share({ title: event?.title ?? '', url });
       } else {
         await navigator.clipboard.writeText(url);
         setCopied(true);
@@ -154,7 +149,7 @@ export default function EventDetailPage() {
     } catch {
       /* user dismissed the share sheet */
     }
-  }, [event.title]);
+  }, [event?.title]);
 
   const fmtDate = (d: string) =>
     new Date(d).toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -176,7 +171,7 @@ export default function EventDetailPage() {
   }, []);
 
   const handleBuy = useCallback(() => {
-    if (!salesOpen) return;
+    if (!salesOpen || !event) return;
     if (!isSeated && cartItems.length === 0) return;
 
     const addonItems = addons
@@ -204,7 +199,11 @@ export default function EventDetailPage() {
       sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
       router.push('/checkout');
     }
-  }, [salesOpen, isSeated, cartItems, event.slug, activeSessionId, addons, addonQuantities, currency, router]);
+  }, [salesOpen, event, isSeated, cartItems, activeSessionId, addons, addonQuantities, currency, router]);
+
+  // Early returns after all hooks
+  if (notFound) return <Layout organizer={organizer ?? undefined}><div className="py-32 text-center text-[var(--theme-muted)]">Event not found.</div></Layout>;
+  if (!event) return <Layout organizer={organizer ?? undefined}><div className="py-32" /></Layout>;
 
   // JSON-LD structured data
   const jsonLd = {

@@ -92,5 +92,4 @@ export default LegalPage;
 import { staticI18nProps } from '@/lib/staticI18n';
 
 export const runtime = 'experimental-edge';
-export const getStaticPaths = () => ({ paths: [], fallback: 'blocking' });
-export const getStaticProps = ({ locale }: { locale?: string }) => ({ props: staticI18nProps(locale) });
+export const getServerSideProps = ({ locale }: { locale?: string }) => ({ props: staticI18nProps(locale) });

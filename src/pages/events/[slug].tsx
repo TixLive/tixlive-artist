@@ -50,7 +50,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     const q = router.query.slug as string | undefined;
     if (q && q !== '_') { setSlug(q); return; }
     const parts = window.location.pathname.split('/').filter(Boolean);
-    setSlug(parts[1] || undefined); // /events/:slug
+    setSlug(parts[1] ? decodeURIComponent(parts[1]) : undefined); // /events/:slug
   }, [router.query.slug]);
 
   const { data: event, isFetching } = useQuery<IEventDetail | null>({

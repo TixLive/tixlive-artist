@@ -34,7 +34,7 @@ export default function SeatsPage() {
 		const q = router.query.slug as string | undefined;
 		if (q && q !== '_') { setSlug(q); return; }
 		const parts = window.location.pathname.split('/').filter(Boolean);
-		setSlug(parts[1] || undefined); // /events/:slug/seats
+		setSlug(parts[1] ? decodeURIComponent(parts[1]) : undefined); // /events/:slug/seats
 	}, [router.query.slug]);
 
 	useEffect(() => {

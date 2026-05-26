@@ -42,8 +42,16 @@ import VideoSection from '@/components/event/sections/VideoSection';
 const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   const { t } = useTranslation('common');
   const router = useRouter();
-  const slug = router.query.slug as string | undefined;
+  // Static export: router.query.slug is '_' (shell placeholder); read real slug from URL
+  const [slug, setSlug] = useState<string | undefined>(undefined);
   const { organizer } = useOrganizer();
+
+  useEffect(() => {
+    const q = router.query.slug as string | undefined;
+    if (q && q !== '_') { setSlug(q); return; }
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    setSlug(parts[1] || undefined); // /events/:slug
+  }, [router.query.slug]);
 
   const { data: event, isFetching } = useQuery<IEventDetail | null>({
     queryKey: ['event', slug],
@@ -714,5 +722,10 @@ export default EventDetailPage;
 
 import { staticI18nProps } from '@/lib/staticI18n';
 
-export const runtime = 'experimental-edge';
-export const getServerSideProps = ({ locale }: { locale?: string }) => ({ props: staticI18nProps(locale) });
+export async function getStaticPaths() {
+  return { paths: [{ params: { slug: '_' } }], fallback: false };
+}
+
+export function getStaticProps() {
+  return { props: staticI18nProps() };
+}

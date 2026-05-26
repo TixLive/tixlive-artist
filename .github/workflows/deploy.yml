@@ -23,7 +23,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Build
-        run: npx @cloudflare/next-on-pages
+        run: yarn build
         env:
           NEXT_PUBLIC_BESTTIX_API_URL: https://tix.live
 
@@ -32,4 +32,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .vercel/output/static --project-name=tixlive-artist --branch=main
+          command: pages deploy out --project-name=tixlive-artist --branch=main

@@ -16,8 +16,16 @@ const AccountTicketDetailPage: NextPageWithLayout = function AccountTicketDetail
 	const router = useRouter();
 	const { organizer } = useOrganizer();
 	const { attendee, loading: authLoading } = useAttendee();
-	const ticketId = router.query.ticketId as string | undefined;
+	// Static export: router.query.ticketId is '_' (shell placeholder); read real id from URL
+	const [ticketId, setTicketId] = useState<string | undefined>(undefined);
 	const [ticket, setTicket] = useState<ITicket | null>(null);
+
+	useEffect(() => {
+		const q = router.query.ticketId as string | undefined;
+		if (q && q !== '_') { setTicketId(q); return; }
+		const parts = window.location.pathname.split('/').filter(Boolean);
+		setTicketId(parts[2] || undefined); // /account/tickets/:ticketId
+	}, [router.query.ticketId]);
 
 	useEffect(() => {
 		if (!authLoading && !attendee) { router.replace(`/login?next=${encodeURIComponent(router.asPath)}`); }
@@ -55,5 +63,10 @@ export default AccountTicketDetailPage;
 
 import { staticI18nProps } from '@/lib/staticI18n';
 
-export const runtime = 'experimental-edge';
-export const getServerSideProps = ({ locale }: { locale?: string }) => ({ props: staticI18nProps(locale) });
+export async function getStaticPaths() {
+	return { paths: [{ params: { ticketId: '_' } }], fallback: false };
+}
+
+export function getStaticProps() {
+	return { props: staticI18nProps() };
+}

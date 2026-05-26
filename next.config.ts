@@ -1,11 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-	i18n: {
-		defaultLocale: 'ro',
-		locales: ['en', 'ro', 'ru'],
-	},
+	output: 'export',
 	images: {
+		unoptimized: true,
 		remotePatterns: [
 			{ protocol: 'https', hostname: '**' },
 			{
@@ -16,12 +14,6 @@ const nextConfig: NextConfig = {
 			},
 		],
 		dangerouslyAllowLocalIP: process.env.NODE_ENV === 'development',
-	},
-	async redirects() {
-		return [
-			{ source: '/my-tickets', destination: '/account/tickets', permanent: true },
-			{ source: '/my-tickets/:ticketId', destination: '/account/tickets/:ticketId', permanent: true },
-		];
 	},
 };
 

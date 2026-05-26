@@ -17,8 +17,16 @@ const OrderDetailPage: NextPageWithLayout = function OrderDetailPage() {
 	const router = useRouter();
 	const { organizer } = useOrganizer();
 	const { attendee, loading: authLoading } = useAttendee();
-	const token = router.query.token as string | undefined;
+	// Static export: router.query.token is '_' (shell placeholder); read real token from URL
+	const [token, setToken] = useState<string | undefined>(undefined);
 	const [order, setOrder] = useState<IOrderDetail | null>(null);
+
+	useEffect(() => {
+		const q = router.query.token as string | undefined;
+		if (q && q !== '_') { setToken(q); return; }
+		const parts = window.location.pathname.split('/').filter(Boolean);
+		setToken(parts[2] || undefined); // /account/orders/:token
+	}, [router.query.token]);
 
 	useEffect(() => {
 		if (!authLoading && !attendee) { router.replace(`/login?next=${encodeURIComponent(router.asPath)}`); }
@@ -51,5 +59,10 @@ export default OrderDetailPage;
 
 import { staticI18nProps } from '@/lib/staticI18n';
 
-export const runtime = 'experimental-edge';
-export const getServerSideProps = ({ locale }: { locale?: string }) => ({ props: staticI18nProps(locale) });
+export async function getStaticPaths() {
+	return { paths: [{ params: { token: '_' } }], fallback: false };
+}
+
+export function getStaticProps() {
+	return { props: staticI18nProps() };
+}

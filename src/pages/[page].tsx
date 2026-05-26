@@ -27,11 +27,19 @@ const LegalPage: NextPageWithLayout = function LegalPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const { organizer } = useOrganizer();
-	const slug = router.query.page as string | undefined;
+	// Static export: router.query.page is '_' (shell placeholder); read real slug from URL
+	const [slug, setSlug] = useState<string | undefined>(undefined);
 	const [page, setPage] = useState<IOrganizerPage | null>(null);
 	const [notFound, setNotFound] = useState(false);
 	const locale = router.locale ?? 'ro';
 	const fallback = 'ro';
+
+	useEffect(() => {
+		const q = router.query.page as string | undefined;
+		if (q && q !== '_') { setSlug(q); return; }
+		const parts = window.location.pathname.split('/').filter(Boolean);
+		setSlug(parts[0] || undefined);
+	}, [router.query.page]);
 
 	useEffect(() => {
 		if (!slug) return;
@@ -91,5 +99,10 @@ export default LegalPage;
 
 import { staticI18nProps } from '@/lib/staticI18n';
 
-export const runtime = 'experimental-edge';
-export const getServerSideProps = ({ locale }: { locale?: string }) => ({ props: staticI18nProps(locale) });
+export async function getStaticPaths() {
+	return { paths: [{ params: { page: '_' } }], fallback: false };
+}
+
+export function getStaticProps() {
+	return { props: staticI18nProps() };
+}

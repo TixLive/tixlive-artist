@@ -10,10 +10,13 @@ const translations: Record<string, Record<string, unknown>> = {
 
 export function staticI18nProps(locale?: string) {
 	const lang = locale ?? 'ro';
-	const store = translations[lang] ?? translations['ro'];
 	return {
 		_nextI18Next: {
-			initialI18nStore: { [lang]: { common: store } },
+			initialI18nStore: {
+				en: { common: translations['en'] },
+				ro: { common: translations['ro'] },
+				ru: { common: translations['ru'] },
+			},
 			initialLocale: lang,
 			ns: ['common'],
 			userConfig: null,

@@ -25,12 +25,20 @@ interface SeatsState {
 
 export default function SeatsPage() {
 	const router = useRouter();
-	const slug = router.query.slug as string | undefined;
+	// Static export: router.query.slug is '_' (shell placeholder); read real slug from URL
+	const [slug, setSlug] = useState<string | undefined>(undefined);
 	const [state, setState] = useState<SeatsState | null>(null);
 	const [notFound, setNotFound] = useState(false);
 
 	useEffect(() => {
-		if (!router.isReady || !slug) return;
+		const q = router.query.slug as string | undefined;
+		if (q && q !== '_') { setSlug(q); return; }
+		const parts = window.location.pathname.split('/').filter(Boolean);
+		setSlug(parts[1] || undefined); // /events/:slug/seats
+	}, [router.query.slug]);
+
+	useEffect(() => {
+		if (!slug) return;
 
 		const raw = sessionStorage.getItem('tixlive:seats');
 		if (!raw) {
@@ -118,7 +126,7 @@ export default function SeatsPage() {
 				setNotFound(true);
 			}
 		})();
-	}, [router.isReady, slug]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	if (notFound) return null;
 	if (!state) return null;
@@ -152,5 +160,10 @@ export default function SeatsPage() {
 
 import { staticI18nProps } from '@/lib/staticI18n';
 
-export const runtime = 'experimental-edge';
-export const getServerSideProps = ({ locale }: { locale?: string }) => ({ props: staticI18nProps(locale) });
+export async function getStaticPaths() {
+	return { paths: [{ params: { slug: '_' } }], fallback: false };
+}
+
+export function getStaticProps() {
+	return { props: staticI18nProps() };
+}

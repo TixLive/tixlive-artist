@@ -1,0 +1,15 @@
+# Dynamic route shells — serve pre-built placeholder HTML at actual slugs
+/events/:slug/seats /events/_/seats 200
+/events/:slug       /events/_       200
+/account/orders/:token     /account/orders/_     200
+/account/tickets/:ticketId /account/tickets/_    200
+
+# Legal pages (handled by [page].tsx shell at /_)
+/terms               /_ 200
+/cookies             /_ 200
+/public-rules        /_ 200
+/payment-regulations /_ 200
+
+# Legacy ticket redirects
+/my-tickets          /account/tickets 301
+/my-tickets/:id      /account/tickets/:id 301

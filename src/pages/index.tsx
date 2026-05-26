@@ -1,49 +1,40 @@
-import { useState, useMemo, useCallback } from 'react';
-import { GetServerSideProps } from 'next';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import Head from 'next/head';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
-import { IOrganizer, IEventListItem } from '@/types';
-import { getSite, getEvents } from '@/lib/api';
+import { IEventListItem } from '@/types';
+import { directGetEvents } from '@/lib/directApi';
+import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import HeroCarousel from '@/components/landing/HeroCarousel';
 import CategoryFilter, { Category } from '@/components/landing/CategoryFilter';
 import EventGrid from '@/components/landing/EventGrid';
 
-interface HomeProps {
-	organizer: IOrganizer;
-	events: IEventListItem[];
-	total: number;
-	brandPrimary: string;
-	brandAccent: string;
-}
-
-export default function Home({
-	organizer,
-	events: initialEvents,
-	total: initialTotal,
-	brandPrimary,
-	brandAccent,
-}: HomeProps) {
+export default function Home() {
 	const { t } = useTranslation('common');
-	const [events, setEvents] = useState(initialEvents);
-	const [total, setTotal] = useState(initialTotal);
+	const { organizer } = useOrganizer();
+	const [events, setEvents] = useState<IEventListItem[]>([]);
+	const [total, setTotal] = useState(0);
 	const [category, setCategory] = useState<Category>('All');
 	const [loadingMore, setLoadingMore] = useState(false);
+	const [initialLoading, setInitialLoading] = useState(true);
 
-  const availableTypes = useMemo(() => {
-    const seen = new Set<string>();
-    for (const e of events) {
-      if (e.event_type) seen.add(e.event_type);
-    }
-    return [...seen];
-  }, [events]);
+	useEffect(() => {
+		directGetEvents()
+			.then((data) => { setEvents(data.events); setTotal(data.total); })
+			.catch(() => {})
+			.finally(() => setInitialLoading(false));
+	}, []);
 
-  const filteredEvents = useMemo(() => {
-    if (category === 'All') return events;
-    return events.filter((e) => e.event_type?.toLowerCase() === category.toLowerCase());
-  }, [events, category]);
+	const availableTypes = useMemo(() => {
+		const seen = new Set<string>();
+		for (const e of events) if (e.event_type) seen.add(e.event_type);
+		return [...seen];
+	}, [events]);
+
+	const filteredEvents = useMemo(() => {
+		if (category === 'All') return events;
+		return events.filter((e) => e.event_type?.toLowerCase() === category.toLowerCase());
+	}, [events, category]);
 
 	const filteredTotal = useMemo(() => {
 		if (category === 'All') return total;
@@ -53,14 +44,13 @@ export default function Home({
 	const handleLoadMore = useCallback(async () => {
 		setLoadingMore(true);
 		try {
-			const res = await fetch(`/api/events?offset=${events.length}`);
-			const data = await res.json();
+			const data = await directGetEvents(events.length);
 			if (data.events) {
 				setEvents((prev) => [...prev, ...data.events]);
 				setTotal(data.total ?? total);
 			}
 		} catch {
-			// Handle error silently
+			// silent
 		} finally {
 			setLoadingMore(false);
 		}
@@ -69,56 +59,27 @@ export default function Home({
 	return (
 		<>
 			<Head>
-				<title>{`${organizer.name} — Events`}</title>
-				<meta property="og:title" content={`${organizer.name} — Events`} />
-				<meta
-					property="og:description"
-					content={organizer.bio || `Events by ${organizer.name}`}
-				/>
-				{organizer.logo_url && (
-					<meta property="og:image" content={organizer.logo_url} />
-				)}
+				<title>{organizer ? `${organizer.name} — Events` : 'Events'}</title>
+				{organizer && <>
+					<meta property="og:title" content={`${organizer.name} — Events`} />
+					<meta property="og:description" content={organizer.bio || `Events by ${organizer.name}`} />
+					{organizer.logo_url && <meta property="og:image" content={organizer.logo_url} />}
+				</>}
 			</Head>
-
-      <Layout
-        organizerName={organizer.name}
-        logoUrl={organizer.logo_url}
-        socialLinks={organizer.social_links}
-        pages={organizer.pages}
-      >
-        <HeroCarousel events={events} />
-        <CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
-        <section className="py-10 md:py-12">
-          <EventGrid
-            events={filteredEvents}
-            total={filteredTotal}
-            onLoadMore={handleLoadMore}
-            loading={loadingMore}
-            organizerBio={organizer.bio ?? undefined}
-            categoryLabel={category}
-          />
-        </section>
-      </Layout>
-    </>
-  );
+			<Layout organizer={organizer ?? undefined}>
+				{!initialLoading && <HeroCarousel events={events} />}
+				<CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
+				<section className="py-10 md:py-12">
+					<EventGrid
+						events={filteredEvents}
+						total={filteredTotal}
+						onLoadMore={handleLoadMore}
+						loading={loadingMore || initialLoading}
+						organizerBio={organizer?.bio ?? undefined}
+						categoryLabel={category}
+					/>
+				</section>
+			</Layout>
+		</>
+	);
 }
-
-export const getServerSideProps: GetServerSideProps<HomeProps> = async ({ locale }) => {
-  try {
-    const [organizer, eventsData] = await Promise.all([getSite(), getEvents()]);
-    return {
-      props: {
-        organizer,
-        events: eventsData.events,
-        total: eventsData.total,
-        brandPrimary: organizer.brand_primary_color || '',
-        brandAccent: organizer.brand_accent_color || '',
-        ...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
-      },
-    };
-  } catch (e) {
-    const msg = e instanceof Error ? `${e.message}\n${e.stack}` : String(e);
-    console.error('[index gssp]', msg);
-    throw e;
-  }
-};

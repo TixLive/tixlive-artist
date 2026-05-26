@@ -1,41 +1,32 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
 import AccountLayout from '@/components/account/AccountLayout';
 import OrdersList from '@/components/account/OrdersList';
-import { getSite, getMyOrders } from '@/lib/api';
-import { withAttendeeAuth } from '@/middleware/Attendee.Middleware';
-import { ACCESS_COOKIE } from '@/lib/cookies';
-import type { IOrderDetail, IOrganizer } from '@/types';
+import { useAttendee } from '@/hooks/useAttendee';
+import { useOrganizer } from '@/contexts/OrganizerContext';
+import type { IOrderDetail } from '@/types';
 
-interface OrdersPageProps {
-	organizer: IOrganizer;
-	orders: IOrderDetail[];
-	email: string;
-	brandPrimary: string;
-	brandAccent: string;
-}
-
-export default function OrdersPage({
-	organizer,
-	orders,
-	email,
-	brandPrimary,
-	brandAccent,
-}: OrdersPageProps) {
+export default function OrdersPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
+	const { organizer } = useOrganizer();
+	const { attendee, loading: authLoading } = useAttendee();
+	const [orders, setOrders] = useState<IOrderDetail[]>([]);
+
+	useEffect(() => {
+		if (!authLoading && !attendee) { router.replace(`/login?next=${encodeURIComponent(router.asPath)}`); }
+	}, [authLoading, attendee, router]);
+
+	useEffect(() => {
+		if (!attendee) return;
+		fetch('/api/orders').then(r => r.json()).then(setOrders).catch(() => {});
+	}, [attendee]);
+
+	if (authLoading || !attendee) return null;
 
 	return (
-		<AccountLayout
-			organizer={organizer}
-			brandPrimary={brandPrimary}
-			brandAccent={brandAccent}
-			email={email}
-			active="orders"
-			title={t('account.orders')}
-		>
+		<AccountLayout organizer={organizer} email={attendee.email} active="orders" title={t('account.orders')}>
 			<div className="mb-8">
 				<h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
 					{t('account.orders')}
@@ -45,19 +36,3 @@ export default function OrdersPage({
 		</AccountLayout>
 	);
 }
-
-export const getServerSideProps = withAttendeeAuth<OrdersPageProps>(async (ctx, attendee) => {
-	const token = ctx.req.cookies?.[ACCESS_COOKIE] || '';
-	const [organizer, orders] = await Promise.all([getSite(), getMyOrders(token)]);
-
-	return {
-		props: {
-			organizer,
-			orders,
-			email: attendee.email,
-			brandPrimary: organizer.brand_primary_color || '',
-			brandAccent: organizer.brand_accent_color || '',
-			...(await serverSideTranslations(ctx.locale ?? 'en', ['common'], nextI18NextConfig)),
-		},
-	};
-});

@@ -8,6 +8,20 @@ import { geist, geistMono } from '@/styles/font';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import { OrganizerProvider, useOrganizer } from '@/contexts/OrganizerContext';
+
+function BrandInjector() {
+	const { organizer } = useOrganizer();
+	const isValidHex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(v);
+	const brandCssVars = [
+		isValidHex(organizer?.brand_primary_color) && `--brand-primary: ${organizer!.brand_primary_color};`,
+		isValidHex(organizer?.brand_accent_color) && `--brand-accent: ${organizer!.brand_accent_color};`,
+	]
+		.filter(Boolean)
+		.join('\n');
+	if (!brandCssVars) return null;
+	return <Head><style>{`:root { ${brandCssVars} }`}</style></Head>;
+}
 
 function App({ Component, pageProps }: AppProps) {
 	const router = useRouter();
@@ -15,20 +29,8 @@ function App({ Component, pageProps }: AppProps) {
 		() => new QueryClient({ defaultOptions: { queries: { staleTime: 60 * 1000 } } })
 	);
 
-	const { brandPrimary, brandAccent, eventType } = pageProps;
+	const { eventType } = pageProps;
 
-	// Validate hex color to prevent CSS injection
-	const isValidHex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(v);
-
-	// Inject brand color CSS vars
-	const brandCssVars = [
-		isValidHex(brandPrimary) && `--brand-primary: ${brandPrimary};`,
-		isValidHex(brandAccent) && `--brand-accent: ${brandAccent};`,
-	]
-		.filter(Boolean)
-		.join('\n');
-
-	// Set data-event-type on html element for CSS theme tokens
 	useEffect(() => {
 		if (eventType) {
 			document.documentElement.setAttribute('data-event-type', eventType);
@@ -39,14 +41,15 @@ function App({ Component, pageProps }: AppProps) {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<HeroUIProvider navigate={router.push}>
-				{/* Toasts (e.g. seat per-category cap) — bottom placement stays reachable on mobile */}
-				<ToastProvider placement="bottom-center" toastOffset={16} />
-				<Head>{brandCssVars && <style>{`:root { ${brandCssVars} }`}</style>}</Head>
-				<main className={`${geist.variable} ${geistMono.variable} font-sans min-h-screen`}>
-					<Component {...pageProps} />
-				</main>
-			</HeroUIProvider>
+			<OrganizerProvider>
+				<HeroUIProvider navigate={router.push}>
+					<ToastProvider placement="bottom-center" toastOffset={16} />
+					<BrandInjector />
+					<main className={`${geist.variable} ${geistMono.variable} font-sans min-h-screen`}>
+						<Component {...pageProps} />
+					</main>
+				</HeroUIProvider>
+			</OrganizerProvider>
 		</QueryClientProvider>
 	);
 }

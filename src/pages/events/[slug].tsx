@@ -1,15 +1,14 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
-import { GetServerSideProps } from 'next';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import nextI18NextConfig from '@/i18n.config';
+import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { IOrganizer, IEventDetail, ICartItem } from '@/types';
-import { getSite, getEvent } from '@/lib/api';
+import { IEventDetail, ICartItem } from '@/types';
+import { directGetEvent } from '@/lib/directApi';
+import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import EventHero from '@/components/event/EventHero';
 import StickyBuyBar from '@/components/event/StickyBuyBar';
@@ -35,22 +34,35 @@ import CampingInfoSection from '@/components/event/sections/CampingInfoSection';
 import SpecialMessageSection from '@/components/event/sections/SpecialMessageSection';
 import VideoSection from '@/components/event/sections/VideoSection';
 
-interface EventDetailProps {
-  event: IEventDetail;
-  organizer: IOrganizer;
-  brandPrimary: string;
-  brandAccent: string;
-  eventType: string;
-}
-
-export default function EventDetailPage({ event, organizer }: EventDetailProps) {
+export default function EventDetailPage() {
   const { t } = useTranslation('common');
-  const [activeSessionId, setActiveSessionId] = useState(
-    event.sessions?.[0]?.id ?? 0
-  );
+  const router = useRouter();
+  const slug = router.query.slug as string | undefined;
+  const { organizer } = useOrganizer();
+  const [event, setEvent] = useState<IEventDetail | null>(null);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!slug) return;
+    directGetEvent(slug).then((e) => {
+      if (!e) setNotFound(true);
+      else {
+        setEvent(e);
+        if (e.event_type) document.documentElement.setAttribute('data-event-type', e.event_type);
+      }
+    });
+  }, [slug]);
+
+  const [activeSessionId, setActiveSessionId] = useState(0);
+  useEffect(() => {
+    if (event) setActiveSessionId(event.sessions?.[0]?.id ?? 0);
+  }, [event]);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [addonQuantities, setAddonQuantities] = useState<Record<number, number>>({});
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+
+  if (notFound) return <Layout organizer={organizer ?? undefined}><div className="py-32 text-center text-[var(--theme-muted)]">Event not found.</div></Layout>;
+  if (!event) return <Layout organizer={organizer ?? undefined}><div className="py-32" /></Layout>;
 
   const ticketTypes = event.ticket_types ?? [];
   const addons = event.ticket_addons ?? [];
@@ -165,14 +177,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
 
   const handleBuy = useCallback(() => {
     if (!salesOpen) return;
-    // Seated events route to the seat page even with no pre-picked quantity (the
-    // seat map is the selection surface); GA still requires at least one ticket.
     if (!isSeated && cartItems.length === 0) return;
-    const form = document.createElement('form');
-    form.method = 'POST';
-    // Seated events route through the seat-selection page first; GA goes straight to checkout.
-    form.action = isSeated ? `/events/${event.slug}/seats` : '/checkout';
-    form.style.display = 'none';
 
     const addonItems = addons
       .filter((a) => (addonQuantities[a.id] ?? 0) > 0)
@@ -185,24 +190,21 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
         currency,
       }));
 
-    const fields = {
+    const data: Record<string, string> = {
       event: event.slug,
       session: String(activeSessionId),
       cart: JSON.stringify(cartItems),
       ...(addonItems.length > 0 && { addons: JSON.stringify(addonItems) }),
     };
 
-    for (const [key, value] of Object.entries(fields)) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value;
-      form.appendChild(input);
+    if (isSeated) {
+      sessionStorage.setItem('tixlive:seats', JSON.stringify(data));
+      router.push(`/events/${event.slug}/seats`);
+    } else {
+      sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
+      router.push('/checkout');
     }
-
-    document.body.appendChild(form);
-    form.submit();
-  }, [salesOpen, isSeated, cartItems, event.slug, activeSessionId, addons, addonQuantities, currency]);
+  }, [salesOpen, isSeated, cartItems, event.slug, activeSessionId, addons, addonQuantities, currency, router]);
 
   // JSON-LD structured data
   const jsonLd = {
@@ -240,7 +242,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
   return (
     <>
       <Head>
-        <title>{`${event.title} — ${organizer.name}`}</title>
+        <title>{`${event.title}${organizer ? ` — ${organizer.name}` : ''}`}</title>
         <meta property="og:title" content={event.title} />
         <meta property="og:description" content={event.description || `Get tickets for ${event.title}`} />
         {event.poster_url && <meta property="og:image" content={event.poster_url} />}
@@ -251,10 +253,10 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
       </Head>
 
       <Layout
-        organizerName={organizer.name}
-        logoUrl={organizer.logo_url}
-        socialLinks={organizer.social_links}
-        pages={organizer.pages}
+        organizerName={organizer?.name}
+        logoUrl={organizer?.logo_url}
+        socialLinks={organizer?.social_links}
+        pages={organizer?.pages}
         cartQuantity={totalQuantity}
         cartTotal={totalPrice}
         currency={currency}
@@ -628,6 +630,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
           )}
 
           {/* Organizer card */}
+          {organizer && (
           <Link
             href="/"
             className="flex items-center gap-5 rounded-[22px] bg-[var(--brand-primary)] p-6 text-[var(--theme-bg)] transition-opacity duration-200 hover:opacity-95"
@@ -657,6 +660,7 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
               Vezi toate <Icon icon="mdi:arrow-right" width={16} />
             </span>
           </Link>
+          )}
         </div>
 
         {/* Desktop floating CTA — seated events (persistent buy entry, no inline selector) */}
@@ -702,25 +706,3 @@ export default function EventDetailPage({ event, organizer }: EventDetailProps) 
   );
 }
 
-export const getServerSideProps: GetServerSideProps<EventDetailProps> = async ({ params, locale }) => {
-  const slug = params?.slug as string;
-
-  const [organizer, event] = await Promise.all([getSite(), getEvent(slug)]);
-
-  // The public API only ever returns non-draft events owned by this organizer, so
-  // anything we get back (open / soon / closed) is viewable. Purchasing is gated in the UI.
-  if (!event) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      event,
-      organizer,
-      brandPrimary: organizer.brand_primary_color || '',
-      brandAccent: organizer.brand_accent_color || '',
-      eventType: event.event_type || '',
-      ...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
-    },
-  };
-};

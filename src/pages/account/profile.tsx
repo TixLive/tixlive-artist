@@ -1,56 +1,35 @@
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import nextI18NextConfig from '@/i18n.config';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import AccountLayout from '@/components/account/AccountLayout';
 import ProfileForm from '@/components/account/ProfileForm';
-import { getSite, getMe } from '@/lib/api';
-import { withAttendeeAuth } from '@/middleware/Attendee.Middleware';
-import { ACCESS_COOKIE } from '@/lib/cookies';
-import type { IMe, IOrganizer } from '@/types';
+import { useAttendee } from '@/hooks/useAttendee';
+import { useOrganizer } from '@/contexts/OrganizerContext';
+import type { IMe } from '@/types';
 
-interface ProfilePageProps {
-	organizer: IOrganizer;
-	me: IMe;
-	brandPrimary: string;
-	brandAccent: string;
-}
-
-export default function ProfilePage({ organizer, me, brandPrimary, brandAccent }: ProfilePageProps) {
+export default function ProfilePage() {
 	const { t } = useTranslation('common');
+	const router = useRouter();
+	const { organizer } = useOrganizer();
+	const { attendee, loading: authLoading } = useAttendee();
+	const [me, setMe] = useState<IMe | null>(null);
+
+	useEffect(() => {
+		if (!authLoading && !attendee) { router.replace(`/login?next=${encodeURIComponent(router.asPath)}`); }
+	}, [authLoading, attendee, router]);
+
+	useEffect(() => {
+		if (!attendee) return;
+		fetch('/api/me').then(r => r.json()).then(setMe).catch(() => {});
+	}, [attendee]);
+
+	if (authLoading || !attendee) return null;
+
+	const profileInitial: IMe = me ?? { email: attendee.email, first_name: '', last_name: '', phone: '' };
 
 	return (
-		<AccountLayout
-			organizer={organizer}
-			brandPrimary={brandPrimary}
-			brandAccent={brandAccent}
-			email={me.email}
-			active="profile"
-			title={t('account.profile')}
-		>
-			<ProfileForm initial={me} />
+		<AccountLayout organizer={organizer} email={attendee.email} active="profile" title={t('account.profile')}>
+			<ProfileForm initial={profileInitial} />
 		</AccountLayout>
 	);
 }
-
-export const getServerSideProps = withAttendeeAuth<ProfilePageProps>(async (ctx, attendee) => {
-	const token = ctx.req.cookies?.[ACCESS_COOKIE] || '';
-	let me: IMe;
-	try {
-		me = await getMe(token);
-	} catch {
-		// Fallback to cookie-derived identity if the backend is temporarily down
-		me = { email: attendee.email, first_name: '', last_name: '', phone: '' };
-	}
-
-	const organizer = await getSite();
-
-	return {
-		props: {
-			organizer,
-			me,
-			brandPrimary: organizer.brand_primary_color || '',
-			brandAccent: organizer.brand_accent_color || '',
-			...(await serverSideTranslations(ctx.locale ?? 'en', ['common'], nextI18NextConfig)),
-		},
-	};
-});

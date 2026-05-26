@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
 	addToast,
 	Button,
@@ -91,6 +92,7 @@ export default function SeatSelection({
 	currency,
 }: SeatSelectionProps) {
 	const { t } = useTranslation('common');
+	const router = useRouter();
 	const reducedMotion = useReducedMotion();
 
 	const versionMismatch = seating.geometry_version !== GEOMETRY_VERSION;
@@ -239,12 +241,7 @@ export default function SeatSelection({
 		const derivedCart = deriveCart(selected, seatTier, tiers, currency);
 		const seatLabels = selectedItems.map((it) => `${it.tierName} · ${it.label}`);
 
-		const form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '/checkout';
-		form.style.display = 'none';
-
-		const fields: Record<string, string> = {
+		const data: Record<string, string> = {
 			event: slug,
 			session: String(sessionId),
 			cart: JSON.stringify(derivedCart),
@@ -252,16 +249,9 @@ export default function SeatSelection({
 			seat_labels: JSON.stringify(seatLabels),
 			...(addonCart.length > 0 && { addons: JSON.stringify(addonCart) }),
 		};
-		for (const [key, value] of Object.entries(fields)) {
-			const input = document.createElement('input');
-			input.type = 'hidden';
-			input.name = key;
-			input.value = value;
-			form.appendChild(input);
-		}
-		document.body.appendChild(form);
-		form.submit();
-	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart]);
+		sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
+		router.push('/checkout');
+	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart, router]);
 
 	const fmtDate = (d: string) => {
 		const date = new Date(d);

@@ -1,14 +1,22 @@
 /**
- * Browser-direct calls to the besttix backend. Used for read-only public
- * endpoints that don't need an API key — the x-org-id header scopes requests
- * to the correct organizer without revealing the server-side API key.
+ * Browser-direct calls to the besttix backend. Used for all public read
+ * endpoints — no API key needed, x-org-id header scopes to the organizer.
  *
- * Requires env vars:
+ * Env vars (set per Vercel deployment):
  *   NEXT_PUBLIC_BESTTIX_API_URL — base URL of the besttix backend
  *   NEXT_PUBLIC_ORG_ID          — organizer ID for this white-label deployment
  */
 
-import type { IPromoValidateResponse, ISeatingSuggestResponse, IOrderDetail } from '@/types';
+import type {
+	IOrganizer,
+	IOrganizerPage,
+	IEventListItem,
+	IEventDetail,
+	IPromoValidateResponse,
+	IOrderDetail,
+	ISeatingResponse,
+	ISeatingSuggestResponse,
+} from '@/types';
 
 const BASE = process.env.NEXT_PUBLIC_BESTTIX_API_URL ?? '';
 const ORG_ID = process.env.NEXT_PUBLIC_ORG_ID ?? '';
@@ -17,20 +25,59 @@ function orgHeaders(): Record<string, string> {
 	return { 'Content-Type': 'application/json', 'x-org-id': ORG_ID };
 }
 
+async function get<T>(path: string): Promise<T> {
+	const res = await fetch(`${BASE}${path}`, { headers: orgHeaders() });
+	if (!res.ok) throw new Error(`${res.status} ${path}`);
+	return res.json() as Promise<T>;
+}
+
+async function post<T>(path: string, body: unknown): Promise<T> {
+	const res = await fetch(`${BASE}${path}`, {
+		method: 'POST',
+		headers: orgHeaders(),
+		body: JSON.stringify(body),
+	});
+	if (!res.ok) throw new Error(`${res.status} ${path}`);
+	return res.json() as Promise<T>;
+}
+
+export async function directGetSite(): Promise<IOrganizer> {
+	return get<IOrganizer>('/api/public/site');
+}
+
+export async function directGetEvents(offset = 0): Promise<{ events: IEventListItem[]; total: number }> {
+	return get<{ events: IEventListItem[]; total: number }>(`/api/public/events${offset ? `?offset=${offset}` : ''}`);
+}
+
+export async function directGetEvent(slug: string): Promise<IEventDetail | null> {
+	try {
+		return await get<IEventDetail>(`/api/public/event/${encodeURIComponent(slug)}`);
+	} catch {
+		return null;
+	}
+}
+
+export async function directGetPage(pageType: string): Promise<IOrganizerPage | null> {
+	try {
+		return await get<IOrganizerPage>(`/api/public/pages/${encodeURIComponent(pageType)}`);
+	} catch {
+		return null;
+	}
+}
+
+export async function directGetSeating(slug: string, sessionId: number): Promise<ISeatingResponse> {
+	return get<ISeatingResponse>(`/api/public/seating/${encodeURIComponent(slug)}?session_id=${sessionId}`);
+}
+
 export async function directValidatePromo(
 	eventId: number,
 	code: string
 ): Promise<IPromoValidateResponse> {
-	const res = await fetch(`${BASE}/api/public/promo/validate`, {
-		method: 'POST',
-		headers: orgHeaders(),
-		body: JSON.stringify({ event_id: eventId, code }),
-	});
-	if (!res.ok) {
-		const body = await res.json().catch(() => ({})) as Record<string, unknown>;
-		return { valid: false, error: (body.message as string) ?? 'Invalid promo code' };
+	try {
+		return await post<IPromoValidateResponse>('/api/public/promo/validate', { event_id: eventId, code });
+	} catch {
+		return { valid: false, error: 'Invalid promo code' };
 	}
-	return res.json() as Promise<IPromoValidateResponse>;
 }
 
 export async function directSuggestSeats(
@@ -38,20 +85,13 @@ export async function directSuggestSeats(
 	sessionId: number,
 	items: Array<{ ticket_package_id: number; quantity: number }>
 ): Promise<ISeatingSuggestResponse> {
-	const res = await fetch(`${BASE}/api/public/seating/${encodeURIComponent(slug)}/suggest`, {
-		method: 'POST',
-		headers: orgHeaders(),
-		body: JSON.stringify({ session_id: sessionId, items }),
+	return post<ISeatingSuggestResponse>(`/api/public/seating/${encodeURIComponent(slug)}/suggest`, {
+		session_id: sessionId,
+		items,
 	});
-	if (!res.ok) throw new Error(`suggest failed: ${res.status}`);
-	return res.json() as Promise<ISeatingSuggestResponse>;
 }
 
 export async function directGetOrder(orderId: string): Promise<IOrderDetail> {
-	const res = await fetch(`${BASE}/api/public/order/${encodeURIComponent(orderId)}`, {
-		headers: orgHeaders(),
-	});
-	if (!res.ok) throw new Error(`order fetch failed: ${res.status}`);
-	const body = await res.json() as Record<string, unknown>;
+	const body = await get<Record<string, unknown>>(`/api/public/order/${encodeURIComponent(orderId)}`);
 	return body as unknown as IOrderDetail;
 }

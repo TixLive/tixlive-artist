@@ -1,10 +1,8 @@
-import type { GetServerSideProps } from 'next';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
-// Cabinet root — always redirect to the orders tab.
 export default function AccountIndexPage() {
+	const router = useRouter();
+	useEffect(() => { router.replace('/account/orders'); }, [router]);
 	return null;
 }
-
-export const getServerSideProps: GetServerSideProps = async () => {
-	return { redirect: { destination: '/account/orders', permanent: false } };
-};

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -7,8 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Input, useDisclosure } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import nextI18NextConfig from '@/i18n.config';
 import { useTranslation } from 'next-i18next';
 
 import Layout from '@/components/layout/Layout';
@@ -19,10 +16,9 @@ import PaymentDetailsSlot from '@/components/checkout/PaymentDetailsSlot';
 import PriceBreakdown from '@/components/checkout/PriceBreakdown';
 import AttendeeIdentityRow from '@/components/checkout/AttendeeIdentityRow';
 import ProfileForm from '@/components/account/ProfileForm';
-import { getSite, getEvent, getMe } from '@/lib/api';
-import { AttendeePageMiddleware } from '@/middleware/Attendee.Middleware';
-import { ACCESS_COOKIE } from '@/lib/cookies';
-import { IOrganizer, IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
+import { directGetEvent } from '@/lib/directApi';
+import { useOrganizer } from '@/contexts/OrganizerContext';
+import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
 
 const checkoutSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -33,27 +29,23 @@ const checkoutSchema = z.object({
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
-interface CheckoutPageProps {
-  organizer: IOrganizer;
-  event: IEventDetail;
-  session: { id: number; date: string };
-  cart: ICartItem[];
-  addonCart: IAddonCartItem[];
-  selectedSeats: string[];
-  seatLabels: string[];
-  brandPrimary: string;
-  brandAccent: string;
-  eventType: string;
-  me: IMe | null;
-  meError: boolean;
-}
-
-export default function CheckoutPage({ organizer, event, session, cart, addonCart, selectedSeats, seatLabels, me, meError }: CheckoutPageProps) {
+export default function CheckoutPage() {
   const { t } = useTranslation('common');
   const router = useRouter();
+  const { organizer } = useOrganizer();
 
-  const paymentMethods: IAvailablePaymentMethod[] = event.available_payment_methods ?? [];
-  const [selectedPaymentId, setSelectedPaymentId] = useState<number>(paymentMethods[0]?.id ?? 0);
+  // Data loaded from sessionStorage + API
+  const [event, setEvent] = useState<IEventDetail | null>(null);
+  const [session, setSession] = useState<{ id: number; date: string }>({ id: 0, date: '' });
+  const [cart, setCart] = useState<ICartItem[]>([]);
+  const [addonCart, setAddonCart] = useState<IAddonCartItem[]>([]);
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [seatLabels, setSeatLabels] = useState<string[]>([]);
+  const [me, setMe] = useState<IMe | null>(null);
+  const [meError, setMeError] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  const [selectedPaymentId, setSelectedPaymentId] = useState<number>(0);
   const [discount, setDiscount] = useState<{ percent?: number; amount?: number } | undefined>();
   const [promoCode, setPromoCode] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
@@ -63,8 +55,6 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
 
   const { isOpen: drawerOpen, onOpen: openDrawer, onOpenChange: setDrawerOpen } = useDisclosure();
 
-  // Generated once per page mount. Two browser tabs = two keys = two orders, which
-  // is the correct semantic. The same tab clicking Pay twice = same key = one order.
   const idempotencyKeyRef = useRef<string>('');
   if (!idempotencyKeyRef.current) {
     idempotencyKeyRef.current =
@@ -73,61 +63,113 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   }
 
-  const isAuthed = me !== null;
-  const selectedMethod = paymentMethods.find((m) => m.id === selectedPaymentId) ?? paymentMethods[0];
+  useEffect(() => {
+    const raw = sessionStorage.getItem('tixlive:checkout');
+    if (!raw) {
+      router.replace('/');
+      return;
+    }
 
-  const methods = useForm<CheckoutFormValues>({
-    resolver: zodResolver(checkoutSchema),
-    defaultValues: {
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone: '',
-    },
-  });
+    let stored: Record<string, string>;
+    try {
+      stored = JSON.parse(raw);
+    } catch {
+      router.replace('/');
+      return;
+    }
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = methods;
+    const { event: eventSlug, session: sessionRaw, cart: cartJson, addons: addonsJson, selected_seats: seatsJson, seat_labels: labelsJson } = stored;
 
-  // Re-enable Pay button after the user closes the drawer (we assume they
-  // saved or chose not to). The retry submit will re-check PROFILE_INCOMPLETE
-  // server-side, so a half-finished edit can't slip through.
+    if (!eventSlug || !cartJson) {
+      router.replace('/');
+      return;
+    }
+
+    let parsedCart: ICartItem[] = [];
+    try {
+      parsedCart = JSON.parse(cartJson);
+      if (!Array.isArray(parsedCart) || parsedCart.length === 0) {
+        router.replace('/');
+        return;
+      }
+    } catch {
+      router.replace('/');
+      return;
+    }
+
+    let parsedAddons: IAddonCartItem[] = [];
+    if (addonsJson) { try { parsedAddons = JSON.parse(addonsJson); } catch { parsedAddons = []; } }
+
+    let parsedSeats: string[] = [];
+    if (seatsJson) { try { const p = JSON.parse(seatsJson); if (Array.isArray(p)) parsedSeats = p.filter((s): s is string => typeof s === 'string'); } catch { parsedSeats = []; } }
+
+    let parsedLabels: string[] = [];
+    if (labelsJson) { try { const p = JSON.parse(labelsJson); if (Array.isArray(p)) parsedLabels = p.filter((s): s is string => typeof s === 'string'); } catch { parsedLabels = []; } }
+
+    setCart(parsedCart);
+    setAddonCart(parsedAddons);
+    setSelectedSeats(parsedSeats);
+    setSeatLabels(parsedLabels);
+
+    // Fetch event and me in parallel
+    Promise.all([
+      directGetEvent(eventSlug),
+      fetch('/api/me').then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([ev, meData]) => {
+      if (!ev) { router.replace('/'); return; }
+
+      if (ev.is_seated && parsedSeats.length === 0) {
+        router.replace(`/events/${eventSlug}`);
+        return;
+      }
+
+      const matchedSession = sessionRaw ? ev.sessions?.find((s: { id: number }) => String(s.id) === sessionRaw) : undefined;
+      const resolvedSession = matchedSession ?? ev.sessions?.[0];
+
+      setEvent(ev);
+      setSession(resolvedSession ? { id: resolvedSession.id, date: resolvedSession.date } : { id: 0, date: '' });
+      setSelectedPaymentId(ev.available_payment_methods?.[0]?.id ?? 0);
+
+      if (ev.event_type) {
+        document.documentElement.setAttribute('data-event-type', ev.event_type);
+      }
+
+      if (meData && meData.email) {
+        setMe(meData as IMe);
+      } else if (meData === null) {
+        setMeError(true);
+      }
+
+      setReady(true);
+    }).catch(() => {
+      router.replace('/');
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!drawerOpen && profileIncomplete) {
       setProfileIncomplete(false);
     }
   }, [drawerOpen, profileIncomplete]);
 
-  // Re-pick seats: POST back to the seat page (fresh booked snapshot + re-suggest).
   const goPickSeats = () => {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/events/${event.slug}/seats`;
-    form.style.display = 'none';
-    const fields: Record<string, string> = {
+    if (!event) return;
+    const data: Record<string, string> = {
       event: event.slug,
       session: String(session.id),
       cart: JSON.stringify(cart),
       ...(addonCart.length > 0 && { addons: JSON.stringify(addonCart) }),
     };
-    for (const [key, value] of Object.entries(fields)) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value;
-      form.appendChild(input);
-    }
-    document.body.appendChild(form);
-    form.submit();
+    sessionStorage.setItem('tixlive:seats', JSON.stringify(data));
+    router.push(`/events/${event.slug}/seats`);
   };
 
   const submitOrder = async (values?: CheckoutFormValues) => {
     setSubmitting(true);
     setSubmitError('');
     setSeatConflict(false);
+
+    const isAuthed = me !== null;
 
     try {
       const baseBody = {
@@ -146,8 +188,6 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
         idempotency_key: idempotencyKeyRef.current,
       };
 
-      // Authed: server reads PII from User row via JWT. We do NOT send PII fields.
-      // Anonymous: include the form values (proxy enforces the same on its side).
       const body = isAuthed
         ? baseBody
         : {
@@ -168,25 +208,18 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
       if (!res.ok) {
         const code = String(response.code ?? '');
         if (code.includes('PROFILE_INCOMPLETE')) {
-          // Open the drawer so the user can fill missing first/last/phone in
-          // place — cart stays in the DOM, no navigation, no lost state.
           setProfileIncomplete(true);
           setSubmitting(false);
           openDrawer();
           return;
         }
-        // besttix seat error codes — all are recoverable by re-picking on the map.
         const SEAT_ERROR_CODES = ['SEAT_TAKEN', 'SEATS_REQUIRED', 'SEAT_COUNT_MISMATCH', 'INVALID_SEAT_ID', 'DUPLICATE_SEATS'];
         if (SEAT_ERROR_CODES.some((c) => code.includes(c))) {
-          // A held/sold seat (or a stale selection) blocked order creation. Send the
-          // buyer back to the map with fresh availability rather than dead-ending.
           setSubmitError(t('checkout.error_seat_taken'));
           setSeatConflict(true);
         } else if (code.includes('SOLD_OUT') || code.includes('NO_AVAILABLE_TICKETS')) {
           setSubmitError(t('checkout.error_sold_out'));
         } else if (code.includes('TICKET_LIMIT_REACHED')) {
-          // Per-category cap exceeded (the FE caps this, so normally only tampering).
-          // Must be checked BEFORE the generic 400 branch, which would swallow it.
           setSubmitError(t('checkout.error_too_many_tickets'));
         } else if (code.includes('PAYMENT_METHOD')) {
           setSubmitError(t('checkout.error_payment_method'));
@@ -214,15 +247,26 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
     }
   };
 
+  const methods = useForm<CheckoutFormValues>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: { first_name: '', last_name: '', email: '', phone: '' },
+  });
+
+  const { register, handleSubmit, formState: { errors } } = methods;
   const onSubmit = (values: CheckoutFormValues) => submitOrder(values);
   const onAuthedSubmit = () => submitOrder();
 
+  if (!ready || !event) return null;
+
+  const isAuthed = me !== null;
+  const paymentMethods: IAvailablePaymentMethod[] = event.available_payment_methods ?? [];
+  const selectedMethod = paymentMethods.find((m) => m.id === selectedPaymentId) ?? paymentMethods[0];
   const ctaLabel = selectedMethod
     ? t('checkout.pay_with', { provider: selectedMethod.name })
     : t('checkout.proceed_to_payment');
 
   return (
-    <Layout organizer={organizer} currentStep={2}>
+    <Layout organizer={organizer ?? undefined} currentStep={2}>
       <Head>
         <title>{`Checkout - ${event.title}`}</title>
       </Head>
@@ -374,7 +418,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
                     </div>
                   )}
 
-                  {/* Price breakdown — mobile only (desktop shows it in the sticky aside) */}
+                  {/* Price breakdown — mobile only */}
                   <div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5 md:hidden">
                     <PriceBreakdown
                       items={cart}
@@ -437,7 +481,7 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
         </div>
       </div>
 
-      {/* Edit-profile drawer — preserves cart state, no navigation */}
+      {/* Edit-profile drawer */}
       {isAuthed && me && (
         <Drawer isOpen={drawerOpen} onOpenChange={setDrawerOpen} placement="right" size="md">
           <DrawerContent>
@@ -455,137 +499,3 @@ export default function CheckoutPage({ organizer, event, session, cart, addonCar
     </Layout>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const { req, query, locale } = ctx;
-  try {
-    // Support both GET (query params) and POST (body) for cart data
-    let eventSlug: string | undefined;
-    let sessionId: string | undefined;
-    let cartJson: string | undefined;
-    let addonsJson: string | undefined;
-    let seatsJson: string | undefined;
-    let seatLabelsJson: string | undefined;
-
-    if (req.method === 'POST') {
-      const chunks: Buffer[] = [];
-      for await (const chunk of req) {
-        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-      }
-      const rawBody = Buffer.concat(chunks).toString();
-      const params = new URLSearchParams(rawBody);
-      eventSlug = params.get('event') ?? undefined;
-      sessionId = params.get('session') ?? undefined;
-      cartJson = params.get('cart') ?? undefined;
-      addonsJson = params.get('addons') ?? undefined;
-      seatsJson = params.get('selected_seats') ?? undefined;
-      seatLabelsJson = params.get('seat_labels') ?? undefined;
-    } else {
-      eventSlug = query.event as string;
-      sessionId = query.session as string;
-      cartJson = query.cart as string;
-      addonsJson = query.addons as string;
-      seatsJson = query.selected_seats as string;
-      seatLabelsJson = query.seat_labels as string;
-    }
-
-    if (!eventSlug || !cartJson) {
-      return { redirect: { destination: '/', permanent: false } };
-    }
-
-    const [site, event] = await Promise.all([getSite(), getEvent(eventSlug)]);
-
-    if (!event) {
-      return { redirect: { destination: '/', permanent: false } };
-    }
-
-    let cart: ICartItem[];
-    try {
-      cart = typeof cartJson === 'string' ? JSON.parse(cartJson) : cartJson;
-    } catch {
-      return { redirect: { destination: '/', permanent: false } };
-    }
-
-    if (!cart || cart.length === 0) {
-      return { redirect: { destination: '/', permanent: false } };
-    }
-
-    let addonCart: IAddonCartItem[] = [];
-    if (addonsJson) {
-      try {
-        addonCart = typeof addonsJson === 'string' ? JSON.parse(addonsJson) : addonsJson;
-      } catch {
-        addonCart = [];
-      }
-    }
-
-    // Seated events forward the chosen seat IDs (authoritative for besttix) plus
-    // human labels (display only). Both optional — GA orders carry neither.
-    let selectedSeats: string[] = [];
-    if (seatsJson) {
-      try {
-        const parsed = JSON.parse(seatsJson);
-        if (Array.isArray(parsed)) selectedSeats = parsed.filter((s): s is string => typeof s === 'string');
-      } catch {
-        selectedSeats = [];
-      }
-    }
-
-    let seatLabels: string[] = [];
-    if (seatLabelsJson) {
-      try {
-        const parsed = JSON.parse(seatLabelsJson);
-        if (Array.isArray(parsed)) seatLabels = parsed.filter((s): s is string => typeof s === 'string');
-      } catch {
-        seatLabels = [];
-      }
-    }
-
-    // A seated event can't check out without seats (besttix would reject on a
-    // count mismatch). Reaching here seatless means a crafted URL or a lost
-    // selection — send the buyer back to the event to pick seats, not a dead end.
-    if (event.is_seated && selectedSeats.length === 0) {
-      return { redirect: { destination: `/events/${eventSlug}`, permanent: false } };
-    }
-
-    // Find the selected session
-    const session = event.sessions?.find((s: { id: number }) => String(s.id) === sessionId) ?? event.sessions?.[0];
-
-    // Optional auth: load profile for authed visitors. A failure here is non-fatal —
-    // the page falls back to the anonymous form with a banner so a temporary
-    // backend hiccup never blocks a paying customer.
-    let me: IMe | null = null;
-    let meError = false;
-    const attendee = await AttendeePageMiddleware(ctx);
-    if (attendee) {
-      const token = ctx.req.cookies?.[ACCESS_COOKIE] || '';
-      try {
-        me = await getMe(token);
-      } catch {
-        me = null;
-        meError = true;
-      }
-    }
-
-    return {
-      props: {
-        organizer: site,
-        event,
-        session: session ? { id: session.id, date: session.date } : { id: 0, date: '' },
-        cart,
-        addonCart,
-        selectedSeats,
-        seatLabels,
-        brandPrimary: site.brand_primary_color ?? '#6366f1',
-        brandAccent: site.brand_accent_color ?? '#818cf8',
-        eventType: event.event_type ?? 'general',
-        me,
-        meError,
-        ...(await serverSideTranslations(locale ?? 'en', ['common'], nextI18NextConfig)),
-      },
-    };
-  } catch (error) {
-    console.error('Checkout getServerSideProps error:', error);
-    return { redirect: { destination: '/', permanent: false } };
-  }
-};

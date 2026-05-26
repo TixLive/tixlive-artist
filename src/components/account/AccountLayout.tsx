@@ -10,9 +10,9 @@ import type { IOrganizer } from '@/types';
 export type AccountSection = 'orders' | 'tickets' | 'profile';
 
 interface AccountLayoutProps {
-	organizer: IOrganizer;
-	brandPrimary: string;
-	brandAccent: string;
+	organizer?: IOrganizer | null;
+	brandPrimary?: string;
+	brandAccent?: string;
 	email: string;
 	active: AccountSection;
 	title: string;
@@ -58,22 +58,10 @@ export default function AccountLayout({
 	return (
 		<>
 			<Head>
-				<title>{`${title} — ${organizer.name}`}</title>
+				<title>{`${title}${organizer ? ` — ${organizer.name}` : ''}`}</title>
 			</Head>
 
-			<style jsx global>{`
-				:root {
-					--brand-primary: ${/^#[0-9a-fA-F]{3,8}$/.test(brandPrimary || '') ? brandPrimary : '#2D2A26'};
-					--brand-accent: ${/^#[0-9a-fA-F]{3,8}$/.test(brandAccent || '') ? brandAccent : '#8B6914'};
-				}
-			`}</style>
-
-			<Layout
-				organizerName={organizer.name}
-				logoUrl={organizer.logo_url}
-				socialLinks={organizer.social_links}
-				pages={organizer.pages}
-			>
+			<Layout organizer={organizer ?? undefined}>
 				<div className="mx-auto max-w-[1120px] px-4 py-10 sm:px-6 md:py-16">
 					{/* Mobile segmented tabs */}
 					<nav className="mb-8 flex gap-1 overflow-x-auto rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-1.5 md:hidden">

@@ -89,11 +89,8 @@ LegalPage.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default LegalPage;
 
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import nextI18NextConfig from '@/i18n.config';
+import { staticI18nProps } from '@/lib/staticI18n';
 
-export const getStaticPaths = () => ({ paths: [], fallback: true });
-export const getStaticProps = async ({ locale }: { locale?: string }) => ({
-  props: await serverSideTranslations(locale ?? 'ro', ['common'], nextI18NextConfig),
-  revalidate: 60,
-});
+export const runtime = 'edge';
+export const getStaticPaths = () => ({ paths: [], fallback: 'blocking' });
+export const getStaticProps = ({ locale }: { locale?: string }) => ({ props: staticI18nProps(locale) });

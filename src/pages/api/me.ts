@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAccessTokenFromCookies } from '@/middleware/Attendee.Middleware';
 
+export const runtime = 'edge';
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	if (req.method !== 'GET' && req.method !== 'PATCH') {
 		return res.status(405).json({ error: 'Method not allowed' });
@@ -16,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			method: req.method,
 			headers: {
 				'Content-Type': 'application/json',
-				'x-api-key': process.env.BESTTIX_API_KEY ?? '',
+				'x-site-domain': (req.headers.host ?? '').split(':')[0],
 				Authorization: `Bearer ${token}`,
 			},
 			body: req.method === 'PATCH' ? JSON.stringify(req.body ?? {}) : undefined,

@@ -106,12 +106,15 @@ async function resolveAttendee(req: ReqLike, res: ResLike): Promise<Attendee | n
 
 	if (!refresh) return null;
 
+	const host = (req as NextApiRequest).headers?.host ?? '';
+	const siteDomain = host.split(':')[0];
+
 	try {
 		const resp = await fetch(`${process.env.BESTTIX_API_URL}/api/public/auth/refresh`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'x-api-key': process.env.BESTTIX_API_KEY || '',
+				'x-site-domain': siteDomain,
 			},
 			body: JSON.stringify({ refreshToken: refresh }),
 		});

@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { clearAttendeeCookies, REFRESH_COOKIE, setAttendeeCookies } from '@/lib/cookies';
 
+export const runtime = 'edge';
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	if (req.method !== 'POST') {
 		return res.status(405).json({ error: 'Method not allowed' });
@@ -17,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'x-api-key': process.env.BESTTIX_API_KEY ?? '',
+				'x-site-domain': (req.headers.host ?? '').split(':')[0],
 			},
 			body: JSON.stringify({ refreshToken }),
 		});
@@ -42,7 +44,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			return res.status(200).json({ success: true });
 		}
 
-		// Upstream rejected — clear stale cookies
 		await clearAttendeeCookies(req, res);
 		return res.status(upstream.status || 401).json(data);
 	} catch {

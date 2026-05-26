@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAccessTokenFromCookies } from '@/middleware/Attendee.Middleware';
 
+export const runtime = 'edge';
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 	const token = getAccessTokenFromCookies(req);
@@ -9,7 +11,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	if (!ticketId || typeof ticketId !== 'string') return res.status(400).json({ error: 'Missing ticketId' });
 	try {
 		const upstream = await fetch(`${process.env.BESTTIX_API_URL}/api/public/tickets/${ticketId}`, {
-			headers: { 'x-api-key': process.env.BESTTIX_API_KEY ?? '', Authorization: `Bearer ${token}` },
+			headers: {
+				'x-site-domain': (req.headers.host ?? '').split(':')[0],
+				Authorization: `Bearer ${token}`,
+			},
 		});
 		return res.status(upstream.status).json(await upstream.json().catch(() => ({})));
 	} catch {

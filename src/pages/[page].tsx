@@ -82,6 +82,7 @@ export default function LegalPage() {
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';
 
-export const getServerSideProps = async ({ locale }: { locale?: string }) => ({
+export const getStaticPaths = () => ({ paths: [], fallback: true });
+export const getStaticProps = async ({ locale }: { locale?: string }) => ({
   props: await serverSideTranslations(locale ?? 'ro', ['common'], nextI18NextConfig),
 });

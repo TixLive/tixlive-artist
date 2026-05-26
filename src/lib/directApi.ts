@@ -1,10 +1,9 @@
 /**
  * Browser-direct calls to the besttix backend. Used for all public read
- * endpoints — no API key needed, x-org-id header scopes to the organizer.
+ * endpoints — no API key needed, x-site-domain header scopes to the organizer.
  *
- * Env vars (set per Vercel deployment):
+ * Env vars:
  *   NEXT_PUBLIC_BESTTIX_API_URL — base URL of the besttix backend
- *   NEXT_PUBLIC_ORG_ID          — organizer ID for this white-label deployment
  */
 
 import type {
@@ -19,10 +18,10 @@ import type {
 } from '@/types';
 
 const BASE = process.env.NEXT_PUBLIC_BESTTIX_API_URL ?? '';
-const ORG_ID = process.env.NEXT_PUBLIC_ORG_ID ?? '';
 
 function orgHeaders(): Record<string, string> {
-	return { 'Content-Type': 'application/json', 'x-org-id': ORG_ID };
+	const domain = typeof window !== 'undefined' ? window.location.hostname : '';
+	return { 'Content-Type': 'application/json', 'x-site-domain': domain };
 }
 
 async function get<T>(path: string): Promise<T> {

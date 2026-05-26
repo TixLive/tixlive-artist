@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,7 +10,10 @@ import { Icon } from '@iconify/react';
 import { IEventDetail, ICartItem } from '@/types';
 import { directGetEvent } from '@/lib/directApi';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import { useEventType } from '@/hooks/useEventType';
+import { useHeaderCart } from '@/contexts/LayoutContext';
 import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import EventHero from '@/components/event/EventHero';
 import StickyBuyBar from '@/components/event/StickyBuyBar';
 import KeyFactsStrip from '@/components/event/KeyFactsStrip';
@@ -35,24 +39,22 @@ import CampingInfoSection from '@/components/event/sections/CampingInfoSection';
 import SpecialMessageSection from '@/components/event/sections/SpecialMessageSection';
 import VideoSection from '@/components/event/sections/VideoSection';
 
-export default function EventDetailPage() {
+const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   const { t } = useTranslation('common');
   const router = useRouter();
   const slug = router.query.slug as string | undefined;
   const { organizer } = useOrganizer();
-  const [event, setEvent] = useState<IEventDetail | null>(null);
-  const [notFound, setNotFound] = useState(false);
 
-  useEffect(() => {
-    if (!slug) return;
-    directGetEvent(slug).then((e) => {
-      if (!e) setNotFound(true);
-      else {
-        setEvent(e);
-        if (e.event_type) document.documentElement.setAttribute('data-event-type', e.event_type);
-      }
-    });
-  }, [slug]);
+  const { data: event, isFetching } = useQuery<IEventDetail | null>({
+    queryKey: ['event', slug],
+    queryFn: () => directGetEvent(slug!),
+    enabled: !!slug,
+    staleTime: 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+  const notFound = !!slug && !isFetching && event === null;
+
+  useEventType(event?.event_type);
 
   const [activeSessionId, setActiveSessionId] = useState(0);
   useEffect(() => {
@@ -202,9 +204,17 @@ export default function EventDetailPage() {
     }
   }, [salesOpen, event, isSeated, cartItems, activeSessionId, addons, addonQuantities, currency, router]);
 
+  const headerCart = useMemo(
+    () => (totalQuantity > 0
+      ? { cartQuantity: totalQuantity, cartTotal: totalPrice, currency, onCartClick: handleBuy }
+      : null),
+    [totalQuantity, totalPrice, currency, handleBuy]
+  );
+  useHeaderCart(headerCart);
+
   // Early returns after all hooks
-  if (notFound) return <Layout organizer={organizer ?? undefined}><div className="py-32 text-center text-[var(--theme-muted)]">Event not found.</div></Layout>;
-  if (!event) return <Layout organizer={organizer ?? undefined}><EventPageSkeleton /></Layout>;
+  if (notFound) return <div className="py-32 text-center text-[var(--theme-muted)]">Event not found.</div>;
+  if (!event) return <EventPageSkeleton />;
 
   // JSON-LD structured data
   const jsonLd = {
@@ -252,16 +262,7 @@ export default function EventDetailPage() {
         />
       </Head>
 
-      <Layout
-        organizerName={organizer?.name}
-        logoUrl={organizer?.logo_url}
-        socialLinks={organizer?.social_links}
-        pages={organizer?.pages}
-        cartQuantity={totalQuantity}
-        cartTotal={totalPrice}
-        currency={currency}
-        onCartClick={handleBuy}
-      >
+      <>
         <EventHero event={event} />
 
         <div className="mx-auto flex max-w-[1120px] flex-col gap-10 px-4 py-10 sm:px-6 md:gap-[72px] md:py-16">
@@ -701,10 +702,14 @@ export default function EventDetailPage() {
 
         {/* Bottom padding for mobile sticky bar */}
         {(cartItems.length > 0 || (isSeated && salesOpen)) && <div className="h-24 md:hidden" />}
-      </Layout>
+      </>
     </>
   );
-}
+};
+
+EventDetailPage.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default EventDetailPage;
 
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -713,4 +718,5 @@ import nextI18NextConfig from '@/i18n.config';
 export const getStaticPaths = () => ({ paths: [], fallback: true });
 export const getStaticProps = async ({ locale }: { locale?: string }) => ({
   props: await serverSideTranslations(locale ?? 'ro', ['common'], nextI18NextConfig),
+  revalidate: 60,
 });

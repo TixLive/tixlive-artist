@@ -4,7 +4,6 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
-import Layout from '@/components/layout/Layout';
 import type { IOrganizer } from '@/types';
 
 export type AccountSection = 'orders' | 'tickets' | 'profile';
@@ -61,8 +60,7 @@ export default function AccountLayout({
 				<title>{`${title}${organizer ? ` — ${organizer.name}` : ''}`}</title>
 			</Head>
 
-			<Layout organizer={organizer ?? undefined}>
-				<div className="mx-auto max-w-[1120px] px-4 py-10 sm:px-6 md:py-16">
+			<div className="mx-auto max-w-[1120px] px-4 py-10 sm:px-6 md:py-16">
 					{/* Mobile segmented tabs */}
 					<nav className="mb-8 flex gap-1 overflow-x-auto rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-1.5 md:hidden">
 						{NAV_ITEMS.map((item) => {
@@ -151,7 +149,6 @@ export default function AccountLayout({
 						</button>
 					</div>
 				</div>
-			</Layout>
 		</>
 	);
 }

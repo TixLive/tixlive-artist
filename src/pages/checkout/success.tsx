@@ -5,9 +5,10 @@ import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import { parseSeatId } from '@/lib/seat';
 import { directGetOrder } from '@/lib/directApi';
-import { useOrganizer } from '@/contexts/OrganizerContext';
+import { useBuyFlowStep } from '@/contexts/LayoutContext';
 
 interface OrderDetails {
   id: string;
@@ -18,10 +19,10 @@ interface OrderDetails {
   pdf_url?: string;
 }
 
-export default function CheckoutSuccessPage() {
+const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
   const { t } = useTranslation('common');
   const router = useRouter();
-  const { organizer } = useOrganizer();
+  useBuyFlowStep(3);
   const orderId = (router.query.token as string) ?? '';
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +81,7 @@ export default function CheckoutSuccessPage() {
   };
 
   return (
-    <Layout organizer={organizer ?? undefined} currentStep={3}>
+    <>
       <Head>
         <title>Payment Successful!</title>
       </Head>
@@ -224,9 +225,13 @@ export default function CheckoutSuccessPage() {
           animation: checkmark-pop 0.5s ease-out;
         }
       `}</style>
-    </Layout>
+    </>
   );
-}
+};
+
+CheckoutSuccessPage.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default CheckoutSuccessPage;
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';

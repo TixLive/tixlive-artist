@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export interface Attendee {
 	email: string;
-	organizer_id: number;
 }
 
 interface State {
@@ -12,20 +11,23 @@ interface State {
 
 /**
  * Client-side auth check. Calls /api/me (our thin proxy) which reads the
- * httpOnly access cookie and verifies/refreshes it server-side.
+ * httpOnly access cookie and verifies/refreshes it server-side. Cached
+ * across pages via TanStack Query so account-page navigation reuses the
+ * result instead of refetching on every mount.
  */
 export function useAttendee(): State {
-	const [state, setState] = useState<State>({ attendee: null, loading: true });
+	const { data, isLoading } = useQuery<Attendee | null>({
+		queryKey: ['attendee'],
+		queryFn: async () => {
+			const res = await fetch('/api/me');
+			if (!res.ok) return null;
+			const body = (await res.json().catch(() => null)) as { email?: unknown } | null;
+			if (!body || typeof body.email !== 'string') return null;
+			return { email: body.email };
+		},
+		staleTime: 5 * 60 * 1000,
+		retry: false,
+	});
 
-	useEffect(() => {
-		fetch('/api/me')
-			.then(async (res) => {
-				if (!res.ok) return setState({ attendee: null, loading: false });
-				const data = (await res.json()) as Attendee;
-				setState({ attendee: data, loading: false });
-			})
-			.catch(() => setState({ attendee: null, loading: false }));
-	}, []);
-
-	return state;
+	return { attendee: data ?? null, loading: isLoading };
 }

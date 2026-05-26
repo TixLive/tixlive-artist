@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useAttendee } from '@/hooks/useAttendee';
 import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import EmailEntryForm from '@/components/auth/EmailEntryForm';
 import OtpForm from '@/components/auth/OtpForm';
 
@@ -16,7 +17,7 @@ function safeNext(nextParam: string | string[] | undefined): string {
 	return nextParam;
 }
 
-export default function LoginPage() {
+const LoginPage: NextPageWithLayout = function LoginPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const { organizer } = useOrganizer();
@@ -43,8 +44,7 @@ export default function LoginPage() {
 			<Head>
 				<title>{`${t('auth.login_title')} — ${organizer?.name ?? ''}`}</title>
 			</Head>
-			<Layout organizer={organizer ?? undefined}>
-				<div className="flex min-h-[70vh] items-center justify-center bg-[var(--theme-bg)] px-4 py-12 md:py-20">
+			<div className="flex min-h-[70vh] items-center justify-center bg-[var(--theme-bg)] px-4 py-12 md:py-20">
 					<div className="w-full max-w-[27rem]">
 						<div className="mb-6 flex flex-col items-center gap-5 text-center">
 							<div className="flex h-16 w-16 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--brand-accent)_25%,transparent)] bg-[color-mix(in_srgb,var(--brand-accent)_6%,transparent)]">
@@ -76,10 +76,13 @@ export default function LoginPage() {
 						</div>
 					</div>
 				</div>
-			</Layout>
-		</>
-	);
-}
+			</>
+		);
+};
+
+LoginPage.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default LoginPage;
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';

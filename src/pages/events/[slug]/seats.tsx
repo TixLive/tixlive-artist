@@ -156,4 +156,5 @@ import nextI18NextConfig from '@/i18n.config';
 export const getStaticPaths = () => ({ paths: [], fallback: true });
 export const getStaticProps = async ({ locale }: { locale?: string }) => ({
   props: await serverSideTranslations(locale ?? 'ro', ['common'], nextI18NextConfig),
+  revalidate: 60,
 });

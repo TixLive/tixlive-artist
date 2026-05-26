@@ -9,6 +9,7 @@ import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 
 import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import OrderSummary from '@/components/checkout/OrderSummary';
 import PromoCodeInput from '@/components/checkout/PromoCodeInput';
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
@@ -18,6 +19,8 @@ import AttendeeIdentityRow from '@/components/checkout/AttendeeIdentityRow';
 import ProfileForm from '@/components/account/ProfileForm';
 import { directGetEvent } from '@/lib/directApi';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import { useEventType } from '@/hooks/useEventType';
+import { useBuyFlowStep } from '@/contexts/LayoutContext';
 import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
 
 const checkoutSchema = z.object({
@@ -29,10 +32,11 @@ const checkoutSchema = z.object({
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
-export default function CheckoutPage() {
+const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const { t } = useTranslation('common');
   const router = useRouter();
   const { organizer } = useOrganizer();
+  useBuyFlowStep(2);
 
   // Data loaded from sessionStorage + API
   const [event, setEvent] = useState<IEventDetail | null>(null);
@@ -54,6 +58,8 @@ export default function CheckoutPage() {
   const [seatConflict, setSeatConflict] = useState(false);
 
   const { isOpen: drawerOpen, onOpen: openDrawer, onOpenChange: setDrawerOpen } = useDisclosure();
+
+  useEventType(event?.event_type);
 
   const idempotencyKeyRef = useRef<string>('');
   if (!idempotencyKeyRef.current) {
@@ -129,10 +135,6 @@ export default function CheckoutPage() {
       setEvent(ev);
       setSession(resolvedSession ? { id: resolvedSession.id, date: resolvedSession.date } : { id: 0, date: '' });
       setSelectedPaymentId(ev.available_payment_methods?.[0]?.id ?? 0);
-
-      if (ev.event_type) {
-        document.documentElement.setAttribute('data-event-type', ev.event_type);
-      }
 
       if (meData && meData.email) {
         setMe(meData as IMe);
@@ -266,7 +268,7 @@ export default function CheckoutPage() {
     : t('checkout.proceed_to_payment');
 
   return (
-    <Layout organizer={organizer ?? undefined} currentStep={2}>
+    <>
       <Head>
         <title>{`Checkout - ${event.title}`}</title>
       </Head>
@@ -496,9 +498,13 @@ export default function CheckoutPage() {
           </DrawerContent>
         </Drawer>
       )}
-    </Layout>
+    </>
   );
-}
+};
+
+CheckoutPage.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default CheckoutPage;
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';

@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import { IEventListItem } from '@/types';
+import { usePrefetchEvent } from '@/hooks/usePrefetchEvent';
 
 interface EventCardProps {
   event: IEventListItem;
@@ -9,6 +10,7 @@ interface EventCardProps {
 
 export default function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation('common');
+  const prefetch = usePrefetchEvent();
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -26,6 +28,8 @@ export default function EventCard({ event }: EventCardProps) {
   return (
     <Link
       href={`/events/${event.slug}`}
+      onMouseEnter={() => prefetch(event.slug)}
+      onTouchStart={() => prefetch(event.slug)}
       className="group block rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
     >
       <article className="relative aspect-[3/4] overflow-hidden rounded-[22px] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] transition-transform duration-250 ease-out group-hover:-translate-y-1 active:scale-[0.98]">

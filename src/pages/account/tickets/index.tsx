@@ -7,9 +7,11 @@ import AccountLayout from '@/components/account/AccountLayout';
 import TicketCard from '@/components/tickets/TicketCard';
 import { useAttendee } from '@/hooks/useAttendee';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import type { ITicket } from '@/types';
 
-export default function AccountTicketsPage() {
+const AccountTicketsPage: NextPageWithLayout = function AccountTicketsPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const { organizer } = useOrganizer();
@@ -22,9 +24,12 @@ export default function AccountTicketsPage() {
 
 	useEffect(() => {
 		if (!attendee) return;
-		fetch('/api/tickets').then(r => r.json()).then((data) => {
-			if (Array.isArray(data)) setTickets(data);
-		}).catch(() => {});
+		let cancelled = false;
+		fetch('/api/tickets')
+			.then((r) => (r.ok ? r.json() : null))
+			.then((data) => { if (!cancelled && Array.isArray(data)) setTickets(data); })
+			.catch(() => {});
+		return () => { cancelled = true; };
 	}, [attendee]);
 
 	const groupedTickets = useMemo(() => {
@@ -84,7 +89,11 @@ export default function AccountTicketsPage() {
 			)}
 		</AccountLayout>
 	);
-}
+};
+
+AccountTicketsPage.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default AccountTicketsPage;
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';

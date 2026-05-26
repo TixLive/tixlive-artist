@@ -7,9 +7,11 @@ import AccountLayout from '@/components/account/AccountLayout';
 import TicketDetailView from '@/components/tickets/TicketDetailView';
 import { useAttendee } from '@/hooks/useAttendee';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import type { ITicket } from '@/types';
 
-export default function AccountTicketDetailPage() {
+const AccountTicketDetailPage: NextPageWithLayout = function AccountTicketDetailPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const { organizer } = useOrganizer();
@@ -23,7 +25,12 @@ export default function AccountTicketDetailPage() {
 
 	useEffect(() => {
 		if (!attendee || !ticketId) return;
-		fetch(`/api/tickets/${ticketId}`).then(r => r.json()).then(setTicket).catch(() => {});
+		let cancelled = false;
+		fetch(`/api/tickets/${ticketId}`)
+			.then((r) => (r.ok ? r.json() : null))
+			.then((data) => { if (!cancelled && data) setTicket(data as ITicket); })
+			.catch(() => {});
+		return () => { cancelled = true; };
 	}, [attendee, ticketId]);
 
 	if (authLoading || !attendee || !ticket) return null;
@@ -40,7 +47,11 @@ export default function AccountTicketDetailPage() {
 			<TicketDetailView ticket={ticket} locale={router.locale} />
 		</AccountLayout>
 	);
-}
+};
+
+AccountTicketDetailPage.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default AccountTicketDetailPage;
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';
@@ -48,4 +59,5 @@ import nextI18NextConfig from '@/i18n.config';
 export const getStaticPaths = () => ({ paths: [], fallback: true });
 export const getStaticProps = async ({ locale }: { locale?: string }) => ({
   props: await serverSideTranslations(locale ?? 'ro', ['common'], nextI18NextConfig),
+  revalidate: 60,
 });

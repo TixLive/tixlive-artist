@@ -5,12 +5,13 @@ import { IEventListItem } from '@/types';
 import { directGetEvents } from '@/lib/directApi';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import HeroCarousel from '@/components/landing/HeroCarousel';
 import CategoryFilter, { Category } from '@/components/landing/CategoryFilter';
 import EventGrid from '@/components/landing/EventGrid';
 import HomePageSkeleton from '@/components/landing/HomePageSkeleton';
 
-export default function Home() {
+const Home: NextPageWithLayout = function Home() {
 	const { t } = useTranslation('common');
 	const { organizer } = useOrganizer();
 	const [events, setEvents] = useState<IEventListItem[]>([]);
@@ -67,29 +68,31 @@ export default function Home() {
 					{organizer.logo_url && <meta property="og:image" content={organizer.logo_url} />}
 				</>}
 			</Head>
-			<Layout organizer={organizer ?? undefined}>
-				{initialLoading ? (
-					<HomePageSkeleton />
-				) : (
-					<>
-						<HeroCarousel events={events} />
-						<CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
-						<section className="py-10 md:py-12">
-							<EventGrid
-								events={filteredEvents}
-								total={filteredTotal}
-								onLoadMore={handleLoadMore}
-								loading={loadingMore}
-								organizerBio={organizer?.bio ?? undefined}
-								categoryLabel={category}
-							/>
-						</section>
-					</>
-				)}
-			</Layout>
+			{initialLoading ? (
+				<HomePageSkeleton />
+			) : (
+				<>
+					<HeroCarousel events={events} />
+					<CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
+					<section className="py-10 md:py-12">
+						<EventGrid
+							events={filteredEvents}
+							total={filteredTotal}
+							onLoadMore={handleLoadMore}
+							loading={loadingMore}
+							organizerBio={organizer?.bio ?? undefined}
+							categoryLabel={category}
+						/>
+					</section>
+				</>
+			)}
 		</>
 	);
-}
+};
+
+Home.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default Home;
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';

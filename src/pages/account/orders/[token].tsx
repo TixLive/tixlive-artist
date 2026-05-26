@@ -7,10 +7,12 @@ import AccountLayout from '@/components/account/AccountLayout';
 import OrderDetailView from '@/components/account/OrderDetailView';
 import { useAttendee } from '@/hooks/useAttendee';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import { directGetOrder } from '@/lib/directApi';
 import type { IOrderDetail } from '@/types';
 
-export default function OrderDetailPage() {
+const OrderDetailPage: NextPageWithLayout = function OrderDetailPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const { organizer } = useOrganizer();
@@ -41,7 +43,11 @@ export default function OrderDetailPage() {
 			<OrderDetailView order={order} locale={router.locale} />
 		</AccountLayout>
 	);
-}
+};
+
+OrderDetailPage.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default OrderDetailPage;
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';
@@ -49,4 +55,5 @@ import nextI18NextConfig from '@/i18n.config';
 export const getStaticPaths = () => ({ paths: [], fallback: true });
 export const getStaticProps = async ({ locale }: { locale?: string }) => ({
   props: await serverSideTranslations(locale ?? 'ro', ['common'], nextI18NextConfig),
+  revalidate: 60,
 });

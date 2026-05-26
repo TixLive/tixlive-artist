@@ -4,6 +4,7 @@ import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { IEventListItem } from '@/types';
+import { usePrefetchEvent } from '@/hooks/usePrefetchEvent';
 
 interface FeaturedHeroProps {
   events: IEventListItem[];
@@ -11,6 +12,7 @@ interface FeaturedHeroProps {
 
 export default function HeroCarousel({ events }: FeaturedHeroProps) {
   const { t } = useTranslation('common');
+  const prefetch = usePrefetchEvent();
   const openEvents = events.filter((e) => e.status === 'open');
   if (openEvents.length === 0) return null;
 
@@ -67,7 +69,12 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
               {formatDate(featured.date_start)}
               {featured.venue_name && ` · ${featured.venue_name}`}
             </p>
-            <Link href={`/events/${featured.slug}`} className="sm:ml-auto">
+            <Link
+              href={`/events/${featured.slug}`}
+              onMouseEnter={() => prefetch(featured.slug)}
+              onTouchStart={() => prefetch(featured.slug)}
+              className="sm:ml-auto"
+            >
               <Button
                 variant="solid"
                 size="lg"
@@ -97,6 +104,8 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
               <Link
                 key={event.id}
                 href={`/events/${event.slug}`}
+                onMouseEnter={() => prefetch(event.slug)}
+                onTouchStart={() => prefetch(event.slug)}
                 className="group flex flex-shrink-0 items-center gap-3 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-2.5 pr-5 shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
               >
                 {event.poster_url ? (

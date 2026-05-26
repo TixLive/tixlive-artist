@@ -5,9 +5,11 @@ import AccountLayout from '@/components/account/AccountLayout';
 import OrdersList from '@/components/account/OrdersList';
 import { useAttendee } from '@/hooks/useAttendee';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import Layout from '@/components/layout/Layout';
+import type { NextPageWithLayout } from '@/pages/_app';
 import type { IOrderDetail } from '@/types';
 
-export default function OrdersPage() {
+const OrdersPage: NextPageWithLayout = function OrdersPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const { organizer } = useOrganizer();
@@ -20,7 +22,12 @@ export default function OrdersPage() {
 
 	useEffect(() => {
 		if (!attendee) return;
-		fetch('/api/orders').then(r => r.json()).then(setOrders).catch(() => {});
+		let cancelled = false;
+		fetch('/api/orders')
+			.then((r) => (r.ok ? r.json() : null))
+			.then((data) => { if (!cancelled && Array.isArray(data)) setOrders(data); })
+			.catch(() => {});
+		return () => { cancelled = true; };
 	}, [attendee]);
 
 	if (authLoading || !attendee) return null;
@@ -35,7 +42,11 @@ export default function OrdersPage() {
 			<OrdersList orders={orders} locale={router.locale} />
 		</AccountLayout>
 	);
-}
+};
+
+OrdersPage.getLayout = (page) => <Layout>{page}</Layout>;
+
+export default OrdersPage;
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '@/i18n.config';

@@ -60,11 +60,11 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
         </div>
 
         {/* Title + meta + CTA — below image */}
-        <div className="pt-4">
-          <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,6vw,2.5rem)] font-[900] leading-[0.95] tracking-[-0.03em] text-[var(--theme-text)]">
+        <div className="pt-3">
+          <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.5rem,4.5vw,2.25rem)] font-[900] leading-[1] tracking-[-0.03em] text-[var(--theme-text)]">
             {featured.title}
           </h2>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
+          <div className="mt-2 flex flex-wrap items-center gap-3">
             <p className="font-[family-name:var(--font-data)] text-[0.875rem] text-[var(--theme-text-muted)]">
               {formatDate(featured.date_start)}
               {featured.venue_name && ` · ${featured.venue_name}`}

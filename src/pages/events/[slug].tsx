@@ -273,7 +273,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
       <>
         <EventHero event={event} />
 
-        <div className="mx-auto flex max-w-[1120px] flex-col gap-10 px-4 py-10 sm:px-6 md:gap-[72px] md:py-16">
+        <div className="mx-auto flex max-w-[1120px] flex-col gap-10 px-4 pt-3 pb-10 sm:px-6 md:gap-[72px] md:pt-4 md:pb-16">
           {/* Live status row */}
           {(showSocial || showCountdown) && (
             <div className="flex flex-wrap items-center gap-3">

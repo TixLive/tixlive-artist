@@ -3,6 +3,12 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'CF Pages project name (e.g. tixlive-paladi)'
+        required: true
+        default: 'tixlive-artist'
 
 jobs:
   deploy:
@@ -32,4 +38,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy out --project-name=tixlive-artist --branch=main
+          command: pages deploy out --project-name=${{ github.event.inputs.project_name || 'tixlive-artist' }} --branch=main

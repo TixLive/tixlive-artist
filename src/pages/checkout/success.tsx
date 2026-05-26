@@ -10,6 +10,7 @@ import { useTranslation } from 'next-i18next';
 import Layout from '@/components/layout/Layout';
 import { getSite } from '@/lib/api';
 import { parseSeatId } from '@/lib/seat';
+import { directGetOrder } from '@/lib/directApi';
 import { IOrganizer } from '@/types';
 
 interface OrderDetails {
@@ -48,12 +49,7 @@ export default function CheckoutSuccessPage({ organizer, orderId, brandPrimary, 
 
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`/api/order/${orderId}`);
-        if (!res.ok) {
-          if (!cancelled) { setNotFound(true); setLoading(false); }
-          return;
-        }
-        const data: OrderDetails = await res.json();
+        const data: OrderDetails = await directGetOrder(orderId) as unknown as OrderDetails;
         if (cancelled) return;
 
         // Keep polling while payment is pending, or while paid but PDF not yet generated

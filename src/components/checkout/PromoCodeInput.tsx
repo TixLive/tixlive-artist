@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Input } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { directValidatePromo } from '@/lib/directApi';
 
 interface PromoCodeInputProps {
   eventId: number;
@@ -22,13 +23,7 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
     setError('');
 
     try {
-      const res = await fetch('/api/promo/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event_id: eventId, code: code.trim() }),
-      });
-      const response = await res.json();
-
+      const response = await directValidatePromo(eventId, code.trim());
       if (response.valid) {
         setApplied(true);
         onApply({

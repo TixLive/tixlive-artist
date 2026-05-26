@@ -20,6 +20,7 @@ import TicketTypeRow from '@/components/event/TicketTypeRow';
 import AddonRow from '@/components/event/AddonRow';
 import AddressMap from '@/components/common/AddressMap';
 import TicketAvailabilityNotice, { TicketAvailabilityVariant } from '@/components/event/TicketAvailabilityNotice';
+import EventPageSkeleton from '@/components/event/EventPageSkeleton';
 import LineupSection from '@/components/event/sections/LineupSection';
 import TeamsSection from '@/components/event/sections/TeamsSection';
 import SpeakersSection from '@/components/event/sections/SpeakersSection';
@@ -203,7 +204,7 @@ export default function EventDetailPage() {
 
   // Early returns after all hooks
   if (notFound) return <Layout organizer={organizer ?? undefined}><div className="py-32 text-center text-[var(--theme-muted)]">Event not found.</div></Layout>;
-  if (!event) return <Layout organizer={organizer ?? undefined}><div className="py-32" /></Layout>;
+  if (!event) return <Layout organizer={organizer ?? undefined}><EventPageSkeleton /></Layout>;
 
   // JSON-LD structured data
   const jsonLd = {

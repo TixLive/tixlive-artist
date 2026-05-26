@@ -71,6 +71,23 @@ body {
 	animation: v2-pulse-dot 1.6s ease-out infinite;
 }
 
+/* Skeleton shimmer */
+@keyframes skeleton-shimmer {
+	0% { background-position: -200% 0; }
+	100% { background-position: 200% 0; }
+}
+
+.skeleton {
+	background: linear-gradient(
+		90deg,
+		var(--theme-surface) 0%,
+		color-mix(in srgb, var(--theme-surface) 50%, var(--theme-bg)) 50%,
+		var(--theme-surface) 100%
+	);
+	background-size: 200% 100%;
+	animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
 /* Reduced motion: disable all animations */
 @media (prefers-reduced-motion: reduce) {
 	.animate-urgency-pulse {

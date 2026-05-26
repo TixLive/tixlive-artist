@@ -8,6 +8,7 @@ import Layout from '@/components/layout/Layout';
 import HeroCarousel from '@/components/landing/HeroCarousel';
 import CategoryFilter, { Category } from '@/components/landing/CategoryFilter';
 import EventGrid from '@/components/landing/EventGrid';
+import HomePageSkeleton from '@/components/landing/HomePageSkeleton';
 
 export default function Home() {
 	const { t } = useTranslation('common');
@@ -67,18 +68,24 @@ export default function Home() {
 				</>}
 			</Head>
 			<Layout organizer={organizer ?? undefined}>
-				{!initialLoading && <HeroCarousel events={events} />}
-				<CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
-				<section className="py-10 md:py-12">
-					<EventGrid
-						events={filteredEvents}
-						total={filteredTotal}
-						onLoadMore={handleLoadMore}
-						loading={loadingMore || initialLoading}
-						organizerBio={organizer?.bio ?? undefined}
-						categoryLabel={category}
-					/>
-				</section>
+				{initialLoading ? (
+					<HomePageSkeleton />
+				) : (
+					<>
+						<HeroCarousel events={events} />
+						<CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
+						<section className="py-10 md:py-12">
+							<EventGrid
+								events={filteredEvents}
+								total={filteredTotal}
+								onLoadMore={handleLoadMore}
+								loading={loadingMore}
+								organizerBio={organizer?.bio ?? undefined}
+								categoryLabel={category}
+							/>
+						</section>
+					</>
+				)}
 			</Layout>
 		</>
 	);

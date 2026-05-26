@@ -6,7 +6,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { appWithTranslation } from 'next-i18next';
 import nextI18NextConfig from '@/i18n.config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { geist, geistMono } from '@/styles/font';
+import { geist } from '@/styles/font';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Head from 'next/head';
@@ -49,7 +49,7 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
 					<HeroUIProvider navigate={router.push}>
 						<ToastProvider placement="bottom-center" toastOffset={16} />
 						<BrandInjector />
-						<div className={`${geist.variable} ${geistMono.variable} font-sans min-h-screen`}>
+						<div className={`${geist.variable} font-sans min-h-screen`}>
 							{getLayout(<Component {...pageProps} />)}
 						</div>
 					</HeroUIProvider>

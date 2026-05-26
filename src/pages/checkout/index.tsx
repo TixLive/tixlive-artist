@@ -117,11 +117,19 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     setSelectedSeats(parsedSeats);
     setSeatLabels(parsedLabels);
 
-    // Fetch event and me in parallel
+    // Fetch event and me in parallel.
+    // /api/me returns 401 when the user is a guest — that's expected, not an error.
+    // Only flag meError for real failures (network / 5xx).
     Promise.all([
       directGetEvent(eventSlug),
-      fetch('/api/me').then(r => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([ev, meData]) => {
+      fetch('/api/me')
+        .then(async (r) => {
+          if (r.ok) return { kind: 'ok' as const, data: await r.json() };
+          if (r.status === 401) return { kind: 'guest' as const };
+          return { kind: 'error' as const };
+        })
+        .catch(() => ({ kind: 'error' as const })),
+    ]).then(([ev, meResult]) => {
       if (!ev) { router.replace('/'); return; }
 
       if (ev.is_seated && parsedSeats.length === 0) {
@@ -136,9 +144,9 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
       setSession(resolvedSession ? { id: resolvedSession.id, date: resolvedSession.date } : { id: 0, date: '' });
       setSelectedPaymentId(ev.available_payment_methods?.[0]?.id ?? 0);
 
-      if (meData && meData.email) {
-        setMe(meData as IMe);
-      } else if (meData === null) {
+      if (meResult.kind === 'ok' && meResult.data?.email) {
+        setMe(meResult.data as IMe);
+      } else if (meResult.kind === 'error') {
         setMeError(true);
       }
 
@@ -292,9 +300,14 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
               {t('checkout.welcome_back', { name: me.first_name || me.email })}
             </h1>
           ) : (
-            <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
-              {t('checkout.your_details')}
-            </h1>
+            <>
+              <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
+                {t('checkout.your_details')}
+              </h1>
+              <p className="mt-1.5 text-[0.875rem] text-[var(--theme-text-muted)]">
+                {t('checkout.your_details_subtitle')}
+              </p>
+            </>
           )}
         </div>
 
@@ -322,6 +335,15 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                     </section>
                   ) : (
                     <section className="space-y-4 rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5 shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] sm:p-6">
+                      <header>
+                        <h2 className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                          {t('checkout.personal_data_title')}
+                        </h2>
+                        <p className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
+                          {t('checkout.personal_data_subtitle')}
+                        </p>
+                      </header>
+
                       {meError && (
                         <div className="rounded-xl bg-[color-mix(in_srgb,var(--theme-text)_5%,transparent)] p-3 text-[0.8125rem] text-[var(--theme-text-muted)]">
                           {t('checkout.me_error_fallback')}
@@ -367,7 +389,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                   )}
 
                   {/* Promo code */}
-                  <section className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4">
+                  <section className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4 sm:p-5">
                     <PromoCodeInput
                       eventId={event.id}
                       onApply={(d, code) => {
@@ -450,9 +472,15 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                       {!submitting && <Icon icon="mdi:arrow-right" className="ml-1" width={20} />}
                     </Button>
 
-                    <p className="text-center text-[0.75rem] text-[var(--theme-text-muted)]">
-                      {t('checkout.secure_payment_note')}
-                    </p>
+                    <div className="flex items-start justify-center gap-2 text-center text-[0.75rem] leading-relaxed text-[var(--theme-text-muted)] sm:items-center sm:text-left">
+                      <Icon
+                        icon="mdi:shield-lock"
+                        width={16}
+                        height={16}
+                        className="mt-px shrink-0 text-[var(--brand-accent)] sm:mt-0"
+                      />
+                      <span>{t('checkout.secure_payment_note')}</span>
+                    </div>
                   </div>
                 </div>
               </form>

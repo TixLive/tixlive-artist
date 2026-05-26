@@ -1,7 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAccessTokenFromCookies } from '@/middleware/Attendee.Middleware';
 
-export const runtime = 'edge';
+// NOTE: no `runtime = 'edge'` — this handler uses the Node-style (req, res)
+// signature, which is incompatible with Next.js's edge runtime in dev.
+// In production the route is served by functions/api/[[path]].ts on CF Pages;
+// `output: 'export'` strips this file from the build.
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	if (req.method !== 'GET' && req.method !== 'PATCH') {

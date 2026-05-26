@@ -645,13 +645,15 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
             className="flex items-center gap-5 rounded-[22px] bg-[var(--brand-primary)] p-6 text-[var(--theme-bg)] transition-opacity duration-200 hover:opacity-95"
           >
             {organizer.logo_url ? (
-              <Image
-                src={organizer.logo_url}
-                alt={organizer.name}
-                width={56}
-                height={56}
-                className="shrink-0 rounded-2xl object-cover"
-              />
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--theme-bg)] p-2">
+                <Image
+                  src={organizer.logo_url}
+                  alt={organizer.name}
+                  width={160}
+                  height={160}
+                  className="h-full w-full object-contain"
+                />
+              </span>
             ) : (
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--theme-bg)] font-[family-name:var(--font-display)] text-[1.5rem] font-[800] text-[var(--theme-text)]">
                 {organizer.name.charAt(0)}

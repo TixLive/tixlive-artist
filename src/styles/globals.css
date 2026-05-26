@@ -17,7 +17,7 @@
 	--font-display: 'Cabinet Grotesk', 'Instrument Sans', system-ui, sans-serif;
 	--font-body: 'Instrument Sans', system-ui, sans-serif;
 	--font-data: 'Geist', system-ui, sans-serif;
-	--font-mono: 'Geist Mono', ui-monospace, monospace;
+	--font-mono: 'Geist', 'Instrument Sans', system-ui, sans-serif;
 }
 
 /* Concert — cool violet accent */

@@ -1,3 +1,5 @@
+import { useTranslation } from 'next-i18next';
+import { Icon } from '@iconify/react';
 import { IAvailablePaymentMethod } from '@/types';
 
 interface PaymentMethodSelectorProps {
@@ -7,12 +9,22 @@ interface PaymentMethodSelectorProps {
 }
 
 export default function PaymentMethodSelector({ methods, selected, onSelect }: PaymentMethodSelectorProps) {
+  const { t } = useTranslation('common');
+
   // If only one method, auto-selected — render nothing
   if (methods.length <= 1) return null;
 
   return (
     <div className="space-y-3">
-      <h3 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">Payment method</h3>
+      <header>
+        <h3 className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+          {t('checkout.payment_method_title')}
+        </h3>
+        <p className="mt-0.5 flex items-center gap-1.5 text-[0.75rem] text-[var(--theme-text-muted)]">
+          <Icon icon="mdi:shield-check-outline" width={13} />
+          {t('checkout.payment_method_subtitle')}
+        </p>
+      </header>
       {methods.map((method) => {
         const isSelected = method.id === selected;
         return (

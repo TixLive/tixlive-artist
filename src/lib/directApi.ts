@@ -1,9 +1,11 @@
 /**
- * Browser-direct calls to the besttix backend. Used for all public read
- * endpoints — no API key needed, x-site-domain header scopes to the organizer.
+ * Browser-direct calls to the besttix backend. Production uses x-site-domain
+ * (Cloudflare Pages deployments at the organizer's custom domain). Local dev
+ * falls back to x-org-id since `localhost` isn't a registered domain.
  *
  * Env vars:
  *   NEXT_PUBLIC_BESTTIX_API_URL — base URL of the besttix backend
+ *   NEXT_PUBLIC_ORG_ID          — local-dev fallback organizer ID
  */
 
 import type {
@@ -18,10 +20,21 @@ import type {
 } from '@/types';
 
 const BASE = process.env.NEXT_PUBLIC_BESTTIX_API_URL ?? '';
+const ORG_ID = process.env.NEXT_PUBLIC_ORG_ID ?? '';
+
+function isLocalHostname(host: string): boolean {
+	return host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local') || /^\d+\.\d+\.\d+\.\d+$/.test(host);
+}
 
 function orgHeaders(): Record<string, string> {
-	const domain = typeof window !== 'undefined' ? window.location.hostname : '';
-	return { 'Content-Type': 'application/json', 'x-site-domain': domain };
+	const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+	const host = typeof window !== 'undefined' ? window.location.hostname : '';
+	if (host && !isLocalHostname(host)) {
+		headers['x-site-domain'] = host;
+	} else if (ORG_ID) {
+		headers['x-org-id'] = ORG_ID;
+	}
+	return headers;
 }
 
 async function get<T>(path: string): Promise<T> {

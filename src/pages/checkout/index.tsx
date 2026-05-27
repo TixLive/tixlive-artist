@@ -1,12 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Input, useDisclosure } from '@heroui/react';
+import { Button, Checkbox, Drawer, DrawerBody, DrawerContent, DrawerHeader, Input, useDisclosure } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useTranslation } from 'next-i18next';
+import { useTranslation, Trans } from 'next-i18next';
+import PhoneInputRHF from 'react-phone-number-input/react-hook-form';
+import { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -25,14 +29,13 @@ import { useEventType } from '@/hooks/useEventType';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
 import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
 
-const checkoutSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  last_name: z.string().min(1, 'Last name is required'),
-  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
-  phone: z.string().optional(),
-});
-
-type CheckoutFormValues = z.infer<typeof checkoutSchema>;
+type CheckoutFormValues = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  accept_terms: boolean;
+};
 
 const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const { t } = useTranslation('common');
@@ -256,14 +259,37 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     }
   };
 
+  const checkoutSchema = useMemo(
+    () =>
+      z.object({
+        first_name: z.string().min(1, 'First name is required'),
+        last_name: z.string().min(1, 'Last name is required'),
+        email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+        phone: z
+          .string()
+          .min(1, t('checkout.phone_required'))
+          .refine((v) => isValidPhoneNumber(v ?? ''), { message: t('checkout.phone_invalid') }),
+        accept_terms: z.boolean().refine((v) => v === true, { message: t('checkout.terms_required') }),
+      }),
+    [t],
+  );
+
   const methods = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { first_name: '', last_name: '', email: '', phone: '' },
+    defaultValues: { first_name: '', last_name: '', email: '', phone: '', accept_terms: false },
   });
 
-  const { register, handleSubmit, formState: { errors } } = methods;
+  const { register, handleSubmit, control, formState: { errors } } = methods;
   const onSubmit = (values: CheckoutFormValues) => submitOrder(values);
-  const onAuthedSubmit = () => submitOrder();
+  const onAuthedSubmit = () => {
+    // For authenticated users only `accept_terms` is captured by this form;
+    // first/last/email/phone come from the account profile.
+    if (!methods.getValues('accept_terms')) {
+      methods.setError('accept_terms', { message: t('checkout.terms_required') });
+      return;
+    }
+    submitOrder();
+  };
 
   if (!ready || !event) return null;
 
@@ -378,12 +404,37 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                         classNames={{ inputWrapper: 'rounded-xl' }}
                       />
 
-                      <Input
-                        label={t('checkout.phone_optional')}
-                        type="tel"
-                        {...register('phone')}
-                        classNames={{ inputWrapper: 'rounded-xl' }}
-                      />
+                      <div className="space-y-1.5">
+                        <label
+                          htmlFor="checkout-phone"
+                          className="block text-[0.75rem] font-[600] text-[var(--theme-text-muted)]"
+                        >
+                          {t('checkout.phone')}
+                          <span className="ml-0.5 text-[#DC2626]">*</span>
+                        </label>
+                        <div
+                          className={`flex h-[3.5rem] items-center rounded-xl border bg-[var(--theme-surface)] px-3 transition-colors focus-within:border-[var(--brand-primary)] ${
+                            errors.phone
+                              ? 'border-[#DC2626]'
+                              : 'border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)]'
+                          }`}
+                        >
+                          <PhoneInputRHF
+                            id="checkout-phone"
+                            name="phone"
+                            control={control as unknown as Parameters<typeof PhoneInputRHF>[0]['control']}
+                            defaultCountry="MD"
+                            international
+                            countryCallingCodeEditable={false}
+                            className="checkout-phone-input flex-1"
+                          />
+                        </div>
+                        {errors.phone && (
+                          <p className="text-[0.8125rem] text-[#DC2626]">
+                            {errors.phone.message as string}
+                          </p>
+                        )}
+                      </div>
                     </section>
                   )}
 
@@ -455,6 +506,44 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                       platformFeeFixed={event.platform_fee_fixed}
                       providerFeePercent={selectedMethod?.fee_percent ?? 0}
                     />
+                  </div>
+
+                  {/* Terms & Conditions */}
+                  <div className="space-y-1.5">
+                    <Controller
+                      control={control}
+                      name="accept_terms"
+                      render={({ field }) => (
+                        <Checkbox
+                          isSelected={!!field.value}
+                          onValueChange={(v) => field.onChange(v)}
+                          onBlur={field.onBlur}
+                          isInvalid={!!errors.accept_terms}
+                          classNames={{
+                            label: 'text-[0.875rem] text-[var(--theme-text)]',
+                          }}
+                        >
+                          <Trans
+                            i18nKey="checkout.terms_agree"
+                            ns="common"
+                            components={{
+                              a: (
+                                <Link
+                                  href="/terms"
+                                  target="_blank"
+                                  className="underline text-[var(--brand-primary)]"
+                                />
+                              ),
+                            }}
+                          />
+                        </Checkbox>
+                      )}
+                    />
+                    {errors.accept_terms && (
+                      <p className="text-[0.8125rem] text-[#DC2626]">
+                        {errors.accept_terms.message as string}
+                      </p>
+                    )}
                   </div>
 
                   {/* Submit CTA */}

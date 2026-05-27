@@ -1,10 +1,14 @@
 {
 	"header": {
 		"my_tickets": "Мои Билеты",
+		"my_account": "Мой аккаунт",
+		"change_language": "Сменить язык",
 		"search_placeholder": "Поиск событий..."
 	},
 	"footer": {
 		"powered_by": "Создано",
+		"legal": "Правовая информация",
+		"contact": "Контакты",
 		"terms": "Правила покупки",
 		"cookies": "Конфиденциальность",
 		"publicRules": "Публичная оферта",
@@ -31,6 +35,54 @@
 		"tickets_left": "{{count}} билетов осталось",
 		"buy_tickets": "Купить Билеты",
 		"show_more": "Показать Ещё"
+	},
+	"event": {
+		"buy_ticket": "Купить Билет",
+		"about": "О событии",
+		"show_less": "Свернуть",
+		"show_more": "Показать ещё",
+		"location": "Место проведения",
+		"doors_open": "Двери открываются в",
+		"coming_soon": "Скоро",
+		"sales_ended": "Продажи завершены",
+		"link_copied": "Ссылка скопирована",
+		"share_event": "Поделиться событием",
+		"order_tickets": "Заказ билетов",
+		"enhance_experience": "Дополните впечатления",
+		"addon_per_ticket_note": "Цена за билет · Применяется ко всем билетам в корзине.",
+		"your_cart": "Ваша корзина",
+		"step_1_of_2": "Шаг 1 из 2",
+		"continue_to_payment": "Перейти к оплате",
+		"promo_placeholder": "Промокод",
+		"apply": "Применить",
+		"all_events": "Все события",
+		"from_price": "От",
+		"sold_out": "Распродано",
+		"only_left": "Осталось всего {{count}}!",
+		"left": "Осталось {{count}}",
+		"ticket_count_one": "билет",
+		"ticket_count_few": "билета",
+		"ticket_count_many": "билетов",
+		"ticket_count_other": "билета",
+		"tickets": "Билеты",
+		"checkout": "Оформить",
+		"trust": {
+			"secure_payment": "Безопасная оплата",
+			"instant_ticket": "Мгновенный билет",
+			"guarantee_100": "Гарантия 100%",
+			"ssl_256": "SSL 256-бит",
+			"email_phone": "Email и телефон",
+			"easy_refund": "Лёгкий возврат"
+		}
+	},
+	"map": {
+		"unavailable": "Карта недоступна",
+		"open_map": "Открыть карту",
+		"title": "Расположение на карте",
+		"open_in_google_maps": "Открыть в Google Maps"
+	},
+	"landing": {
+		"categories_label": "Категории событий"
 	},
 	"checkout": {
 		"attendee_details": "Данные Участника",
@@ -113,7 +165,8 @@
 		"load_more": "Загрузить Ещё",
 		"load_more_error": "Не удалось загрузить ещё.",
 		"try_again": "Попробовать Снова",
-		"loading": "Загрузка…"
+		"loading": "Загрузка…",
+		"total": "Итого"
 	},
 	"tickets": {
 		"my_tickets": "Мои Билеты",
@@ -166,7 +219,7 @@
 		"continue_hint": "Выберите хотя бы одно место.",
 		"seats_count": "{{count}} мест",
 		"seat_count_sr": "{{count}} {{tier}} выбрано",
-		"remove_seat": "Убрать {{seat}}",
+		"remove_seat": "Удалить",
 		"cap_reached": "Не более {{max}} {{tier}} на заказ.",
 		"pick_best": "Подобрать лучшие места",
 		"repick_error": "Не удалось подобрать места. Коснитесь карты, чтобы выбрать.",
@@ -181,7 +234,17 @@
 		"live_complete": "Выбрано {{count}} мест, итого {{total}} {{currency}}.",
 		"version_mismatch_title": "Схема зала обновлена",
 		"version_mismatch_body": "Схема зала изменилась с момента загрузки страницы. Пожалуйста, обновите страницу, чтобы продолжить.",
-		"refresh": "Обновить"
+		"refresh": "Обновить",
+		"loading_map": "Загрузка схемы…",
+		"seats_available": "мест доступно",
+		"row": "Ряд",
+		"seat": "Место",
+		"seats_selected_one": "{{count}} место выбрано",
+		"seats_selected_few": "{{count}} места выбрано",
+		"seats_selected_many": "{{count}} мест выбрано",
+		"seats_selected_other": "{{count}} места выбрано",
+		"clear_all": "Очистить",
+		"confirm_pay": "Подтвердить и оплатить"
 	},
 	"profile": {
 		"subtitle": "Обновите имя и телефон, которые используются на билетах.",

@@ -32,16 +32,21 @@ import { suggestSeats } from '@/queries/seating/useSuggestSeats';
 import SelectedSeatsList, { SelectedSeatItem } from '@/components/seating/SelectedSeatsList';
 import type { IAddonCartItem, ISeatingResponse } from '@/types';
 
-const SeatingViewer = dynamic(() => import('@/components/seating/SeatingViewer'), {
-	ssr: false,
-	loading: () => (
+function SeatingViewerLoading() {
+	const { t } = useTranslation('common');
+	return (
 		<div className="flex h-full w-full items-center justify-center bg-[var(--theme-surface)]">
 			<div className="flex flex-col items-center gap-3 text-[var(--theme-text-muted)]">
 				<Icon icon="mdi:seat-outline" width={36} className="animate-pulse" />
-				<span className="font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-[0.1em]">Se încarcă harta…</span>
+				<span className="font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-[0.1em]">{t('seating.loading_map')}</span>
 			</div>
 		</div>
-	),
+	);
+}
+
+const SeatingViewer = dynamic(() => import('@/components/seating/SeatingViewer'), {
+	ssr: false,
+	loading: () => <SeatingViewerLoading />,
 });
 
 interface SeatSelectionProps {
@@ -404,7 +409,7 @@ export default function SeatSelection({
 				{/* Available count overlay */}
 				<div className="pointer-events-none absolute left-3 top-3">
 					<span className="rounded-full bg-[var(--theme-bg)]/80 px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)] backdrop-blur-sm">
-						{availableCount} locuri disponibile
+						{availableCount} {t('seating.seats_available')}
 					</span>
 				</div>
 			</div>
@@ -454,7 +459,7 @@ export default function SeatSelection({
 										{/* Row + Seat — spelled out */}
 										<p className="font-[family-name:var(--font-mono)] text-[0.75rem] font-[700] leading-tight tabular-nums">
 											{locStr
-												? <>Rând {rowStr} · Loc {locStr}</>
+												? <>{t('seating.row')} {rowStr} · {t('seating.seat')} {locStr}</>
 												: rowStr}
 										</p>
 										{/* Price */}
@@ -468,7 +473,7 @@ export default function SeatSelection({
 										onClick={() => handleRemove(item.seatId)}
 										className="absolute -right-1.5 -top-1.5 z-10 hidden h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm group-hover:flex"
 										style={{ color: 'var(--brand-primary)' }}
-										aria-label="Șterge"
+										aria-label={t('seating.remove_seat')}
 									>
 										<Icon icon="mdi:close" width={11} />
 									</button>
@@ -571,10 +576,10 @@ export default function SeatSelection({
 							<ModalHeader className="flex items-start justify-between gap-3">
 								<div>
 									<h2 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-										Locurile tale
+										{t('seating.your_seats')}
 									</h2>
 									<p className="mt-0.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
-										{selected.size === 1 ? '1 loc selectat' : `${selected.size} locuri selectate`}
+										{t('seating.seats_selected', { count: selected.size })}
 									</p>
 								</div>
 								<button
@@ -582,7 +587,7 @@ export default function SeatSelection({
 									onClick={handleClearAll}
 									className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
 								>
-									Golește
+									{t('seating.clear_all')}
 								</button>
 							</ModalHeader>
 
@@ -611,7 +616,7 @@ export default function SeatSelection({
 													type="button"
 													onClick={() => handleRemove(item.seatId)}
 													className="text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
-													aria-label="Șterge"
+													aria-label={t('seating.remove_seat')}
 												>
 													<Icon icon="mdi:close" width={14} />
 												</button>
@@ -625,7 +630,7 @@ export default function SeatSelection({
 								{/* Total */}
 								<div className="flex w-full items-baseline justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-3">
 									<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
-										Total
+										{t('common.total')}
 									</span>
 									<span className="font-[family-name:var(--font-display)] text-[1.5rem] font-[800] leading-none tracking-[-0.02em] tabular-nums text-[var(--theme-text)]">
 										{total} <span className="text-[0.9375rem] font-[700] opacity-50">{currency}</span>
@@ -654,7 +659,7 @@ export default function SeatSelection({
 									className="w-full rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
 									style={{ backgroundColor: 'var(--brand-primary)' }}
 								>
-									Confirmă & Plătește
+									{t('seating.confirm_pay')}
 									<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
 								</Button>
 

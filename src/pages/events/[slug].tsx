@@ -164,7 +164,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     ? t('seating.select_seats')
     : totalQuantity > 0
       ? `Checkout · ${totalPrice} ${currency}`
-      : 'Cumpără Bilet';
+      : t('event.buy_ticket');
 
   const handleQuantityChange = useCallback((ticketTypeId: number, qty: number) => {
     setQuantities((prev) => ({ ...prev, [ticketTypeId]: qty }));
@@ -288,7 +288,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                 {event.description && (
                   <div>
                     <h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
-                      Despre Eveniment
+                      {t('event.about')}
                     </h2>
                     <p
                       className={`mt-4 whitespace-pre-line text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)] sm:text-[1.0625rem] ${
@@ -302,7 +302,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                         className="mt-3 font-[family-name:var(--font-body)] text-[0.9375rem] font-[600] text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
                         onClick={() => setDescriptionExpanded((o) => !o)}
                       >
-                        {descriptionExpanded ? 'Arată mai puțin' : 'Arată mai mult'}
+                        {descriptionExpanded ? t('event.show_less') : t('event.show_more')}
                       </button>
                     )}
                   </div>
@@ -311,7 +311,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                 {event.venue_name && (
                   <div>
                     <h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
-                      Locație
+                      {t('event.location')}
                     </h2>
                     <div className="mt-4">
                       <p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">
@@ -345,7 +345,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                       {fmtDate(event.date_start)}
                     </div>
                     <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
-                      Porțile se deschid la {fmtTime(event.date_start)}
+                      {t('event.doors_open')} {fmtTime(event.date_start)}
                     </div>
                   </div>
 
@@ -386,7 +386,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                       size="lg"
                       className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700]"
                     >
-                      {event.status === 'soon' ? 'În curând' : 'Vânzări Încheiate'}
+                      {event.status === 'soon' ? t('event.coming_soon') : t('event.sales_ended')}
                     </Button>
                   ) : (
                     <Button
@@ -408,11 +408,11 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                   >
                     {copied ? (
                       <>
-                        <Icon icon="mdi:check" width={16} className="text-[#16A34A]" /> Link copiat
+                        <Icon icon="mdi:check" width={16} className="text-[#16A34A]" /> {t('event.link_copied')}
                       </>
                     ) : (
                       <>
-                        <Icon icon="mdi:share-variant-outline" width={16} /> Distribuie evenimentul
+                        <Icon icon="mdi:share-variant-outline" width={16} /> {t('event.share_event')}
                       </>
                     )}
                   </Button>
@@ -422,9 +422,9 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
               {/* Trust badges */}
               <div className="flex flex-col gap-2">
                 {[
-                  { icon: 'mdi:shield-check-outline', title: 'Plată securizată', sub: 'SSL 256-bit' },
-                  { icon: 'mdi:flash-outline', title: 'Bilet instant', sub: 'Email & telefon' },
-                  { icon: 'mdi:check-decagram-outline', title: 'Garanție 100%', sub: 'Rambursare ușoară' },
+                  { icon: 'mdi:shield-check-outline', title: t('event.trust.secure_payment'), sub: t('event.trust.ssl_256') },
+                  { icon: 'mdi:flash-outline', title: t('event.trust.instant_ticket'), sub: t('event.trust.email_phone') },
+                  { icon: 'mdi:check-decagram-outline', title: t('event.trust.guarantee_100'), sub: t('event.trust.easy_refund') },
                 ].map((it) => (
                   <div
                     key={it.title}
@@ -449,7 +449,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
           {(!isSeated || (event.sessions ?? []).length > 1) && (
             <SectionShell
               id="tickets"
-              label="Comandă Bilete"
+              label={t('event.order_tickets')}
               rightSlot={
                 priceFrom > 0 && !isSeated ? (
                   <span className="font-[family-name:var(--font-mono)] text-[0.75rem] tracking-[0.03em] text-[var(--theme-text-muted)]">
@@ -494,11 +494,11 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                         <div className="flex items-center gap-2">
                           <Icon icon="mdi:auto-awesome" width={18} className="text-[var(--brand-accent)]" />
                           <h3 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-                            Îmbunătățește-ți Experiența
+                            {t('event.enhance_experience')}
                           </h3>
                         </div>
                         <p className="mt-1 text-[0.75rem] text-[var(--theme-text-muted)]">
-                          Preț per bilet · Aplicat la toate biletele din coș.
+                          {t('event.addon_per_ticket_note')}
                         </p>
                         <div className="mt-3 flex flex-col gap-2.5">
                           {addons.map((addon) => (
@@ -519,10 +519,10 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                       <div className="overflow-hidden rounded-[22px] bg-[var(--brand-primary)] text-[var(--theme-bg)]">
                         <div className="flex items-center justify-between border-b border-[color-mix(in_srgb,var(--theme-bg)_12%,transparent)] px-6 py-4">
                           <span className="font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.15em]">
-                            Coșul tău
+                            {t('event.your_cart')}
                           </span>
                           <span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] opacity-55">
-                            Pasul 1 din 2
+                            {t('event.step_1_of_2')}
                           </span>
                         </div>
                         <div className="px-6 py-4">
@@ -551,7 +551,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                         </div>
                         <div className="flex items-center justify-between bg-[var(--theme-bg)] px-6 py-5 text-[var(--theme-text)]">
                           <div>
-                            <div className={monoLabel}>Total</div>
+                            <div className={monoLabel}>{t('common.total')}</div>
                             <div className="font-[family-name:var(--font-display)] text-[1.75rem] font-[800] leading-none tracking-[-0.02em] tabular-nums">
                               {totalPrice} <span className="text-[0.875rem] font-[700]">{currency}</span>
                             </div>
@@ -563,7 +563,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                             style={{ backgroundColor: 'var(--brand-accent)' }}
                             onPress={handleBuy}
                           >
-                            Continuă la Plată
+                            {t('event.continue_to_payment')}
                             <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
                           </Button>
                         </div>
@@ -575,11 +575,11 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                       <Icon icon="mdi:tag-outline" width={18} className="ml-2 shrink-0 text-[var(--theme-text-muted)]" />
                       <input
                         type="text"
-                        placeholder="Cod promoțional"
+                        placeholder={t('event.promo_placeholder')}
                         className="h-9 min-w-0 flex-1 bg-transparent px-2 font-[family-name:var(--font-mono)] text-[0.8125rem] tracking-[0.03em] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] focus:outline-none"
                       />
                       <button className="h-9 shrink-0 rounded-full bg-[var(--brand-primary)] px-5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[700] text-[var(--theme-bg)] transition-opacity duration-200 hover:opacity-90">
-                        Aplică
+                        {t('event.apply')}
                       </button>
                     </div>
                   </>
@@ -657,7 +657,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                 {organizer.name}
               </div>
               <div className="mt-1 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em] opacity-60">
-                Toate evenimentele
+                {t('event.all_events')}
               </div>
             </div>
             <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--theme-bg)_25%,transparent)] px-5 py-2.5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] sm:inline-flex">
@@ -679,7 +679,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                   Bilete
                 </span>
                 <span className="block font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em]">
-                  {priceFrom > 0 ? `De la ${priceFrom} ${currency}` : 'Locuri'}
+                  {priceFrom > 0 ? `${t('event.from_price')} ${priceFrom} ${currency}` : t('seating.select_seats')}
                 </span>
               </span>
               <span

@@ -19,6 +19,7 @@ const LOCALE_LABELS: Record<string, { flag: string; name: string }> = {
 };
 
 export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTotal, currency, onCartClick }: AppHeaderProps) {
+	const { t } = useTranslation('common');
 	const hasCart = (cartQuantity ?? 0) > 0;
 
 	return (
@@ -60,10 +61,10 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 						<Link
 							href="/account"
 							className="inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] px-3 py-2 text-[0.8125rem] font-[500] text-[var(--theme-text)] transition-colors duration-200 hover:bg-[var(--theme-surface)] sm:px-4"
-							aria-label="Contul meu"
+							aria-label={t('header.my_account')}
 						>
 							<Icon icon="mdi:account-circle-outline" width={16} />
-							<span className="hidden sm:inline">Contul meu</span>
+							<span className="hidden sm:inline">{t('header.my_account')}</span>
 						</Link>
 					)}
 				</div>
@@ -73,7 +74,7 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 }
 
 function LanguageSwitcher() {
-	const { i18n } = useTranslation('common');
+	const { i18n, t } = useTranslation('common');
 	const [open, setOpen] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
 
@@ -100,7 +101,7 @@ function LanguageSwitcher() {
 			<button
 				onClick={() => setOpen((o) => !o)}
 				className="flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-surface)] px-3 py-2 text-[var(--theme-text)] transition-colors duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_22%,transparent)]"
-				aria-label="Schimbă limba"
+				aria-label={t('header.change_language')}
 				aria-haspopup="listbox"
 				aria-expanded={open}
 			>

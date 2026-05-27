@@ -18,6 +18,7 @@
 
 import { computeAllSeats, Section, Seat } from '@/lib/seatingGeometry';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'next-i18next';
 
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 5;
@@ -116,6 +117,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	onSeatToggle,
 	reducedMotion = false,
 }) => {
+	const { t } = useTranslation('common');
 	const containerRef = useRef<HTMLDivElement>(null);
 	const canvasEl = useRef<HTMLCanvasElement>(null);
 	const minimapEl = useRef<HTMLCanvasElement>(null);
@@ -766,12 +768,12 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 						x: e.clientX - rect.left + 16,
 						y: e.clientY - rect.top - 60,
 						title: sectionLabelByKey.get(foundSeat.sectionKey) ?? '',
-						sub: `Rând ${foundSeat.row} · Loc ${foundSeat.num}${priceStr}`,
+						sub: `${t('seating.row')} ${foundSeat.row} · ${t('seating.seat')} ${foundSeat.num}${priceStr}`,
 					});
 				} else setTooltip(null);
 			}
 		},
-		[allSeats, sections, sectionBoundsMap, sectionLabelByKey, isSelectable, scheduleRedraw]
+		[allSeats, sections, sectionBoundsMap, sectionLabelByKey, isSelectable, scheduleRedraw, t]
 	);
 
 	const endPan = useCallback((e: React.PointerEvent) => {

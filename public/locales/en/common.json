@@ -1,10 +1,14 @@
 {
 	"header": {
 		"my_tickets": "My Tickets",
+		"my_account": "My Account",
+		"change_language": "Change language",
 		"search_placeholder": "Search events..."
 	},
 	"footer": {
 		"powered_by": "Powered by",
+		"legal": "Legal",
+		"contact": "Contact",
 		"terms": "Terms",
 		"cookies": "Privacy",
 		"publicRules": "Public offer",
@@ -39,6 +43,52 @@
 		"events_count_one": "{{count}} event",
 		"events_count_other": "{{count}} events",
 		"show_more": "Show More"
+	},
+	"event": {
+		"buy_ticket": "Buy Ticket",
+		"about": "About the Event",
+		"show_less": "Show less",
+		"show_more": "Show more",
+		"location": "Location",
+		"doors_open": "Doors open at",
+		"coming_soon": "Coming Soon",
+		"sales_ended": "Sales Ended",
+		"link_copied": "Link copied",
+		"share_event": "Share event",
+		"order_tickets": "Order Tickets",
+		"enhance_experience": "Enhance Your Experience",
+		"addon_per_ticket_note": "Price per ticket · Applied to all tickets in your cart.",
+		"your_cart": "Your cart",
+		"step_1_of_2": "Step 1 of 2",
+		"continue_to_payment": "Continue to Payment",
+		"promo_placeholder": "Promo code",
+		"apply": "Apply",
+		"all_events": "All events",
+		"from_price": "From",
+		"sold_out": "Sold Out",
+		"only_left": "Only {{count}} left!",
+		"left": "{{count}} left",
+		"ticket_count_one": "ticket",
+		"ticket_count_other": "tickets",
+		"tickets": "Tickets",
+		"checkout": "Checkout",
+		"trust": {
+			"secure_payment": "Secure payment",
+			"instant_ticket": "Instant ticket",
+			"guarantee_100": "100% guarantee",
+			"ssl_256": "SSL 256-bit",
+			"email_phone": "Email & phone",
+			"easy_refund": "Easy refund"
+		}
+	},
+	"map": {
+		"unavailable": "Map unavailable",
+		"open_map": "Open map",
+		"title": "Location on map",
+		"open_in_google_maps": "Open in Google Maps"
+	},
+	"landing": {
+		"categories_label": "Event categories"
 	},
 	"checkout": {
 		"attendee_details": "Attendee Details",
@@ -121,7 +171,8 @@
 		"load_more": "Load More",
 		"load_more_error": "Couldn't load more.",
 		"try_again": "Try Again",
-		"loading": "Loading…"
+		"loading": "Loading…",
+		"total": "Total"
 	},
 	"tickets": {
 		"my_tickets": "My Tickets",
@@ -170,7 +221,7 @@
 		"continue_hint": "Select at least one seat.",
 		"seats_count": "{{count}} seats",
 		"seat_count_sr": "{{count}} {{tier}} selected",
-		"remove_seat": "Remove {{seat}}",
+		"remove_seat": "Remove",
 		"cap_reached": "Max {{max}} {{tier}} per order.",
 		"pick_best": "Pick best seats",
 		"repick_error": "Couldn't auto-pick seats. Tap the map to choose.",
@@ -185,7 +236,15 @@
 		"live_complete": "{{count}} seats selected, total {{total}} {{currency}}.",
 		"version_mismatch_title": "Seat map updated",
 		"version_mismatch_body": "The seating map has changed since this page loaded. Please refresh to continue.",
-		"refresh": "Refresh"
+		"refresh": "Refresh",
+		"loading_map": "Loading map…",
+		"seats_available": "seats available",
+		"row": "Row",
+		"seat": "Seat",
+		"seats_selected_one": "{{count}} seat selected",
+		"seats_selected_other": "{{count}} seats selected",
+		"clear_all": "Clear all",
+		"confirm_pay": "Confirm & Pay"
 	},
 	"profile": {
 		"subtitle": "Update the name and phone we use on your tickets.",

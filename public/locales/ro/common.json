@@ -1,10 +1,14 @@
 {
 	"header": {
 		"my_tickets": "Biletele Mele",
+		"my_account": "Contul meu",
+		"change_language": "Schimbă limba",
 		"search_placeholder": "Cauta evenimente..."
 	},
 	"footer": {
 		"powered_by": "Creat de",
+		"legal": "Legal",
+		"contact": "Contact",
 		"terms": "Regulament bilete",
 		"cookies": "Confidențialitate",
 		"publicRules": "Ofertă publică",
@@ -39,6 +43,52 @@
 		"events_count_one": "{{count}} eveniment",
 		"events_count_other": "{{count}} evenimente",
 		"show_more": "Arată Mai Mult"
+	},
+	"event": {
+		"buy_ticket": "Cumpără Bilet",
+		"about": "Despre Eveniment",
+		"show_less": "Arată mai puțin",
+		"show_more": "Arată mai mult",
+		"location": "Locație",
+		"doors_open": "Porțile se deschid la",
+		"coming_soon": "În curând",
+		"sales_ended": "Vânzări Încheiate",
+		"link_copied": "Link copiat",
+		"share_event": "Distribuie evenimentul",
+		"order_tickets": "Comandă Bilete",
+		"enhance_experience": "Îmbunătățește-ți Experiența",
+		"addon_per_ticket_note": "Preț per bilet · Aplicat la toate biletele din coș.",
+		"your_cart": "Coșul tău",
+		"step_1_of_2": "Pasul 1 din 2",
+		"continue_to_payment": "Continuă la Plată",
+		"promo_placeholder": "Cod promoțional",
+		"apply": "Aplică",
+		"all_events": "Toate evenimentele",
+		"from_price": "De la",
+		"sold_out": "Epuizat",
+		"only_left": "Doar {{count}} rămase!",
+		"left": "{{count}} rămase",
+		"ticket_count_one": "bilet",
+		"ticket_count_other": "bilete",
+		"tickets": "Bilete",
+		"checkout": "Finalizare",
+		"trust": {
+			"secure_payment": "Plată securizată",
+			"instant_ticket": "Bilet instant",
+			"guarantee_100": "Garanție 100%",
+			"ssl_256": "SSL 256-bit",
+			"email_phone": "Email & telefon",
+			"easy_refund": "Rambursare ușoară"
+		}
+	},
+	"map": {
+		"unavailable": "Hartă indisponibilă",
+		"open_map": "Deschide harta",
+		"title": "Locație pe hartă",
+		"open_in_google_maps": "Deschide în Google Maps"
+	},
+	"landing": {
+		"categories_label": "Categorii evenimente"
 	},
 	"checkout": {
 		"attendee_details": "Detalii Participant",
@@ -121,7 +171,8 @@
 		"load_more": "Incarca Mai Multe",
 		"load_more_error": "Nu am putut incarca mai multe.",
 		"try_again": "Incearca Din Nou",
-		"loading": "Se incarca…"
+		"loading": "Se incarca…",
+		"total": "Total"
 	},
 	"tickets": {
 		"my_tickets": "Biletele Mele",
@@ -172,7 +223,7 @@
 		"continue_hint": "Alege cel putin un loc.",
 		"seats_count": "{{count}} locuri",
 		"seat_count_sr": "{{count}} {{tier}} selectate",
-		"remove_seat": "Elimina {{seat}}",
+		"remove_seat": "Șterge",
 		"cap_reached": "Maxim {{max}} {{tier}} per comanda.",
 		"pick_best": "Alege cele mai bune locuri",
 		"repick_error": "Nu am putut alege locuri automat. Atinge harta pentru a alege.",
@@ -187,7 +238,15 @@
 		"live_complete": "{{count}} locuri selectate, total {{total}} {{currency}}.",
 		"version_mismatch_title": "Harta locurilor a fost actualizata",
 		"version_mismatch_body": "Harta locurilor s-a schimbat de cand s-a incarcat pagina. Te rugam sa reimprospatezi pentru a continua.",
-		"refresh": "Reimprospateaza"
+		"refresh": "Reimprospateaza",
+		"loading_map": "Se încarcă harta…",
+		"seats_available": "locuri disponibile",
+		"row": "Rând",
+		"seat": "Loc",
+		"seats_selected_one": "{{count}} loc selectat",
+		"seats_selected_other": "{{count}} locuri selectate",
+		"clear_all": "Golește",
+		"confirm_pay": "Confirmă & Plătește"
 	},
 	"profile": {
 		"subtitle": "Actualizeaza numele si telefonul folosite pe bilete.",

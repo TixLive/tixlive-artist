@@ -54,7 +54,7 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 					{/* Legal — only pages the organizer has actually published */}
 					{legalLinks.length > 0 && (
 						<div>
-							<h3 className={heading}>Legal</h3>
+							<h3 className={heading}>{t('footer.legal')}</h3>
 							<ul className="space-y-3 text-[0.8125rem]">
 								{legalLinks.map((page) => (
 									<li key={page.pageType}>
@@ -69,7 +69,7 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 
 					{/* Contact */}
 					<div>
-						<h3 className={heading}>Contact</h3>
+						<h3 className={heading}>{t('footer.contact')}</h3>
 						<ul className="space-y-3 text-[0.8125rem]">
 							<li>
 								<a href="mailto:support@tix.live" className={link}>support@tix.live</a>

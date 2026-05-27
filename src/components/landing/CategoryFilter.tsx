@@ -1,4 +1,5 @@
 import { Chip } from '@heroui/react';
+import { useTranslation } from 'next-i18next';
 
 type Category = string;
 
@@ -10,6 +11,7 @@ interface CategoryFilterProps {
 }
 
 export default function CategoryFilter({ active, onChange, availableTypes }: CategoryFilterProps) {
+  const { t } = useTranslation('common');
   // Only show "All" + types that actually have events
   const tabs = ['All', ...availableTypes];
 
@@ -22,7 +24,7 @@ export default function CategoryFilter({ active, onChange, availableTypes }: Cat
     >
       <nav
         className="mx-auto flex max-w-[1120px] gap-2 overflow-x-auto px-4 py-3 sm:px-6"
-        aria-label="Event categories"
+        aria-label={t('landing.categories_label')}
         style={{ scrollbarWidth: 'none' }}
       >
         {tabs.map((cat) => {

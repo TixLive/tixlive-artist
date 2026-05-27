@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
 
 interface AddressMapProps {
@@ -10,6 +11,7 @@ interface AddressMapProps {
 const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
 
 const AddressMap: FC<AddressMapProps> = ({ googlePlaceId, address, height = 220 }) => {
+	const { t } = useTranslation('common');
 	// With API key: use the proper Embed API (place_id supported).
 	// Without API key: fall back to a text search query — place_id embeds are
 	// broken without a key and render the world map.
@@ -29,7 +31,7 @@ const AddressMap: FC<AddressMapProps> = ({ googlePlaceId, address, height = 220 
 			>
 				<div className="flex items-center gap-3 text-[var(--theme-text-muted)]">
 					<Icon icon="mdi:map-marker-outline" width={28} />
-					<span className="text-[0.875rem]">{address ?? 'Hartă indisponibilă'}</span>
+					<span className="text-[0.875rem]">{address ?? t('map.unavailable')}</span>
 				</div>
 				<a
 					href={mapsHref}
@@ -37,7 +39,7 @@ const AddressMap: FC<AddressMapProps> = ({ googlePlaceId, address, height = 220 
 					rel="noopener noreferrer"
 					className="shrink-0 rounded-full bg-[var(--brand-primary)] px-4 py-2 text-[0.8125rem] font-semibold text-[var(--theme-bg)]"
 				>
-					Deschide harta
+					{t('map.open_map')}
 				</a>
 			</div>
 		);
@@ -51,17 +53,17 @@ const AddressMap: FC<AddressMapProps> = ({ googlePlaceId, address, height = 220 
 				allowFullScreen
 				referrerPolicy="no-referrer-when-downgrade"
 				src={src}
-				title="Locație pe hartă"
+				title={t('map.title')}
 			/>
 			<a
 				href={mapsHref}
 				target="_blank"
 				rel="noopener noreferrer"
 				className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-lg bg-[var(--theme-bg)]/90 px-2.5 py-1.5 text-[0.75rem] font-medium text-[var(--theme-text)] shadow backdrop-blur transition-colors hover:bg-[var(--theme-bg)]"
-				aria-label="Deschide în Google Maps"
+				aria-label={t('map.open_in_google_maps')}
 			>
 				<Icon icon="mdi:google-maps" width={14} />
-				Deschide harta
+				{t('map.open_map')}
 			</a>
 		</div>
 	);

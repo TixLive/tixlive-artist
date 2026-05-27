@@ -1,3 +1,5 @@
+import { useTranslation } from 'next-i18next';
+
 interface CapacityBadgeProps {
   remainingCapacity: number | null | undefined;
   /**
@@ -20,6 +22,7 @@ export default function CapacityBadge({
   remainingCapacity,
   showLowStockUrgency = true,
 }: CapacityBadgeProps) {
+  const { t } = useTranslation('common');
   if (remainingCapacity == null || remainingCapacity > 20) return null;
 
   if (remainingCapacity === 0) {
@@ -28,7 +31,7 @@ export default function CapacityBadge({
         className="inline-block rounded-md bg-[#DC2626]/10 px-2 py-0.5 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-[#DC2626] line-through"
         aria-label="0 tickets remaining"
       >
-        Sold Out
+        {t('event.sold_out')}
       </span>
     );
   }
@@ -41,7 +44,7 @@ export default function CapacityBadge({
         className="animate-urgency-pulse inline-block rounded-md bg-[#DC2626]/10 px-2 py-0.5 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-[#DC2626]"
         aria-label={`${remainingCapacity} tickets remaining`}
       >
-        Only {remainingCapacity} left!
+        {t('event.only_left', { count: remainingCapacity })}
       </span>
     );
   }
@@ -52,7 +55,7 @@ export default function CapacityBadge({
       className="inline-block rounded-md bg-[#D97706]/10 px-2 py-0.5 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-[#D97706]"
       aria-label={`${remainingCapacity} tickets remaining`}
     >
-      {remainingCapacity} left
+      {t('event.left', { count: remainingCapacity })}
     </span>
   );
 }

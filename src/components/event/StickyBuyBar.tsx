@@ -1,5 +1,6 @@
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import { ICartItem } from '@/types';
 
 interface StickyBuyBarProps {
@@ -12,6 +13,7 @@ interface StickyBuyBarProps {
 }
 
 export default function StickyBuyBar({ cartItems, currency, onBuy, ctaLabel, isSeated, salesOpen }: StickyBuyBarProps) {
+  const { t } = useTranslation('common');
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -25,10 +27,10 @@ export default function StickyBuyBar({ cartItems, currency, onBuy, ctaLabel, isS
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] opacity-65">
-            {totalQuantity > 0 ? `${totalQuantity} ${totalQuantity === 1 ? 'ticket' : 'tickets'}` : 'Tickets'}
+            {totalQuantity > 0 ? `${totalQuantity} ${t('event.ticket_count', { count: totalQuantity })}` : t('event.tickets')}
           </p>
           <p className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] tabular-nums">
-            {totalQuantity > 0 ? `${totalPrice} ${currency}` : 'Bilete'}
+            {totalQuantity > 0 ? `${totalPrice} ${currency}` : t('event.tickets')}
           </p>
         </div>
         <Button
@@ -37,7 +39,7 @@ export default function StickyBuyBar({ cartItems, currency, onBuy, ctaLabel, isS
           className="shrink-0 rounded-full bg-[var(--brand-accent)] font-[family-name:var(--font-body)] font-[700] text-white"
           onPress={onBuy}
         >
-          {ctaLabel ?? 'Checkout'}
+          {ctaLabel ?? t('event.checkout')}
           <Icon icon="mdi:arrow-right" className="ml-1" width={20} />
         </Button>
       </div>

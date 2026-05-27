@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 
 interface ShareButtonProps {
   title: string;
@@ -8,6 +9,7 @@ interface ShareButtonProps {
 }
 
 export default function ShareButton({ title, variant = 'hero' }: ShareButtonProps) {
+  const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);
 
   const handleShare = useCallback(async () => {
@@ -42,7 +44,7 @@ export default function ShareButton({ title, variant = 'hero' }: ShareButtonProp
         variant="ghost"
         className={variant === 'hero' ? heroClass : inlineClass}
         onPress={handleShare}
-        aria-label="Share event"
+        aria-label={t('event.share_event')}
       >
         <Icon icon="mdi:share-variant" width={variant === 'hero' ? 22 : 18} />
       </Button>
@@ -50,7 +52,7 @@ export default function ShareButton({ title, variant = 'hero' }: ShareButtonProp
       {/* Copied toast */}
       {copied && (
         <div className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-xl bg-[var(--theme-text)] px-3 py-1.5 text-xs text-[var(--theme-bg)] shadow-lg">
-          Link copied!
+          {t('event.link_copied')}
         </div>
       )}
     </div>

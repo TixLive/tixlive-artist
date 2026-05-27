@@ -533,9 +533,8 @@ CheckoutPage.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default CheckoutPage;
 
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import nextI18NextConfig from '@/i18n.config';
+import { staticI18nProps } from '@/lib/staticI18n';
 
 export const getStaticProps = async ({ locale }: { locale?: string }) => ({
-  props: await serverSideTranslations(locale ?? 'ro', ['common'], nextI18NextConfig),
+  props: staticI18nProps(locale),
 });

@@ -3,12 +3,12 @@ import { HeroUIProvider, ToastProvider } from '@heroui/react';
 import type { AppProps } from 'next/app';
 import type { NextPage } from 'next';
 import type { ReactElement, ReactNode } from 'react';
-import { appWithTranslation } from 'next-i18next';
+import { appWithTranslation, useTranslation } from 'next-i18next';
 import nextI18NextConfig from '@/i18n.config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { geist } from '@/styles/font';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { OrganizerProvider, useOrganizer } from '@/contexts/OrganizerContext';
 import { LayoutProvider } from '@/contexts/LayoutContext';
@@ -21,6 +21,18 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 type AppPropsWithLayout = AppProps & {
 	Component: NextPageWithLayout;
 };
+
+function LocaleHydrator() {
+	const { i18n } = useTranslation();
+	useEffect(() => {
+		const match = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/);
+		const cookieLocale = match?.[1];
+		if (cookieLocale && ['en', 'ro', 'ru'].includes(cookieLocale) && i18n.language !== cookieLocale) {
+			i18n.changeLanguage(cookieLocale);
+		}
+	}, [i18n]);
+	return null;
+}
 
 function BrandInjector() {
 	const { organizer } = useOrganizer();
@@ -50,6 +62,7 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
 					<LayoutProvider>
 						<HeroUIProvider navigate={router.push}>
 							<ToastProvider placement="bottom-center" toastOffset={16} />
+							<LocaleHydrator />
 							<BrandInjector />
 							<div className={`${geist.variable} font-sans min-h-screen`}>
 								{getLayout(<Component {...pageProps} />)}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
 
 interface AppHeaderProps {
@@ -73,12 +73,12 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 }
 
 function LanguageSwitcher() {
-	const router = useRouter();
+	const { i18n } = useTranslation('common');
 	const [open, setOpen] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
 
-	const locales = router.locales ?? ['en', 'ro', 'ru'];
-	const current = router.locale ?? router.defaultLocale ?? 'ro';
+	const locales = ['en', 'ro', 'ru'];
+	const current = (i18n.language || 'ro').slice(0, 2);
 
 	useEffect(() => {
 		if (!open) return;
@@ -92,7 +92,7 @@ function LanguageSwitcher() {
 	const change = (locale: string) => {
 		setOpen(false);
 		document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000; SameSite=Lax`;
-		router.push({ pathname: router.pathname, query: router.query }, router.asPath, { locale });
+		i18n.changeLanguage(locale);
 	};
 
 	return (

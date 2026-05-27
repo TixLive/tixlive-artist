@@ -115,6 +115,8 @@
 		"buy_tickets": "Cumpara Bilete",
 		"share": "Distribuie",
 		"load_more": "Incarca Mai Multe",
+		"load_more_error": "Nu am putut incarca mai multe.",
+		"try_again": "Incearca Din Nou",
 		"loading": "Se incarca…"
 	},
 	"tickets": {

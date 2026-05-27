@@ -314,3 +314,16 @@ export interface ISeatingSuggestResponse {
 	/** True when any tier got fewer seats than requested. */
 	shortfall: boolean;
 }
+
+/**
+ * Generic envelope for paginated besttix list endpoints
+ * (`/api/public/events`, `/api/public/orders`, `/api/public/tickets`).
+ *
+ * `next_offset` is `null` on the last page. Pass it back through
+ * `useInfiniteQuery`'s `pageParam` to fetch the next page.
+ */
+export interface IPaginatedResponse<T> {
+	data: T[];
+	total: number;
+	next_offset: number | null;
+}

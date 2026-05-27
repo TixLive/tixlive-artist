@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import AccountLayout from '@/components/account/AccountLayout';
 import OrdersList from '@/components/account/OrdersList';
+import LoadMore from '@/components/common/LoadMore';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetMyOrders } from '@/queries/orders/useGetMyOrders';
@@ -14,7 +16,16 @@ function OrdersPageContent() {
 	const router = useRouter();
 	const { organizer } = useOrganizer();
 	const { user } = useAuth();
-	const { data: orders = [], isLoading } = useGetMyOrders();
+	const {
+		data,
+		isLoading,
+		fetchNextPage,
+		isFetchingNextPage,
+		hasNextPage,
+		isError,
+	} = useGetMyOrders();
+
+	const orders = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
 
 	return (
 		<AccountLayout organizer={organizer} email={user!.email} active="orders" title={t('account.orders')}>
@@ -41,7 +52,15 @@ function OrdersPageContent() {
 					))}
 				</div>
 			) : (
-				<OrdersList orders={orders} locale={router.locale} />
+				<>
+					<OrdersList orders={orders} locale={router.locale} />
+					<LoadMore
+						hasNextPage={hasNextPage}
+						isFetching={isFetchingNextPage}
+						isError={isError}
+						onLoadMore={fetchNextPage}
+					/>
+				</>
 			)}
 		</AccountLayout>
 	);

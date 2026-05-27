@@ -1,19 +1,21 @@
 import EventCard from '@/components/landing/EventCard';
+import LoadMore from '@/components/common/LoadMore';
 import { IEventListItem } from '@/types';
-import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 
 interface EventGridProps {
   events: IEventListItem[];
   total: number;
-  onLoadMore: () => void;
+  onLoadMore: () => void | Promise<unknown>;
+  hasNextPage?: boolean;
   loading?: boolean;
+  isError?: boolean;
   organizerBio?: string;
   categoryLabel?: string;
 }
 
-export default function EventGrid({ events, total, onLoadMore, loading, organizerBio, categoryLabel }: EventGridProps) {
+export default function EventGrid({ events, total, onLoadMore, hasNextPage, loading, isError, organizerBio, categoryLabel }: EventGridProps) {
   const { t } = useTranslation('common');
 
   if (events.length === 0) {
@@ -64,19 +66,13 @@ export default function EventGrid({ events, total, onLoadMore, loading, organize
       </div>
 
       {/* Load more */}
-      {total > events.length && (
-        <div className="mt-10 flex justify-center pb-8">
-          <Button
-            variant="bordered"
-            radius="full"
-            className="border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-8 font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] transition-colors duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_18%,transparent)]"
-            onPress={onLoadMore}
-            isLoading={loading}
-          >
-            {t('events.show_more')}
-          </Button>
-        </div>
-      )}
+      <LoadMore
+        hasNextPage={hasNextPage ?? total > events.length}
+        isFetching={loading ?? false}
+        isError={isError}
+        onLoadMore={onLoadMore}
+        label={t('events.show_more')}
+      />
     </div>
   );
 }

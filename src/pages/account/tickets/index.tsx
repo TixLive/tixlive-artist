@@ -5,6 +5,7 @@ import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
 import AccountLayout from '@/components/account/AccountLayout';
 import TicketCard from '@/components/tickets/TicketCard';
+import LoadMore from '@/components/common/LoadMore';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetMyTickets } from '@/queries/tickets/useGetMyTickets';
@@ -18,8 +19,20 @@ function AccountTicketsContent() {
 	const router = useRouter();
 	const { organizer } = useOrganizer();
 	const { user } = useAuth();
-	const { data: tickets = [], isLoading } = useGetMyTickets();
+	const {
+		data,
+		isLoading,
+		fetchNextPage,
+		isFetchingNextPage,
+		hasNextPage,
+		isError,
+	} = useGetMyTickets();
 
+	const tickets = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
+
+	// Group the currently-loaded set by event_title. Counts evolve as more pages
+	// load — this is the agreed pagination behavior (paginate by ticket row,
+	// regroup the loaded set).
 	const groupedTickets = useMemo(() => {
 		const groups: Record<string, ITicket[]> = {};
 		for (const ticket of tickets) {
@@ -64,26 +77,34 @@ function AccountTicketsContent() {
 					</section>
 				</div>
 			) : tickets.length > 0 ? (
-				<div className="space-y-10">
-					{eventNames.map((eventTitle) => {
-						const count = groupedTickets[eventTitle].length;
-						return (
-							<section key={eventTitle}>
-								<div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pb-3">
-									<h2 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">{eventTitle}</h2>
-									<span className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] tabular-nums text-[var(--theme-text-muted)]">
-										{t('tickets.tickets_count', { count })}
-									</span>
-								</div>
-								<div className="space-y-3">
-									{groupedTickets[eventTitle].map((ticket) => (
-										<TicketCard key={ticket.id} ticket={ticket} locale={router.locale} />
-									))}
-								</div>
-							</section>
-						);
-					})}
-				</div>
+				<>
+					<div className="space-y-10">
+						{eventNames.map((eventTitle) => {
+							const count = groupedTickets[eventTitle].length;
+							return (
+								<section key={eventTitle}>
+									<div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pb-3">
+										<h2 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">{eventTitle}</h2>
+										<span className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] tabular-nums text-[var(--theme-text-muted)]">
+											{t('tickets.tickets_count', { count })}
+										</span>
+									</div>
+									<div className="space-y-3">
+										{groupedTickets[eventTitle].map((ticket) => (
+											<TicketCard key={ticket.id} ticket={ticket} locale={router.locale} />
+										))}
+									</div>
+								</section>
+							);
+						})}
+					</div>
+					<LoadMore
+						hasNextPage={hasNextPage}
+						isFetching={isFetchingNextPage}
+						isError={isError}
+						onLoadMore={fetchNextPage}
+					/>
+				</>
 			) : (
 				<div className="flex flex-col items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-20 text-center">
 					<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--theme-text)_6%,transparent)]">

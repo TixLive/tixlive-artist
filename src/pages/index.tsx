@@ -17,11 +17,12 @@ const Home: NextPageWithLayout = function Home() {
 		fetchNextPage,
 		isFetchingNextPage,
 		hasNextPage,
+		isError,
 	} = useGetEvents();
 
 	const [category, setCategory] = useState<Category>('All');
 
-	const events = useMemo(() => data?.pages.flatMap((p) => p.events) ?? [], [data]);
+	const events = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
 	const total = data?.pages[0]?.total ?? 0;
 
 	const availableTypes = useMemo(() => {
@@ -65,7 +66,9 @@ const Home: NextPageWithLayout = function Home() {
 							events={filteredEvents}
 							total={filteredTotal}
 							onLoadMore={handleLoadMore}
+							hasNextPage={category === 'All' ? hasNextPage : false}
 							loading={isFetchingNextPage}
+							isError={isError}
 							organizerBio={organizer?.bio ?? undefined}
 							categoryLabel={category}
 						/>

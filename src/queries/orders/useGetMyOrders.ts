@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import ApiService from '@/services/Api.Service';
-import type { IOrderDetail } from '@/types';
+import type { IOrderDetail, IPaginatedResponse } from '@/types';
 
 export const GetMyOrdersKey = 'my-orders';
 
@@ -9,9 +9,15 @@ type Params = {
 };
 
 export const useGetMyOrders = ({ enabled = true }: Params = {}) => {
-	return useQuery({
+	return useInfiniteQuery({
 		queryKey: [GetMyOrdersKey],
-		queryFn: async () => ApiService.get<IOrderDetail[]>('/api/public/orders'),
+		queryFn: async ({ pageParam }) => {
+			const offset = pageParam as number;
+			const qs = offset ? `?offset=${offset}` : '';
+			return ApiService.get<IPaginatedResponse<IOrderDetail>>(`/api/public/orders${qs}`);
+		},
+		initialPageParam: 0,
+		getNextPageParam: (lastPage) => lastPage.next_offset ?? undefined,
 		enabled,
 		retry: 0,
 	});

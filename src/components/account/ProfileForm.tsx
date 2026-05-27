@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'next-i18next';
+import { updateMe } from '@/lib/attendeeApi';
 import type { IMe } from '@/types';
 
 interface ProfileFormProps {
@@ -55,17 +56,7 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 	const onSubmit = async (values: FormValues) => {
 		setState('saving');
 		try {
-			const res = await fetch('/api/me', {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(values),
-			});
-
-			if (!res.ok) {
-				setState('error');
-				return;
-			}
-
+			await updateMe(values);
 			reset(values);
 			setState('success');
 			setTimeout(() => setState('idle'), 3000);

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Button, InputOtp } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
+import { validateLoginCode, resendLoginCode } from '@/lib/attendeeApi';
 
 interface OtpFormProps {
 	email: string;
@@ -34,18 +35,8 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 			setError(false);
 
 			try {
-				const res = await fetch('/api/auth/email-code/validate', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ email, code }),
-				});
-
-				if (res.ok) {
-					onSuccess();
-				} else {
-					setError(true);
-					setOtp('');
-				}
+				await validateLoginCode(email, code);
+				onSuccess();
 			} catch {
 				setError(true);
 				setOtp('');
@@ -82,15 +73,8 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 		setResending(true);
 		setError(false);
 		try {
-			const res = await fetch('/api/auth/email-code', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, resend: true }),
-			});
-			const data = await res.json().catch(() => ({}));
-			if (res.ok) {
-				setResendTime(typeof data.resendTime === 'number' ? data.resendTime : 60);
-			}
+			const data = await resendLoginCode(email);
+			setResendTime(typeof data.resendTime === 'number' ? data.resendTime : 60);
 		} catch {
 			/* ignore */
 		} finally {

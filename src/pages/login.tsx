@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useAttendee } from '@/hooks/useAttendee';
 import Layout from '@/components/layout/Layout';
@@ -20,6 +21,7 @@ function safeNext(nextParam: string | string[] | undefined): string {
 const LoginPage: NextPageWithLayout = function LoginPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
+	const queryClient = useQueryClient();
 	const { organizer } = useOrganizer();
 	const { attendee, loading: authLoading } = useAttendee();
 	const nextPath = safeNext(router.query.next);
@@ -70,7 +72,10 @@ const LoginPage: NextPageWithLayout = function LoginPage() {
 									email={email}
 									initialResendTime={resendTime}
 									onBack={() => setStep('email')}
-									onSuccess={() => router.push(nextPath)}
+									onSuccess={async () => {
+										queryClient.setQueryData(['attendee'], { email });
+										await router.push(nextPath);
+									}}
 								/>
 							)}
 						</div>

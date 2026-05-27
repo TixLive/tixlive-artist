@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 import AccountLayout from '@/components/account/AccountLayout';
 import TicketCard from '@/components/tickets/TicketCard';
 import { useAttendee } from '@/hooks/useAttendee';
+import { getMyTickets } from '@/lib/attendeeApi';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -25,9 +26,8 @@ const AccountTicketsPage: NextPageWithLayout = function AccountTicketsPage() {
 	useEffect(() => {
 		if (!attendee) return;
 		let cancelled = false;
-		fetch('/api/tickets')
-			.then((r) => (r.ok ? r.json() : null))
-			.then((data) => { if (!cancelled && Array.isArray(data)) setTickets(data); })
+		getMyTickets()
+			.then((data) => { if (!cancelled) setTickets(data); })
 			.catch(() => {});
 		return () => { cancelled = true; };
 	}, [attendee]);

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Input } from '@heroui/react';
 import { useTranslation } from 'next-i18next';
+import { requestLoginCode } from '@/lib/attendeeApi';
 
 interface EmailEntryFormProps {
 	initialEmail?: string;
@@ -22,19 +23,8 @@ export default function EmailEntryForm({ initialEmail = '', onCodeSent, autoFocu
 		setError(false);
 
 		try {
-			const res = await fetch('/api/auth/email-code', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email: trimmed }),
-			});
-
-			const data = await res.json().catch(() => ({}));
-
-			if (res.ok) {
-				onCodeSent(trimmed, typeof data.resendTime === 'number' ? data.resendTime : 0);
-			} else {
-				setError(true);
-			}
+			const data = await requestLoginCode(trimmed);
+			onCodeSent(trimmed, typeof data.resendTime === 'number' ? data.resendTime : 0);
 		} catch {
 			setError(true);
 		} finally {

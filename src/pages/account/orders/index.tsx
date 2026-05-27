@@ -4,6 +4,7 @@ import { useTranslation } from 'next-i18next';
 import AccountLayout from '@/components/account/AccountLayout';
 import OrdersList from '@/components/account/OrdersList';
 import { useAttendee } from '@/hooks/useAttendee';
+import { getMyOrders } from '@/lib/attendeeApi';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -23,9 +24,8 @@ const OrdersPage: NextPageWithLayout = function OrdersPage() {
 	useEffect(() => {
 		if (!attendee) return;
 		let cancelled = false;
-		fetch('/api/orders')
-			.then((r) => (r.ok ? r.json() : null))
-			.then((data) => { if (!cancelled && Array.isArray(data)) setOrders(data); })
+		getMyOrders()
+			.then((data) => { if (!cancelled) setOrders(data); })
 			.catch(() => {});
 		return () => { cancelled = true; };
 	}, [attendee]);

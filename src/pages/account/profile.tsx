@@ -4,6 +4,7 @@ import { useTranslation } from 'next-i18next';
 import AccountLayout from '@/components/account/AccountLayout';
 import ProfileForm from '@/components/account/ProfileForm';
 import { useAttendee } from '@/hooks/useAttendee';
+import { getMe } from '@/lib/attendeeApi';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -23,11 +24,8 @@ const ProfilePage: NextPageWithLayout = function ProfilePage() {
 	useEffect(() => {
 		if (!attendee) return;
 		let cancelled = false;
-		fetch('/api/me')
-			.then((r) => (r.ok ? r.json() : null))
-			.then((data) => {
-				if (!cancelled && data && typeof data.email === 'string') setMe(data as IMe);
-			})
+		getMe()
+			.then((data) => { if (!cancelled) setMe(data); })
 			.catch(() => {});
 		return () => { cancelled = true; };
 	}, [attendee]);

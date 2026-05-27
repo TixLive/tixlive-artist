@@ -18,6 +18,7 @@ import PriceBreakdown from '@/components/checkout/PriceBreakdown';
 import AttendeeIdentityRow from '@/components/checkout/AttendeeIdentityRow';
 import ProfileForm from '@/components/account/ProfileForm';
 import { directGetEvent } from '@/lib/directApi';
+import { getMe, createOrder, getAccessToken, getRefreshToken } from '@/lib/attendeeApi';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useEventType } from '@/hooks/useEventType';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
@@ -120,16 +121,14 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     // Fetch event and me in parallel.
     // /api/me returns 401 when the user is a guest — that's expected, not an error.
     // Only flag meError for real failures (network / 5xx).
-    Promise.all([
-      directGetEvent(eventSlug),
-      fetch('/api/me')
-        .then(async (r) => {
-          if (r.ok) return { kind: 'ok' as const, data: await r.json() };
-          if (r.status === 401) return { kind: 'guest' as const };
-          return { kind: 'error' as const };
-        })
-        .catch(() => ({ kind: 'error' as const })),
-    ]).then(([ev, meResult]) => {
+    const hasAttendeeCookies = Boolean(getAccessToken() || getRefreshToken());
+    const mePromise: Promise<{ kind: 'ok'; data: IMe } | { kind: 'guest' } | { kind: 'error' }> = hasAttendeeCookies
+      ? getMe()
+          .then((data) => ({ kind: 'ok' as const, data }))
+          .catch(() => ({ kind: 'error' as const }))
+      : Promise.resolve({ kind: 'guest' as const });
+
+    Promise.all([directGetEvent(eventSlug), mePromise]).then(([ev, meResult]) => {
       if (!ev) { router.replace('/'); return; }
 
       if (ev.is_seated && parsedSeats.length === 0) {
@@ -208,15 +207,13 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
             phone: values?.phone ?? '',
           };
 
-      const res = await fetch('/api/order/buy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const response = await res.json();
-
-      if (!res.ok) {
-        const code = String(response.code ?? '');
+      let response;
+      try {
+        response = await createOrder(body);
+      } catch (err) {
+        const e = err as Error & { status?: number; code?: string };
+        const code = String(e.code ?? e.message ?? '');
+        const status = e.status ?? 0;
         if (code.includes('PROFILE_INCOMPLETE')) {
           setProfileIncomplete(true);
           setSubmitting(false);
@@ -233,9 +230,9 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
           setSubmitError(t('checkout.error_too_many_tickets'));
         } else if (code.includes('PAYMENT_METHOD')) {
           setSubmitError(t('checkout.error_payment_method'));
-        } else if (res.status === 400) {
+        } else if (status === 400) {
           setSubmitError(t('checkout.error_invalid_order'));
-        } else if (res.status >= 500) {
+        } else if (status >= 500) {
           setSubmitError(t('checkout.error_server'));
         } else {
           setSubmitError(t('checkout.error_generic'));

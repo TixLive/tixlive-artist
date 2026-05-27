@@ -217,14 +217,16 @@ export interface IAddonCartItem {
 export interface IOrderBuyBody {
 	session_id: number;
 	payment_method_id: number;
-	email: string;
-	first_name: string;
-	last_name: string;
+	/** Required for guest checkout; omitted when authed (Bearer provides identity). */
+	email?: string;
+	first_name?: string;
+	last_name?: string;
 	phone?: string;
 	cart: Array<{ ticket_package_id: number; quantity: number }>;
 	addons?: Array<{ addon_id: number; quantity: number }>;
 	promo_code?: string;
 	locale: string;
+	idempotency_key?: string;
 	/** Seated events only: flat list of chosen seat IDs (length === total ticket count). */
 	selected_seats?: string[];
 }

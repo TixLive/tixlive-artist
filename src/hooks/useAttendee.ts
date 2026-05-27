@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { getMe, getAccessToken, getRefreshToken } from '@/lib/attendeeApi';
 
 export interface Attendee {
 	email: string;
@@ -10,20 +11,21 @@ interface State {
 }
 
 /**
- * Client-side auth check. Calls /api/me (our thin proxy) which reads the
- * httpOnly access cookie and verifies/refreshes it server-side. Cached
- * across pages via TanStack Query so account-page navigation reuses the
- * result instead of refetching on every mount.
+ * Client-side auth check. Reads the access cookie, and if absent but a refresh
+ * cookie exists, triggers rotation transparently via `getMe`. Cached across
+ * pages via TanStack Query so navigation reuses the result.
  */
 export function useAttendee(): State {
 	const { data, isLoading } = useQuery<Attendee | null>({
 		queryKey: ['attendee'],
 		queryFn: async () => {
-			const res = await fetch('/api/me');
-			if (!res.ok) return null;
-			const body = (await res.json().catch(() => null)) as { email?: unknown } | null;
-			if (!body || typeof body.email !== 'string') return null;
-			return { email: body.email };
+			if (!getAccessToken() && !getRefreshToken()) return null;
+			try {
+				const me = await getMe();
+				return { email: me.email };
+			} catch {
+				return null;
+			}
 		},
 		staleTime: 5 * 60 * 1000,
 		retry: false,

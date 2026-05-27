@@ -27,12 +27,10 @@ function OrderDetailContent() {
 		setToken(parts[2] || null); // /account/orders/:token
 	}, [router.query.token]);
 
-	const { data: order } = useGetOrderByToken({ token });
-
-	if (!order) return null;
+	const { data: order, isLoading } = useGetOrderByToken({ token });
 
 	return (
-		<AccountLayout organizer={organizer} email={user!.email} active="orders" title={order.event_title}>
+		<AccountLayout organizer={organizer} email={user!.email} active="orders" title={order?.event_title ?? t('account.orders')}>
 			<Link
 				href="/account/orders"
 				className="mb-6 inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-2 pl-2.5 pr-4 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
@@ -40,7 +38,25 @@ function OrderDetailContent() {
 				<Icon icon="mdi:arrow-left" width={14} />
 				{t('order_detail.back_to_orders')}
 			</Link>
-			<OrderDetailView order={order} locale={router.locale} />
+			{isLoading || !order ? (
+				<div className="space-y-5" role="status" aria-label={t('common.loading')}>
+					<div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
+						<div className="skeleton h-3 w-24 rounded-md" />
+						<div className="skeleton h-7 w-2/3 rounded-lg" />
+						<div className="skeleton h-4 w-40 rounded-md" />
+					</div>
+					<div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
+						{Array.from({ length: 3 }).map((_, i) => (
+							<div key={i} className="flex items-center justify-between gap-3">
+								<div className="skeleton h-4 w-1/2 rounded-md" />
+								<div className="skeleton h-4 w-16 rounded-md" />
+							</div>
+						))}
+					</div>
+				</div>
+			) : (
+				<OrderDetailView order={order} locale={router.locale} />
+			)}
 		</AccountLayout>
 	);
 }

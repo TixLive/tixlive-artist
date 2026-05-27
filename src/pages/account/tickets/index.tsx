@@ -18,7 +18,7 @@ function AccountTicketsContent() {
 	const router = useRouter();
 	const { organizer } = useOrganizer();
 	const { user } = useAuth();
-	const { data: tickets = [] } = useGetMyTickets();
+	const { data: tickets = [], isLoading } = useGetMyTickets();
 
 	const groupedTickets = useMemo(() => {
 		const groups: Record<string, ITicket[]> = {};
@@ -38,7 +38,32 @@ function AccountTicketsContent() {
 					{t('account.tickets')}
 				</h1>
 			</div>
-			{tickets.length > 0 ? (
+			{isLoading ? (
+				<div className="space-y-10" role="status" aria-label={t('common.loading')}>
+					<section>
+						<div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pb-3">
+							<div className="skeleton h-4 w-40 rounded-md" />
+							<div className="skeleton h-3 w-16 rounded-md" />
+						</div>
+						<div className="space-y-3">
+							{Array.from({ length: 3 }).map((_, i) => (
+								<div
+									key={i}
+									className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4"
+								>
+									<div className="skeleton h-14 w-14 flex-shrink-0 rounded-xl" />
+									<div className="min-w-0 flex-1 space-y-2">
+										<div className="skeleton h-4 w-2/3 rounded-md" />
+										<div className="skeleton h-3 w-44 rounded-md" />
+										<div className="skeleton h-3 w-28 rounded-md" />
+									</div>
+									<div className="skeleton h-5 w-5 flex-shrink-0 rounded-md" />
+								</div>
+							))}
+						</div>
+					</section>
+				</div>
+			) : tickets.length > 0 ? (
 				<div className="space-y-10">
 					{eventNames.map((eventTitle) => {
 						const count = groupedTickets[eventTitle].length;

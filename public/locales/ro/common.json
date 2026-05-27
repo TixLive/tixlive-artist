@@ -114,7 +114,8 @@
 		"tickets_left": "{{count}} bilete ramase",
 		"buy_tickets": "Cumpara Bilete",
 		"share": "Distribuie",
-		"load_more": "Incarca Mai Multe"
+		"load_more": "Incarca Mai Multe",
+		"loading": "Se incarca…"
 	},
 	"tickets": {
 		"my_tickets": "Biletele Mele",

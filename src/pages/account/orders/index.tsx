@@ -14,7 +14,7 @@ function OrdersPageContent() {
 	const router = useRouter();
 	const { organizer } = useOrganizer();
 	const { user } = useAuth();
-	const { data: orders = [] } = useGetMyOrders();
+	const { data: orders = [], isLoading } = useGetMyOrders();
 
 	return (
 		<AccountLayout organizer={organizer} email={user!.email} active="orders" title={t('account.orders')}>
@@ -23,7 +23,26 @@ function OrdersPageContent() {
 					{t('account.orders')}
 				</h1>
 			</div>
-			<OrdersList orders={orders} locale={router.locale} />
+			{isLoading ? (
+				<div className="space-y-3" role="status" aria-label={t('common.loading')}>
+					{Array.from({ length: 4 }).map((_, i) => (
+						<div
+							key={i}
+							className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4"
+						>
+							<div className="skeleton h-14 w-14 shrink-0 rounded-xl" />
+							<div className="min-w-0 flex-1 space-y-2">
+								<div className="skeleton h-3 w-24 rounded-md" />
+								<div className="skeleton h-4 w-2/3 rounded-md" />
+								<div className="skeleton h-3 w-40 rounded-md" />
+							</div>
+							<div className="skeleton h-6 w-16 shrink-0 rounded-full" />
+						</div>
+					))}
+				</div>
+			) : (
+				<OrdersList orders={orders} locale={router.locale} />
+			)}
 		</AccountLayout>
 	);
 }

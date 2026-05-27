@@ -106,7 +106,8 @@
 		"tickets_left": "{{count}} билетов осталось",
 		"buy_tickets": "Купить Билеты",
 		"share": "Поделиться",
-		"load_more": "Загрузить Ещё"
+		"load_more": "Загрузить Ещё",
+		"loading": "Загрузка…"
 	},
 	"tickets": {
 		"my_tickets": "Мои Билеты",

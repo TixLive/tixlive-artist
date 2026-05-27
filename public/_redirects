@@ -4,6 +4,18 @@
 /account/orders/:token     /account/orders/_     200
 /account/tickets/:ticketId /account/tickets/_    200
 
+# Next data JSON requests (SPA navigation) → shell's JSON.
+# Without these, client-side `<Link>` to /events/<slug> hits a 404 on the
+# data fetch and falls back to a hard reload.
+/_next/data/:build/events/:slug/seats.json /_next/data/:build/events/_/seats.json 200
+/_next/data/:build/events/:slug.json       /_next/data/:build/events/_.json       200
+/_next/data/:build/account/orders/:token.json     /_next/data/:build/account/orders/_.json     200
+/_next/data/:build/account/tickets/:ticketId.json /_next/data/:build/account/tickets/_.json    200
+/_next/data/:build/terms.json               /_next/data/:build/_.json 200
+/_next/data/:build/cookies.json             /_next/data/:build/_.json 200
+/_next/data/:build/public-rules.json        /_next/data/:build/_.json 200
+/_next/data/:build/payment-regulations.json /_next/data/:build/_.json 200
+
 # Legal pages (handled by [page].tsx shell at /_)
 /terms               /_ 200
 /cookies             /_ 200

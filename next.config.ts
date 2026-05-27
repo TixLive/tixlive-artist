@@ -33,11 +33,35 @@ const nextConfig: NextConfig = {
 	async rewrites() {
 		if (!isDev) return [];
 		return [
+			// User-facing URLs → placeholder shell pages
 			{ source: '/events/:slug', destination: '/events/_' },
 			{ source: '/events/:slug/seats', destination: '/events/_/seats' },
 			{ source: '/account/orders/:token', destination: '/account/orders/_' },
 			{ source: '/account/tickets/:ticketId', destination: '/account/tickets/_' },
 			{ source: '/:page(terms|cookies|public-rules|payment-regulations)', destination: '/_' },
+			// Next data JSON requests (SPA navigation) → shell's JSON.
+			// Without these, client-side `<Link>` to /events/<slug> 404s on the
+			// data fetch and Next falls back to a hard reload.
+			{
+				source: '/_next/data/:build/events/:slug([^/.]+).json',
+				destination: '/_next/data/:build/events/_.json',
+			},
+			{
+				source: '/_next/data/:build/events/:slug([^/.]+)/seats.json',
+				destination: '/_next/data/:build/events/_/seats.json',
+			},
+			{
+				source: '/_next/data/:build/account/orders/:token([^/.]+).json',
+				destination: '/_next/data/:build/account/orders/_.json',
+			},
+			{
+				source: '/_next/data/:build/account/tickets/:ticketId([^/.]+).json',
+				destination: '/_next/data/:build/account/tickets/_.json',
+			},
+			{
+				source: '/_next/data/:build/:page(terms|cookies|public-rules|payment-regulations).json',
+				destination: '/_next/data/:build/_.json',
+			},
 		];
 	},
 };

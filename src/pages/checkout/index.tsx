@@ -17,8 +17,9 @@ import PaymentDetailsSlot from '@/components/checkout/PaymentDetailsSlot';
 import PriceBreakdown from '@/components/checkout/PriceBreakdown';
 import AttendeeIdentityRow from '@/components/checkout/AttendeeIdentityRow';
 import ProfileForm from '@/components/account/ProfileForm';
-import { directGetEvent } from '@/lib/directApi';
-import { getMe, createOrder, getAccessToken, getRefreshToken } from '@/lib/attendeeApi';
+import ApiService, { ApiError, getAccessToken, getRefreshToken } from '@/services/Api.Service';
+import { fetchEvent } from '@/queries/events/useGetEvent';
+import { useCreateOrder } from '@/queries/orders/useCreateOrder';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useEventType } from '@/hooks/useEventType';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
@@ -59,6 +60,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const [seatConflict, setSeatConflict] = useState(false);
 
   const { isOpen: drawerOpen, onOpen: openDrawer, onOpenChange: setDrawerOpen } = useDisclosure();
+  const createOrderMutation = useCreateOrder();
 
   useEventType(event?.event_type);
 
@@ -123,12 +125,12 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     // Only flag meError for real failures (network / 5xx).
     const hasAttendeeCookies = Boolean(getAccessToken() || getRefreshToken());
     const mePromise: Promise<{ kind: 'ok'; data: IMe } | { kind: 'guest' } | { kind: 'error' }> = hasAttendeeCookies
-      ? getMe()
+      ? ApiService.get<IMe>('/api/public/me')
           .then((data) => ({ kind: 'ok' as const, data }))
           .catch(() => ({ kind: 'error' as const }))
       : Promise.resolve({ kind: 'guest' as const });
 
-    Promise.all([directGetEvent(eventSlug), mePromise]).then(([ev, meResult]) => {
+    Promise.all([fetchEvent(eventSlug), mePromise]).then(([ev, meResult]) => {
       if (!ev) { router.replace('/'); return; }
 
       if (ev.is_seated && parsedSeats.length === 0) {
@@ -209,9 +211,9 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
 
       let response;
       try {
-        response = await createOrder(body);
+        response = await createOrderMutation.mutateAsync(body);
       } catch (err) {
-        const e = err as Error & { status?: number; code?: string };
+        const e = err instanceof ApiError ? err : (err as Error & { status?: number; code?: string });
         const code = String(e.code ?? e.message ?? '');
         const status = e.status ?? 0;
         if (code.includes('PROFILE_INCOMPLETE')) {

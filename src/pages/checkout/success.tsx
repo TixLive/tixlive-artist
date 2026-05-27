@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { Button } from '@heroui/react';
@@ -7,78 +7,61 @@ import { useTranslation } from 'next-i18next';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import { parseSeatId } from '@/lib/seat';
-import { directGetOrder } from '@/lib/directApi';
+import { useGetOrderByToken } from '@/queries/orders/useGetOrderByToken';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
+import type { IOrderDetail } from '@/types';
 
-interface OrderDetails {
-  id: string;
+interface OrderDetails extends Pick<IOrderDetail, 'id' | 'event_title' | 'session_date' | 'pdf_url'> {
   status: 'paid' | 'pending' | 'failed';
-  event_title: string;
-  session_date: string;
   items: { name: string; quantity: number; seat_id?: string | null }[];
-  pdf_url?: string;
 }
+
+const MAX_POLLS = 20;
+const POLL_INTERVAL_MS = 3000;
 
 const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
   const { t } = useTranslation('common');
   const router = useRouter();
   useBuyFlowStep(3);
   const orderId = (router.query.token as string) ?? '';
-  const [order, setOrder] = useState<OrderDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const pollCountRef = useRef(0);
+  const [pollLimitReached, setPollLimitReached] = useState(false);
+
+  const { data: order, isError } = useGetOrderByToken({
+    token: router.isReady && orderId ? orderId : null,
+    refetchInterval: (q) => {
+      const d = (q as { state: { data: OrderDetails | undefined } }).state.data;
+      if (!d) return POLL_INTERVAL_MS;
+      const stillWaiting = d.status === 'pending' || (d.status === 'paid' && !d.pdf_url);
+      if (!stillWaiting) return false;
+      pollCountRef.current += 1;
+      if (pollCountRef.current >= MAX_POLLS) return false;
+      return POLL_INTERVAL_MS;
+    },
+  }) as { data: OrderDetails | undefined; isError: boolean };
 
   useEffect(() => {
-    if (!router.isReady) return;
-    if (!orderId) {
-      setLoading(false);
-      setNotFound(true);
-      return;
-    }
+    if (!order) return;
+    const stillWaiting = order.status === 'pending' || (order.status === 'paid' && !order.pdf_url);
+    if (stillWaiting && pollCountRef.current >= MAX_POLLS) setPollLimitReached(true);
+  }, [order]);
 
-    let cancelled = false;
-    let pollCount = 0;
-    const MAX_POLLS = 20;
-
-    const fetchOrder = async () => {
-      try {
-        const data: OrderDetails = await directGetOrder(orderId) as unknown as OrderDetails;
-        if (cancelled) return;
-
-        const stillWaiting = data.status === 'pending' || (data.status === 'paid' && !data.pdf_url);
-        if (stillWaiting && pollCount < MAX_POLLS) {
-          pollCount++;
-          setTimeout(fetchOrder, 3000);
-          return;
-        }
-
-        setOrder(data);
-        setLoading(false);
-      } catch {
-        if (!cancelled) { setNotFound(true); setLoading(false); }
-      }
-    };
-
-    fetchOrder();
-    return () => { cancelled = true; };
-  }, [orderId, router.isReady]);
+  const notFound = (router.isReady && !orderId) || isError;
+  const loading = !notFound && !order;
 
   const handleShare = async () => {
     const shareData = {
       title: order?.event_title ?? 'Check out this event!',
       url: window.location.origin,
     };
-
     if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch {
-        // User cancelled or share failed
-      }
+      try { await navigator.share(shareData); } catch { /* user cancelled */ }
     } else {
       await navigator.clipboard.writeText(shareData.url);
     }
   };
+
+  const stillPending = order?.status === 'pending' && !pollLimitReached;
 
   return (
     <>
@@ -88,7 +71,7 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-20">
         {/* 1. Status banner */}
-        {loading || (order && order.status === 'pending') ? (
+        {loading || stillPending ? (
           <div className="mb-10 flex flex-col items-center text-center">
             <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--theme-surface)]">
               <Icon icon="mdi:loading" width={40} className="animate-spin text-[var(--brand-primary)]" />
@@ -137,7 +120,6 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
         {/* 2. Order details — only for paid orders */}
         {order && order.status === 'paid' ? (
           <div className="space-y-4">
-            {/* Order summary */}
             <div className="overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
               <div className="px-6 py-5">
                 <div className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
@@ -177,7 +159,6 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
               )}
             </div>
 
-            {/* 3. Download tickets */}
             {order.pdf_url && (
               <a href={order.pdf_url} target="_blank" rel="noopener noreferrer" className="block">
                 <Button
@@ -191,7 +172,6 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
               </a>
             )}
 
-            {/* 4. Share */}
             <div className="flex justify-center pt-2">
               <Button
                 variant="bordered"
@@ -208,22 +188,11 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 
       <style jsx global>{`
         @keyframes checkmark-pop {
-          0% {
-            transform: scale(0);
-            opacity: 0;
-          }
-          60% {
-            transform: scale(1.15);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
+          0% { transform: scale(0); opacity: 0; }
+          60% { transform: scale(1.15); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
         }
-        .animate-checkmark {
-          animation: checkmark-pop 0.5s ease-out;
-        }
+        .animate-checkmark { animation: checkmark-pop 0.5s ease-out; }
       `}</style>
     </>
   );

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
-import { directValidatePromo } from '@/lib/directApi';
+import { useValidatePromo } from '@/queries/promo/useValidatePromo';
 
 interface PromoCodeInputProps {
   eventId: number;
@@ -13,18 +13,16 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
   const { t } = useTranslation('common');
   const [expanded, setExpanded] = useState(false);
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [applied, setApplied] = useState(false);
+  const validatePromo = useValidatePromo();
+  const loading = validatePromo.isPending;
 
   const handleApply = async () => {
     if (!code.trim()) return;
-
-    setLoading(true);
     setError('');
-
     try {
-      const response = await directValidatePromo(eventId, code.trim());
+      const response = await validatePromo.mutateAsync({ eventId, code: code.trim() });
       if (response.valid) {
         setApplied(true);
         onApply({
@@ -36,8 +34,6 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
       }
     } catch {
       setError(t('checkout.error_generic'));
-    } finally {
-      setLoading(false);
     }
   };
 

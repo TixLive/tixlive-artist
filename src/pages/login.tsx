@@ -3,35 +3,33 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useOrganizer } from '@/contexts/OrganizerContext';
-import { useAttendee } from '@/hooks/useAttendee';
+import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import EmailEntryForm from '@/components/auth/EmailEntryForm';
 import OtpForm from '@/components/auth/OtpForm';
 
-function safeNext(nextParam: string | string[] | undefined): string {
-	if (typeof nextParam !== 'string') return '/account/tickets';
-	if (nextParam.startsWith('//')) return '/account/tickets';
-	if (!nextParam.startsWith('/account')) return '/account/tickets';
-	return nextParam;
+function safeNext(fromParam: string | string[] | undefined): string {
+	if (typeof fromParam !== 'string') return '/account/tickets';
+	if (fromParam.startsWith('//')) return '/account/tickets';
+	if (!fromParam.startsWith('/account')) return '/account/tickets';
+	return fromParam;
 }
 
 const LoginPage: NextPageWithLayout = function LoginPage() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const { organizer } = useOrganizer();
-	const { attendee, loading: authLoading } = useAttendee();
-	const nextPath = safeNext(router.query.next);
+	const { user, loading: authLoading, refresh } = useAuth();
+	const nextPath = safeNext(router.query.from ?? router.query.next);
 	const [step, setStep] = useState<'email' | 'otp'>('email');
 	const [email, setEmail] = useState('');
 	const [resendTime, setResendTime] = useState(0);
 
 	useEffect(() => {
-		if (!authLoading && attendee) router.replace(nextPath);
-	}, [authLoading, attendee, nextPath, router]);
+		if (!authLoading && user) router.replace(nextPath);
+	}, [authLoading, user, nextPath, router]);
 
 	const handleCodeSent = (sentEmail: string, time: number) => {
 		setEmail(sentEmail);
@@ -39,7 +37,7 @@ const LoginPage: NextPageWithLayout = function LoginPage() {
 		setStep('otp');
 	};
 
-	if (authLoading || attendee) return null;
+	if (authLoading || user) return null;
 
 	return (
 		<>
@@ -73,7 +71,7 @@ const LoginPage: NextPageWithLayout = function LoginPage() {
 									initialResendTime={resendTime}
 									onBack={() => setStep('email')}
 									onSuccess={async () => {
-										queryClient.setQueryData(['attendee'], { email });
+										await refresh();
 										await router.push(nextPath);
 									}}
 								/>

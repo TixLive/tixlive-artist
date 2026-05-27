@@ -28,7 +28,7 @@ import {
 	formatSeatLabel,
 } from '@/lib/seatSelection';
 import { buildTierColorById, buildTierColorBySeatId } from '@/lib/tierColors';
-import { requestSuggest } from '@/lib/seatClient';
+import { suggestSeats } from '@/queries/seating/useSuggestSeats';
 import SelectedSeatsList, { SelectedSeatItem } from '@/components/seating/SelectedSeatsList';
 import type { IAddonCartItem, ISeatingResponse } from '@/types';
 
@@ -223,7 +223,7 @@ export default function SeatSelection({
 		if (seedCart.length === 0) return;
 		setRepicking(true);
 		try {
-			const res = await requestSuggest(slug, sessionId, seedCart);
+			const res = await suggestSeats(slug, sessionId, seedCart);
 			setSelected(new Set(sanitizeSeats(res.items.flatMap((i) => i.seat_ids), seatTier, bookedSet, maxPerCategory)));
 			setShortfall(res.shortfall);
 			closeCheckout();

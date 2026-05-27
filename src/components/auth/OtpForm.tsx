@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { Button, InputOtp } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
-import { validateLoginCode, resendLoginCode } from '@/lib/attendeeApi';
+import { useValidateLoginCode } from '@/queries/auth/useValidateLoginCode';
+import { useResendLoginCode } from '@/queries/auth/useResendLoginCode';
 
 interface OtpFormProps {
 	email: string;
@@ -14,10 +15,12 @@ interface OtpFormProps {
 export default function OtpForm({ email, initialResendTime, onBack, onSuccess }: OtpFormProps) {
 	const { t } = useTranslation('common');
 	const [otp, setOtp] = useState('');
-	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(false);
 	const [resendTime, setResendTime] = useState(initialResendTime);
-	const [resending, setResending] = useState(false);
+	const validate = useValidateLoginCode();
+	const resend = useResendLoginCode();
+	const loading = validate.isPending;
+	const resending = resend.isPending;
 
 	useEffect(() => {
 		if (resendTime <= 0) return;
@@ -27,31 +30,26 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 		return () => clearInterval(interval);
 	}, [resendTime]);
 
-	const validate = useCallback(
+	const submitCode = useCallback(
 		async (code: string) => {
 			if (code.length !== 6 || loading) return;
-
-			setLoading(true);
 			setError(false);
-
 			try {
-				await validateLoginCode(email, code);
+				await validate.mutateAsync({ email, code });
 				onSuccess();
 			} catch {
 				setError(true);
 				setOtp('');
-			} finally {
-				setLoading(false);
 			}
 		},
-		[email, loading, onSuccess]
+		[email, loading, onSuccess, validate]
 	);
 
 	const handleOtpChange = (val: string) => {
 		setOtp(val);
 		setError(false);
 		if (val.length === 6) {
-			validate(val);
+			submitCode(val);
 		}
 	};
 
@@ -61,7 +59,7 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 			const cleaned = text.replace(/\D/g, '').slice(0, 6);
 			if (cleaned.length === 6) {
 				setOtp(cleaned);
-				validate(cleaned);
+				submitCode(cleaned);
 			}
 		} catch {
 			/* ignore */
@@ -70,15 +68,12 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 
 	const handleResend = async () => {
 		if (resendTime > 0 || resending) return;
-		setResending(true);
 		setError(false);
 		try {
-			const data = await resendLoginCode(email);
+			const data = await resend.mutateAsync(email);
 			setResendTime(typeof data.resendTime === 'number' ? data.resendTime : 60);
 		} catch {
 			/* ignore */
-		} finally {
-			setResending(false);
 		}
 	};
 

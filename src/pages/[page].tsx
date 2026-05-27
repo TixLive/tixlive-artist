@@ -3,8 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useTranslation } from 'next-i18next';
-import { IOrganizerPage } from '@/types';
-import { directGetPage } from '@/lib/directApi';
+import { useGetPage } from '@/queries/pages/useGetPage';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -29,8 +28,6 @@ const LegalPage: NextPageWithLayout = function LegalPage() {
 	const { organizer } = useOrganizer();
 	// Static export: router.query.page is '_' (shell placeholder); read real slug from URL
 	const [slug, setSlug] = useState<string | undefined>(undefined);
-	const [page, setPage] = useState<IOrganizerPage | null>(null);
-	const [notFound, setNotFound] = useState(false);
 	const locale = router.locale ?? 'ro';
 	const fallback = 'ro';
 
@@ -41,21 +38,9 @@ const LegalPage: NextPageWithLayout = function LegalPage() {
 		setSlug(parts[0] || undefined);
 	}, [router.query.page]);
 
-	useEffect(() => {
-		if (!slug) return;
-		setPage(null);
-		setNotFound(false);
-		if (!isPageSlug(slug)) { setNotFound(true); return; }
-		let cancelled = false;
-		directGetPage(slug)
-			.then((p) => {
-				if (cancelled) return;
-				if (!p) setNotFound(true);
-				else setPage(p);
-			})
-			.catch(() => { if (!cancelled) setNotFound(true); });
-		return () => { cancelled = true; };
-	}, [slug]);
+	const validSlug = slug && isPageSlug(slug) ? slug : null;
+	const { data: page, isFetching, isError } = useGetPage({ pageType: validSlug });
+	const notFound = (!!slug && !validSlug) || isError || (validSlug !== null && !isFetching && page === null);
 
 	if (notFound) return null;
 	if (!page || !slug || !isPageSlug(slug)) return <div className="py-32" />;

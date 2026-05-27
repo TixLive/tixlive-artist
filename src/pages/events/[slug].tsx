@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -7,8 +6,8 @@ import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { IEventDetail, ICartItem } from '@/types';
-import { directGetEvent } from '@/lib/directApi';
+import { ICartItem } from '@/types';
+import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useEventType } from '@/hooks/useEventType';
 import { useHeaderCart } from '@/contexts/LayoutContext';
@@ -53,13 +52,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     setSlug(parts[1] ? decodeURIComponent(parts[1]) : undefined); // /events/:slug
   }, [router.query.slug]);
 
-  const { data: event, isFetching } = useQuery<IEventDetail | null>({
-    queryKey: ['event', slug],
-    queryFn: () => directGetEvent(slug!),
-    enabled: !!slug,
-    staleTime: 60 * 1000,
-    placeholderData: keepPreviousData,
-  });
+  const { data: event, isFetching } = useGetEvent({ slug });
   const notFound = !!slug && !isFetching && event === null;
 
   useEventType(event?.event_type);

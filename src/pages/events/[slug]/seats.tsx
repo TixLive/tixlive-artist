@@ -3,7 +3,9 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import SeatSelection from '@/components/seating/SeatSelection';
-import { directGetEvent, directGetSeating, directSuggestSeats } from '@/lib/directApi';
+import { fetchEvent } from '@/queries/events/useGetEvent';
+import { fetchSeating } from '@/queries/seating/useGetSeating';
+import { suggestSeats } from '@/queries/seating/useSuggestSeats';
 import type { ICartItem, IAddonCartItem, ISeatingResponse } from '@/types';
 
 interface SeatsState {
@@ -75,7 +77,7 @@ export default function SeatsPage() {
 
 		(async () => {
 			try {
-				const event = await directGetEvent(slug);
+				const event = await fetchEvent(slug);
 				if (!event || !event.is_seated || event.status !== 'open') {
 					router.replace(`/events/${slug}`);
 					return;
@@ -88,13 +90,13 @@ export default function SeatsPage() {
 					return;
 				}
 
-				const seating = await directGetSeating(slug, session.id);
+				const seating = await fetchSeating(slug, session.id);
 
 				let initialSelectedSeatIds: string[] = [];
 				let initialShortfall = false;
 				if (seedCart.length > 0) {
 					try {
-						const suggestion = await directSuggestSeats(slug, session.id, seedCart);
+						const suggestion = await suggestSeats(slug, session.id, seedCart);
 						initialSelectedSeatIds = suggestion.items.flatMap((i) => i.seat_ids);
 						initialShortfall = suggestion.shortfall;
 					} catch {

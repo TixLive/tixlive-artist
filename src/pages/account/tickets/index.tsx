@@ -1,36 +1,24 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
 import AccountLayout from '@/components/account/AccountLayout';
 import TicketCard from '@/components/tickets/TicketCard';
-import { useAttendee } from '@/hooks/useAttendee';
-import { getMyTickets } from '@/lib/attendeeApi';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { useAuth } from '@/contexts/AuthContext';
+import { useGetMyTickets } from '@/queries/tickets/useGetMyTickets';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import type { ITicket } from '@/types';
 
-const AccountTicketsPage: NextPageWithLayout = function AccountTicketsPage() {
+function AccountTicketsContent() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const { organizer } = useOrganizer();
-	const { attendee, loading: authLoading } = useAttendee();
-	const [tickets, setTickets] = useState<ITicket[]>([]);
-
-	useEffect(() => {
-		if (!authLoading && !attendee) { router.replace(`/login?next=${encodeURIComponent(router.asPath)}`); }
-	}, [authLoading, attendee, router]);
-
-	useEffect(() => {
-		if (!attendee) return;
-		let cancelled = false;
-		getMyTickets()
-			.then((data) => { if (!cancelled) setTickets(data); })
-			.catch(() => {});
-		return () => { cancelled = true; };
-	}, [attendee]);
+	const { user } = useAuth();
+	const { data: tickets = [] } = useGetMyTickets();
 
 	const groupedTickets = useMemo(() => {
 		const groups: Record<string, ITicket[]> = {};
@@ -41,12 +29,10 @@ const AccountTicketsPage: NextPageWithLayout = function AccountTicketsPage() {
 		return groups;
 	}, [tickets]);
 
-	if (authLoading || !attendee) return null;
-
 	const eventNames = Object.keys(groupedTickets);
 
 	return (
-		<AccountLayout organizer={organizer} email={attendee.email} active="tickets" title={t('account.tickets')}>
+		<AccountLayout organizer={organizer} email={user!.email} active="tickets" title={t('account.tickets')}>
 			<div className="mb-8">
 				<h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
 					{t('account.tickets')}
@@ -88,6 +74,14 @@ const AccountTicketsPage: NextPageWithLayout = function AccountTicketsPage() {
 				</div>
 			)}
 		</AccountLayout>
+	);
+}
+
+const AccountTicketsPage: NextPageWithLayout = function AccountTicketsPage() {
+	return (
+		<ProtectedRoute>
+			<AccountTicketsContent />
+		</ProtectedRoute>
 	);
 };
 

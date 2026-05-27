@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { directGetEvent } from '@/lib/directApi';
+import { fetchEvent, GetEventKey } from '@/queries/events/useGetEvent';
 
 /**
  * Returns a prefetch callback for an event slug. Wire to `onMouseEnter` /
@@ -10,8 +10,8 @@ export function usePrefetchEvent() {
 	const qc = useQueryClient();
 	return (slug: string) => {
 		qc.prefetchQuery({
-			queryKey: ['event', slug],
-			queryFn: () => directGetEvent(slug),
+			queryKey: [GetEventKey, slug],
+			queryFn: () => fetchEvent(slug),
 			staleTime: 60 * 1000,
 		});
 	};

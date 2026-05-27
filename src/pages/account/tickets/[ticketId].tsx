@@ -5,46 +5,34 @@ import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
 import AccountLayout from '@/components/account/AccountLayout';
 import TicketDetailView from '@/components/tickets/TicketDetailView';
-import { useAttendee } from '@/hooks/useAttendee';
-import { getMyTicket } from '@/lib/attendeeApi';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { useAuth } from '@/contexts/AuthContext';
+import { useGetMyTicket } from '@/queries/tickets/useGetMyTicket';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
-import type { ITicket } from '@/types';
 
-const AccountTicketDetailPage: NextPageWithLayout = function AccountTicketDetailPage() {
+function TicketDetailContent() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const { organizer } = useOrganizer();
-	const { attendee, loading: authLoading } = useAttendee();
+	const { user } = useAuth();
 	// Static export: router.query.ticketId is '_' (shell placeholder); read real id from URL
-	const [ticketId, setTicketId] = useState<string | undefined>(undefined);
-	const [ticket, setTicket] = useState<ITicket | null>(null);
+	const [ticketId, setTicketId] = useState<string | null>(null);
 
 	useEffect(() => {
 		const q = router.query.ticketId as string | undefined;
 		if (q && q !== '_') { setTicketId(q); return; }
 		const parts = window.location.pathname.split('/').filter(Boolean);
-		setTicketId(parts[2] || undefined); // /account/tickets/:ticketId
+		setTicketId(parts[2] || null); // /account/tickets/:ticketId
 	}, [router.query.ticketId]);
 
-	useEffect(() => {
-		if (!authLoading && !attendee) { router.replace(`/login?next=${encodeURIComponent(router.asPath)}`); }
-	}, [authLoading, attendee, router]);
+	const { data: ticket } = useGetMyTicket({ ticketId });
 
-	useEffect(() => {
-		if (!attendee || !ticketId) return;
-		let cancelled = false;
-		getMyTicket(ticketId)
-			.then((data) => { if (!cancelled) setTicket(data); })
-			.catch(() => {});
-		return () => { cancelled = true; };
-	}, [attendee, ticketId]);
-
-	if (authLoading || !attendee || !ticket) return null;
+	if (!ticket) return null;
 
 	return (
-		<AccountLayout organizer={organizer} email={attendee.email} active="tickets" title={ticket.event_title}>
+		<AccountLayout organizer={organizer} email={user!.email} active="tickets" title={ticket.event_title}>
 			<Link
 				href="/account/tickets"
 				className="mb-6 inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-2 pl-2.5 pr-4 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)] transition-colors duration-200 hover:text-[var(--theme-text)]"
@@ -54,6 +42,14 @@ const AccountTicketDetailPage: NextPageWithLayout = function AccountTicketDetail
 			</Link>
 			<TicketDetailView ticket={ticket} locale={router.locale} />
 		</AccountLayout>
+	);
+}
+
+const AccountTicketDetailPage: NextPageWithLayout = function AccountTicketDetailPage() {
+	return (
+		<ProtectedRoute>
+			<TicketDetailContent />
+		</ProtectedRoute>
 	);
 };
 

@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'next-i18next';
-import { updateMe } from '@/lib/attendeeApi';
+import { useUpdateMe } from '@/queries/me/useUpdateMe';
 import type { IMe } from '@/types';
 
 interface ProfileFormProps {
@@ -19,6 +19,7 @@ const PHONE_RE = /^\+?\d{7,15}$/;
 export default function ProfileForm({ initial }: ProfileFormProps) {
 	const { t } = useTranslation('common');
 	const [state, setState] = useState<FormState>('idle');
+	const updateMe = useUpdateMe();
 
 	const schema = z.object({
 		first_name: z
@@ -56,7 +57,7 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 	const onSubmit = async (values: FormValues) => {
 		setState('saving');
 		try {
-			await updateMe(values);
+			await updateMe.mutateAsync(values);
 			reset(values);
 			setState('success');
 			setTimeout(() => setState('idle'), 3000);

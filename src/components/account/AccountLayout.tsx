@@ -4,8 +4,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
-import { useQueryClient } from '@tanstack/react-query';
-import { logout } from '@/lib/attendeeApi';
+import { useAuth } from '@/contexts/AuthContext';
 import type { IOrganizer } from '@/types';
 
 export type AccountSection = 'orders' | 'tickets' | 'profile';
@@ -37,13 +36,12 @@ export default function AccountLayout({
 }: AccountLayoutProps) {
 	const { t } = useTranslation('common');
 	const router = useRouter();
-	const queryClient = useQueryClient();
+	const { signOut } = useAuth();
 	const [signingOut, setSigningOut] = useState(false);
 
 	const handleSignOut = async () => {
 		setSigningOut(true);
-		logout();
-		queryClient.setQueryData(['attendee'], null);
+		signOut();
 		router.push('/login');
 	};
 

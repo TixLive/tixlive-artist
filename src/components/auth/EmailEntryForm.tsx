@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, Input } from '@heroui/react';
 import { useTranslation } from 'next-i18next';
-import { requestLoginCode } from '@/lib/attendeeApi';
+import { useRequestLoginCode } from '@/queries/auth/useRequestLoginCode';
 
 interface EmailEntryFormProps {
 	initialEmail?: string;
@@ -12,25 +12,22 @@ interface EmailEntryFormProps {
 export default function EmailEntryForm({ initialEmail = '', onCodeSent, autoFocus = false }: EmailEntryFormProps) {
 	const { t } = useTranslation('common');
 	const [email, setEmail] = useState(initialEmail);
-	const [sending, setSending] = useState(false);
 	const [error, setError] = useState(false);
+	const requestCode = useRequestLoginCode();
 
 	const handleSubmit = async () => {
 		const trimmed = email.trim();
 		if (!trimmed) return;
-
-		setSending(true);
 		setError(false);
-
 		try {
-			const data = await requestLoginCode(trimmed);
+			const data = await requestCode.mutateAsync(trimmed);
 			onCodeSent(trimmed, typeof data.resendTime === 'number' ? data.resendTime : 0);
 		} catch {
 			setError(true);
-		} finally {
-			setSending(false);
 		}
 	};
+
+	const sending = requestCode.isPending;
 
 	return (
 		<div className="space-y-4">

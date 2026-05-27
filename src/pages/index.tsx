@@ -1,8 +1,6 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Head from 'next/head';
-import { useTranslation } from 'next-i18next';
-import { IEventListItem } from '@/types';
-import { directGetEvents } from '@/lib/directApi';
+import { useGetEvents } from '@/queries/events/useGetEvents';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -12,20 +10,19 @@ import EventGrid from '@/components/landing/EventGrid';
 import HomePageSkeleton from '@/components/landing/HomePageSkeleton';
 
 const Home: NextPageWithLayout = function Home() {
-	const { t } = useTranslation('common');
 	const { organizer } = useOrganizer();
-	const [events, setEvents] = useState<IEventListItem[]>([]);
-	const [total, setTotal] = useState(0);
-	const [category, setCategory] = useState<Category>('All');
-	const [loadingMore, setLoadingMore] = useState(false);
-	const [initialLoading, setInitialLoading] = useState(true);
+	const {
+		data,
+		isLoading: initialLoading,
+		fetchNextPage,
+		isFetchingNextPage,
+		hasNextPage,
+	} = useGetEvents();
 
-	useEffect(() => {
-		directGetEvents()
-			.then((data) => { setEvents(data.events); setTotal(data.total); })
-			.catch(() => {})
-			.finally(() => setInitialLoading(false));
-	}, []);
+	const [category, setCategory] = useState<Category>('All');
+
+	const events = useMemo(() => data?.pages.flatMap((p) => p.events) ?? [], [data]);
+	const total = data?.pages[0]?.total ?? 0;
 
 	const availableTypes = useMemo(() => {
 		const seen = new Set<string>();
@@ -43,20 +40,9 @@ const Home: NextPageWithLayout = function Home() {
 		return filteredEvents.length;
 	}, [category, total, filteredEvents.length]);
 
-	const handleLoadMore = useCallback(async () => {
-		setLoadingMore(true);
-		try {
-			const data = await directGetEvents(events.length);
-			if (data.events) {
-				setEvents((prev) => [...prev, ...data.events]);
-				setTotal(data.total ?? total);
-			}
-		} catch {
-			// silent
-		} finally {
-			setLoadingMore(false);
-		}
-	}, [events.length, total]);
+	const handleLoadMore = async () => {
+		if (hasNextPage && !isFetchingNextPage) await fetchNextPage();
+	};
 
 	return (
 		<>
@@ -79,7 +65,7 @@ const Home: NextPageWithLayout = function Home() {
 							events={filteredEvents}
 							total={filteredTotal}
 							onLoadMore={handleLoadMore}
-							loading={loadingMore}
+							loading={isFetchingNextPage}
 							organizerBio={organizer?.bio ?? undefined}
 							categoryLabel={category}
 						/>

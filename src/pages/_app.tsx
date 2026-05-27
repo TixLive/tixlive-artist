@@ -12,6 +12,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import { OrganizerProvider, useOrganizer } from '@/contexts/OrganizerContext';
 import { LayoutProvider } from '@/contexts/LayoutContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 	getLayout?: (page: ReactElement) => ReactNode;
@@ -44,17 +45,19 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<OrganizerProvider>
-				<LayoutProvider>
-					<HeroUIProvider navigate={router.push}>
-						<ToastProvider placement="bottom-center" toastOffset={16} />
-						<BrandInjector />
-						<div className={`${geist.variable} font-sans min-h-screen`}>
-							{getLayout(<Component {...pageProps} />)}
-						</div>
-					</HeroUIProvider>
-				</LayoutProvider>
-			</OrganizerProvider>
+			<AuthProvider>
+				<OrganizerProvider>
+					<LayoutProvider>
+						<HeroUIProvider navigate={router.push}>
+							<ToastProvider placement="bottom-center" toastOffset={16} />
+							<BrandInjector />
+							<div className={`${geist.variable} font-sans min-h-screen`}>
+								{getLayout(<Component {...pageProps} />)}
+							</div>
+						</HeroUIProvider>
+					</LayoutProvider>
+				</OrganizerProvider>
+			</AuthProvider>
 		</QueryClientProvider>
 	);
 }

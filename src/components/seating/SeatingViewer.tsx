@@ -949,17 +949,17 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 
 			{/* Zoom controls — bottom-left, 44px targets */}
 			<div className="absolute bottom-3 left-3 z-10 flex flex-col gap-1.5">
-				<button type="button" className={zoomBtn} onClick={() => handleZoom(1.3)} aria-label="Zoom in" tabIndex={-1}>
+				<button type="button" className={zoomBtn} onClick={() => handleZoom(1.3)} aria-label={t('seating.zoom_in')} tabIndex={-1}>
 					+
 				</button>
-				<button type="button" className={zoomBtn} onClick={() => handleZoom(1 / 1.3)} aria-label="Zoom out" tabIndex={-1}>
+				<button type="button" className={zoomBtn} onClick={() => handleZoom(1 / 1.3)} aria-label={t('seating.zoom_out')} tabIndex={-1}>
 					−
 				</button>
 				<button
 					type="button"
 					className={`${zoomBtn} text-[0.75rem]`}
 					onClick={handleReset}
-					aria-label="Reset view"
+					aria-label={t('seating.reset_view')}
 					tabIndex={-1}
 				>
 					⤢

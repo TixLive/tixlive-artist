@@ -107,6 +107,10 @@
 		"phone_optional": "Phone (optional)",
 		"phone_required": "Phone number is required",
 		"phone_invalid": "Enter a valid phone number",
+		"first_name_required": "First name is required",
+		"last_name_required": "Last name is required",
+		"email_required": "Email is required",
+		"email_invalid": "Please enter a valid email address",
 		"terms_agree": "I agree to the <a>Terms and Conditions</a>",
 		"terms_required": "You must accept the Terms and Conditions",
 		"promo_code": "Promo Code",
@@ -377,7 +381,10 @@
 		"seats_selected_one": "{{count}} seat selected",
 		"seats_selected_other": "{{count}} seats selected",
 		"clear_all": "Clear all",
-		"confirm_pay": "Confirm & Pay"
+		"confirm_pay": "Confirm & Pay",
+		"zoom_in": "Zoom in",
+		"zoom_out": "Zoom out",
+		"reset_view": "Reset view"
 	},
 	"profile": {
 		"subtitle": "Update the name and phone we use on your tickets.",

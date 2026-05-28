@@ -262,9 +262,9 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const checkoutSchema = useMemo(
     () =>
       z.object({
-        first_name: z.string().min(1, 'First name is required'),
-        last_name: z.string().min(1, 'Last name is required'),
-        email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+        first_name: z.string().min(1, t('checkout.first_name_required')),
+        last_name: z.string().min(1, t('checkout.last_name_required')),
+        email: z.string().min(1, t('checkout.email_required')).email(t('checkout.email_invalid')),
         phone: z
           .string()
           .min(1, t('checkout.phone_required'))

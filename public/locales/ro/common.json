@@ -105,8 +105,12 @@
 		"email": "Email",
 		"phone": "Telefon",
 		"phone_optional": "Telefon (optional)",
-		"phone_required": "Numarul de telefon este obligatoriu",
-		"phone_invalid": "Introdu un numar de telefon valid",
+		"phone_required": "Numărul de telefon este obligatoriu",
+		"phone_invalid": "Introdu un număr de telefon valid",
+		"first_name_required": "Prenumele este obligatoriu",
+		"last_name_required": "Numele este obligatoriu",
+		"email_required": "Email-ul este obligatoriu",
+		"email_invalid": "Introdu un email valid",
 		"terms_agree": "Sunt de acord cu <a>Termenii și Condițiile</a>",
 		"terms_required": "Trebuie să accepți Termenii și Condițiile",
 		"promo_code": "Cod Promotional",
@@ -379,7 +383,10 @@
 		"seats_selected_one": "{{count}} loc selectat",
 		"seats_selected_other": "{{count}} locuri selectate",
 		"clear_all": "Golește",
-		"confirm_pay": "Confirmă & Plătește"
+		"confirm_pay": "Confirmă & Plătește",
+		"zoom_in": "Mărește",
+		"zoom_out": "Micșorează",
+		"reset_view": "Resetează vederea"
 	},
 	"profile": {
 		"subtitle": "Actualizeaza numele si telefonul folosite pe bilete.",

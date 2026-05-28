@@ -30,11 +30,21 @@
 	},
 	"events": {
 		"no_upcoming": "Нет предстоящих событий",
-		"all_events": "Все События",
+		"all_events": "Все события",
+		"category_events": "{{category}} события",
 		"sold_out": "Распродано",
 		"tickets_left": "{{count}} билетов осталось",
-		"buy_tickets": "Купить Билеты",
-		"show_more": "Показать Ещё"
+		"buy_tickets": "Купить билеты",
+		"get_tickets": "Получить билеты",
+		"price_from": "От {{price}} {{currency}}",
+		"also_coming_up": "Также скоро",
+		"only_left": "Осталось всего {{count}}!",
+		"low_stock": "Осталось {{count}}",
+		"events_count_one": "{{count}} событие",
+		"events_count_few": "{{count}} события",
+		"events_count_many": "{{count}} событий",
+		"events_count_other": "{{count}} событий",
+		"show_more": "Показать ещё"
 	},
 	"event": {
 		"buy_ticket": "Купить Билет",
@@ -103,6 +113,10 @@
 		"phone_optional": "Телефон (необязательно)",
 		"phone_required": "Номер телефона обязателен",
 		"phone_invalid": "Введите корректный номер телефона",
+		"first_name_required": "Имя обязательно",
+		"last_name_required": "Фамилия обязательна",
+		"email_required": "Email обязателен",
+		"email_invalid": "Введите корректный email",
 		"terms_agree": "Я согласен с <a>Условиями использования</a>",
 		"terms_required": "Вы должны принять Условия использования",
 		"promo_code": "Промокод",
@@ -385,7 +399,10 @@
 		"seats_selected_many": "{{count}} мест выбрано",
 		"seats_selected_other": "{{count}} места выбрано",
 		"clear_all": "Очистить",
-		"confirm_pay": "Подтвердить и оплатить"
+		"confirm_pay": "Подтвердить и оплатить",
+		"zoom_in": "Приблизить",
+		"zoom_out": "Отдалить",
+		"reset_view": "Сбросить вид"
 	},
 	"profile": {
 		"subtitle": "Обновите имя и телефон, которые используются на билетах.",

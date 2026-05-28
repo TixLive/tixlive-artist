@@ -114,29 +114,31 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 				// aspect-ratio inside it — that's how the artwork stays bigger
 				// without forcing letterbox.
 				gridTemplateColumns: '1fr auto',
-				// Explicit height (not max-height) so the grid actually uses the
-				// available vertical space — otherwise the row collapses to the
-				// text card's natural content height and the poster gets tiny.
-				// Capped at 820px so it doesn't tower on 4K monitors.
-				height: 'min(calc(100svh - 5.5rem), 820px)',
-				minHeight: 480,
 			}}
 		>
 			<style>{`
+				/* Desktop: explicit height so the grid row uses the viewport,
+				   not just the text card's intrinsic height. Capped at 820px
+				   so the hero doesn't tower on 4K monitors. Lives here (not
+				   inline) so the mobile media query below can override it. */
+				.hero-split {
+					height: min(calc(100svh - 5.5rem), 820px);
+					min-height: 480px;
+				}
 				.hero-text-card, .hero-poster-card { min-height: 0; }
 				@media (max-width: 820px) {
 					.hero-split {
-						display: flex !important;
-						flex-direction: column !important;
-						min-height: 0 !important;
-						max-height: none !important;
+						display: flex;
+						flex-direction: column;
+						min-height: 0;
+						height: auto;
 					}
-					.hero-text-card { padding: 24px 20px !important; gap: 14px !important; flex-shrink: 0; }
-					.hero-text-card h2 { font-size: clamp(22px, 6vw, 32px) !important; }
+					.hero-text-card { padding: 24px 20px; gap: 14px; flex-shrink: 0; }
+					.hero-text-card h2 { font-size: clamp(22px, 6vw, 32px); }
 					.hero-poster-card {
-						width: 100% !important;
-						aspect-ratio: var(--poster-aspect) !important;
-						height: auto !important;
+						width: 100%;
+						aspect-ratio: var(--poster-aspect);
+						height: auto;
 					}
 					.hero-cta-buy { width: 100%; justify-content: center; }
 				}

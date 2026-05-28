@@ -23,7 +23,10 @@ export interface IEventListItem {
 	id: number;
 	slug: string;
 	title: string;
+	/** 16:9 cover image (event.cover_image). Used as the wide banner. */
 	poster_url: string | null;
+	/** 2:3 portrait poster (event.poster_image). Drives the landing-hero split layout when present. */
+	poster_portrait_url?: string | null;
 	event_type: string;
 	status: 'draft' | 'soon' | 'open' | 'closed';
 	venue_name: string;

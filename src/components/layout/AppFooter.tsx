@@ -40,7 +40,7 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 									<Image src={logoUrl} alt={organizerName ?? ''} width={120} height={84} className="h-7 w-auto object-contain" />
 								</span>
 							)}
-							<span className="font-[family-name:var(--font-display)] text-[1.5rem] font-[800] tracking-[-0.02em] text-[var(--theme-bg)]">
+							<span className="truncate font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-bg)]">
 								{organizerName}
 							</span>
 						</div>

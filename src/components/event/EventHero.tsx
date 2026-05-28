@@ -87,7 +87,7 @@ export default function EventHero({ event }: EventHeroProps) {
 
 				{/* Title — below image */}
 				<div className="pt-3">
-					<h1 className="font-[family-name:var(--font-display)] text-[clamp(1.625rem,4.5vw,2.5rem)] font-[900] leading-[1] tracking-[-0.03em] text-[var(--theme-text)]">
+					<h1 className="font-[family-name:var(--font-display)] text-[clamp(1.375rem,3.2vw,1.875rem)] font-[800] leading-[1.1] tracking-[-0.025em] text-[var(--theme-text)]">
 						{event.title}
 					</h1>
 				</div>

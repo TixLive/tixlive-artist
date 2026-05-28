@@ -61,7 +61,7 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
 
         {/* Title + meta + CTA — below image */}
         <div className="pt-3">
-          <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.5rem,4.5vw,2.25rem)] font-[900] leading-[1] tracking-[-0.03em] text-[var(--theme-text)]">
+          <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.25rem,3vw,1.75rem)] font-[800] leading-[1.1] tracking-[-0.025em] text-[var(--theme-text)]">
             {featured.title}
           </h2>
           <div className="mt-2 flex flex-wrap items-center gap-3">

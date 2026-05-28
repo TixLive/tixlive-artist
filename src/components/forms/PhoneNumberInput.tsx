@@ -26,21 +26,19 @@ export default function PhoneNumberInput<T extends FieldValues>({
 	const invalid = Boolean(errorMessage);
 
 	return (
-		<div className="space-y-1.5">
+		<div className="flex flex-col gap-1.5">
 			{label && (
 				<label
 					htmlFor={inputId}
-					className="block text-[0.75rem] font-[600] text-[var(--theme-text-muted)]"
+					className="block text-[12px] font-[600] tracking-[-0.005em] text-[var(--ink-3)]"
 				>
 					{label}
 					{isRequired && <span className="ml-0.5 text-[#DC2626]">*</span>}
 				</label>
 			)}
 			<div
-				className={`tixlive-phone-wrapper flex h-14 items-center rounded-xl border bg-[var(--theme-surface)] px-3 transition-colors focus-within:border-[var(--brand-primary)] ${
-					invalid
-						? 'border-[#DC2626]'
-						: 'border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)]'
+				className={`tixlive-phone-wrapper flex h-[56px] items-stretch rounded-[14px] border bg-[var(--surface)] px-4 transition-colors duration-150 focus-within:border-[var(--ink)] ${
+					invalid ? 'border-[#DC2626]' : 'border-[var(--line)]'
 				}`}
 			>
 				<PhoneInputRHF
@@ -55,9 +53,7 @@ export default function PhoneNumberInput<T extends FieldValues>({
 					className="tixlive-phone-input flex-1"
 				/>
 			</div>
-			{invalid && (
-				<p className="text-[0.8125rem] text-[#DC2626]">{errorMessage}</p>
-			)}
+			{invalid && <p className="m-0 text-[12px] text-[#DC2626]">{errorMessage}</p>}
 		</div>
 	);
 }

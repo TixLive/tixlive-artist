@@ -37,9 +37,10 @@ export default function PhoneNumberInput<T extends FieldValues>({
 				</label>
 			)}
 			<div
-				className={`tixlive-phone-wrapper flex h-[56px] items-stretch rounded-[14px] border bg-[var(--surface)] px-4 transition-colors duration-150 focus-within:border-[var(--ink)] ${
+				className={`tixlive-phone-wrapper flex h-[56px] items-center rounded-[14px] border bg-[var(--surface)] px-4 transition-colors duration-150 focus-within:border-[var(--ink)] ${
 					invalid ? 'border-[#DC2626]' : 'border-[var(--line)]'
 				}`}
+				style={{ height: '56px' }}
 			>
 				<PhoneInputRHF
 					id={inputId}

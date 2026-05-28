@@ -185,21 +185,23 @@ body {
    ============================================================ */
 .tixlive-phone-input.PhoneInput {
 	display: flex;
-	align-items: stretch;
+	align-items: center;
 	gap: 0;
 	height: 100%;
-	min-height: 100%;
+	width: 100%;
 }
 
 .tixlive-phone-input .PhoneInputCountry {
-	display: inline-flex;
+	display: flex;
 	align-items: center;
+	justify-content: center;
 	gap: 0.375rem;
 	padding-right: 0.75rem;
 	margin-right: 0.625rem;
 	border-right: 1px solid var(--line);
 	flex-shrink: 0;
 	align-self: stretch;
+	min-height: 0;
 }
 
 .tixlive-phone-input .PhoneInputCountryIcon {
@@ -209,6 +211,7 @@ body {
 	overflow: hidden;
 	box-shadow: 0 0 0 1px var(--line);
 	background: transparent;
+	flex-shrink: 0;
 }
 
 .tixlive-phone-input .PhoneInputCountryIcon--border {

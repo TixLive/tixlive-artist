@@ -41,6 +41,13 @@ body {
 	font-family: var(--font-body);
 }
 
+/* reCAPTCHA v2 invisible — hide the floating badge.
+   Per Google TOS, the disclaimer with Privacy/Terms links must be
+   visible on any page that triggers a challenge (see RecaptchaDisclaimer). */
+.grecaptcha-badge {
+	visibility: hidden !important;
+}
+
 /* Pulse animation for critical urgency badge */
 @keyframes urgency-pulse {
 	0%, 100% { opacity: 1; }

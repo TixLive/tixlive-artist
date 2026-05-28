@@ -4,6 +4,7 @@ import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { useValidateLoginCode } from '@/queries/auth/useValidateLoginCode';
 import { useResendLoginCode } from '@/queries/auth/useResendLoginCode';
+import RecaptchaDisclaimer from '@/components/common/RecaptchaDisclaimer';
 
 interface OtpFormProps {
 	email: string;
@@ -142,6 +143,8 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 					{resendTime > 0 ? t('auth.resend_code_in', { time: formatTime(resendTime) }) : t('auth.resend_code')}
 				</Button>
 			</div>
+
+			<RecaptchaDisclaimer />
 		</div>
 	);
 }

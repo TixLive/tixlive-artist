@@ -299,6 +299,9 @@
 		"login_error": "Ceva nu a mers bine. Te rugam sa incerci din nou.",
 		"sign_out": "Deconectare"
 	},
+	"recaptcha": {
+		"disclaimer": "Acest site este protejat de reCAPTCHA si se aplica <a1>Politica de confidentialitate</a1> si <a2>Termenii si conditiile</a2> Google."
+	},
 	"common": {
 		"sold_out": "Epuizat",
 		"tickets_left": "{{count}} bilete ramase",

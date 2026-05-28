@@ -18,6 +18,7 @@ import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 import PaymentDetailsSlot from '@/components/checkout/PaymentDetailsSlot';
 import PriceBreakdown from '@/components/checkout/PriceBreakdown';
 import AttendeeIdentityRow from '@/components/checkout/AttendeeIdentityRow';
+import RecaptchaDisclaimer from '@/components/common/RecaptchaDisclaimer';
 import ProfileForm from '@/components/account/ProfileForm';
 import PhoneNumberInput from '@/components/forms/PhoneNumberInput';
 import ApiService, { ApiError, getAccessToken, getRefreshToken } from '@/services/Api.Service';
@@ -545,6 +546,8 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                       />
                       <span>{t('checkout.secure_payment_note')}</span>
                     </div>
+
+                    <RecaptchaDisclaimer />
                   </div>
                 </div>
               </form>

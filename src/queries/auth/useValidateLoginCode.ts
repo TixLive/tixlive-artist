@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useRecaptcha } from '@/contexts/RecaptchaContext';
 import ApiService, { setTokens } from '@/services/Api.Service';
 
 interface ValidateResponse {
@@ -22,9 +23,15 @@ interface ValidateParams {
 }
 
 export const useValidateLoginCode = () => {
+	const { executeRecaptcha } = useRecaptcha();
 	return useMutation({
 		mutationFn: async ({ email, code }: ValidateParams): Promise<ValidatedSession> => {
-			const data = await ApiService.post<ValidateResponse>('/api/public/auth/email-code/validate', { email, code });
+			const recaptchaToken = executeRecaptcha ? await executeRecaptcha() : undefined;
+			const data = await ApiService.post<ValidateResponse>('/api/public/auth/email-code/validate', {
+				email,
+				code,
+				recaptchaToken,
+			});
 			if (
 				typeof data.accessToken !== 'string' ||
 				typeof data.refreshToken !== 'string' ||

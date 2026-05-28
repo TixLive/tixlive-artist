@@ -14,6 +14,7 @@ import Head from 'next/head';
 import { OrganizerProvider, useOrganizer } from '@/contexts/OrganizerContext';
 import { LayoutProvider } from '@/contexts/LayoutContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { RecaptchaProvider } from '@/contexts/RecaptchaContext';
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 	getLayout?: (page: ReactElement) => ReactNode;
@@ -61,14 +62,16 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
 			<AuthProvider>
 				<OrganizerProvider>
 					<LayoutProvider>
-						<HeroUIProvider navigate={router.push}>
-							<ToastProvider placement="bottom-center" toastOffset={16} />
-							<LocaleHydrator />
-							<BrandInjector />
-							<div className={`${geist.variable} font-sans min-h-screen`}>
-								{getLayout(<Component {...pageProps} />)}
-							</div>
-						</HeroUIProvider>
+						<RecaptchaProvider>
+							<HeroUIProvider navigate={router.push}>
+								<ToastProvider placement="bottom-center" toastOffset={16} />
+								<LocaleHydrator />
+								<BrandInjector />
+								<div className={`${geist.variable} font-sans min-h-screen`}>
+									{getLayout(<Component {...pageProps} />)}
+								</div>
+							</HeroUIProvider>
+						</RecaptchaProvider>
 					</LayoutProvider>
 				</OrganizerProvider>
 			</AuthProvider>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, Input } from '@heroui/react';
 import { useTranslation } from 'next-i18next';
 import { useRequestLoginCode } from '@/queries/auth/useRequestLoginCode';
+import RecaptchaDisclaimer from '@/components/common/RecaptchaDisclaimer';
 
 interface EmailEntryFormProps {
 	initialEmail?: string;
@@ -67,6 +68,7 @@ export default function EmailEntryForm({ initialEmail = '', onCodeSent, autoFocu
 					{t('auth.login_error')}
 				</p>
 			)}
+			<RecaptchaDisclaimer />
 		</div>
 	);
 }

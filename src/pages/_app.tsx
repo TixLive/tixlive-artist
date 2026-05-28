@@ -1,3 +1,4 @@
+import 'react-phone-number-input/style.css';
 import '@/styles/globals.css';
 import { HeroUIProvider, ToastProvider } from '@heroui/react';
 import type { AppProps } from 'next/app';

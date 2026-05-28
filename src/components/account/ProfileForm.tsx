@@ -4,8 +4,10 @@ import { Icon } from '@iconify/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { isValidPhoneNumber } from 'react-phone-number-input';
 import { useTranslation } from 'next-i18next';
 import { useUpdateMe } from '@/queries/me/useUpdateMe';
+import PhoneNumberInput from '@/components/forms/PhoneNumberInput';
 import type { IMe } from '@/types';
 
 interface ProfileFormProps {
@@ -13,8 +15,6 @@ interface ProfileFormProps {
 }
 
 type FormState = 'idle' | 'saving' | 'success' | 'error';
-
-const PHONE_RE = /^\+?\d{7,15}$/;
 
 export default function ProfileForm({ initial }: ProfileFormProps) {
 	const { t } = useTranslation('common');
@@ -35,7 +35,7 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 		phone: z
 			.string()
 			.trim()
-			.refine((v) => v === '' || PHONE_RE.test(v), { message: t('profile.phone_invalid') }),
+			.refine((v) => v === '' || isValidPhoneNumber(v), { message: t('profile.phone_invalid') }),
 	});
 
 	type FormValues = z.infer<typeof schema>;
@@ -121,26 +121,11 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 					/>
 				</div>
 
-				<Controller
+				<PhoneNumberInput
 					name="phone"
 					control={control}
-					render={({ field }) => (
-						<Input
-							{...field}
-							type="tel"
-							label={t('profile.phone')}
-							labelPlacement="outside"
-							placeholder="+373 ..."
-							isInvalid={!!errors.phone}
-							errorMessage={errors.phone?.message}
-							classNames={{
-								label: 'font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]',
-								inputWrapper:
-									'rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-bg)] px-5 shadow-none data-[hover=true]:bg-[var(--theme-bg)] group-data-[focus=true]:border-[var(--brand-accent)]',
-								input: 'font-[family-name:var(--font-body)] text-[0.9375rem]',
-							}}
-						/>
-					)}
+					label={t('profile.phone')}
+					errorMessage={errors.phone?.message}
 				/>
 
 				<div>

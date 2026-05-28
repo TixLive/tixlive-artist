@@ -8,9 +8,7 @@ import { z } from 'zod';
 import { Button, Checkbox, Drawer, DrawerBody, DrawerContent, DrawerHeader, Input, useDisclosure } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation, Trans } from 'next-i18next';
-import PhoneInputRHF from 'react-phone-number-input/react-hook-form';
 import { isValidPhoneNumber } from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
 
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -21,6 +19,7 @@ import PaymentDetailsSlot from '@/components/checkout/PaymentDetailsSlot';
 import PriceBreakdown from '@/components/checkout/PriceBreakdown';
 import AttendeeIdentityRow from '@/components/checkout/AttendeeIdentityRow';
 import ProfileForm from '@/components/account/ProfileForm';
+import PhoneNumberInput from '@/components/forms/PhoneNumberInput';
 import ApiService, { ApiError, getAccessToken, getRefreshToken } from '@/services/Api.Service';
 import { fetchEvent } from '@/queries/events/useGetEvent';
 import { useCreateOrder } from '@/queries/orders/useCreateOrder';
@@ -404,37 +403,14 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                         classNames={{ inputWrapper: 'rounded-xl' }}
                       />
 
-                      <div className="space-y-1.5">
-                        <label
-                          htmlFor="checkout-phone"
-                          className="block text-[0.75rem] font-[600] text-[var(--theme-text-muted)]"
-                        >
-                          {t('checkout.phone')}
-                          <span className="ml-0.5 text-[#DC2626]">*</span>
-                        </label>
-                        <div
-                          className={`flex h-[3.5rem] items-center rounded-xl border bg-[var(--theme-surface)] px-3 transition-colors focus-within:border-[var(--brand-primary)] ${
-                            errors.phone
-                              ? 'border-[#DC2626]'
-                              : 'border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)]'
-                          }`}
-                        >
-                          <PhoneInputRHF
-                            id="checkout-phone"
-                            name="phone"
-                            control={control as unknown as Parameters<typeof PhoneInputRHF>[0]['control']}
-                            defaultCountry="MD"
-                            international
-                            countryCallingCodeEditable={false}
-                            className="checkout-phone-input flex-1"
-                          />
-                        </div>
-                        {errors.phone && (
-                          <p className="text-[0.8125rem] text-[#DC2626]">
-                            {errors.phone.message as string}
-                          </p>
-                        )}
-                      </div>
+                      <PhoneNumberInput
+                        id="checkout-phone"
+                        name="phone"
+                        control={control}
+                        label={t('checkout.phone')}
+                        isRequired
+                        errorMessage={errors.phone?.message as string | undefined}
+                      />
                     </section>
                   )}
 

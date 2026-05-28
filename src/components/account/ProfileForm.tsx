@@ -69,15 +69,15 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
 			<div>
-				<h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
+				<h1 className="m-0 text-[28px] font-[800] tracking-[-0.028em] text-[var(--ink)] sm:text-[32px]">
 					{t('account.profile')}
 				</h1>
-				<p className="mt-2 text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)]">
+				<p className="mt-2 text-[14px] leading-[1.55] text-[var(--ink-3)]">
 					{t('profile.subtitle')}
 				</p>
 			</div>
 
-			<div className="space-y-6 rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6 shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] sm:p-7">
+			<div className="space-y-6 rounded-[18px] bg-[var(--surface)] p-6 sm:p-7" style={{ boxShadow: 'var(--shadow-2)' }}>
 				<div className="grid gap-5 md:grid-cols-2">
 					<Controller
 						name="first_name"
@@ -91,9 +91,9 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 								isInvalid={!!errors.first_name}
 								errorMessage={errors.first_name?.message}
 								classNames={{
-									label: 'font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]',
+									label: 'text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]',
 									inputWrapper:
-										'rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-bg)] px-5 shadow-none data-[hover=true]:bg-[var(--theme-bg)] group-data-[focus=true]:border-[var(--brand-accent)]',
+										'rounded-[14px] border border-[var(--line)] bg-[var(--bg)] px-4 shadow-none data-[hover=true]:bg-[var(--bg)] group-data-[focus=true]:border-[var(--ink)]',
 									input: 'font-[family-name:var(--font-body)] text-[0.9375rem]',
 								}}
 							/>
@@ -111,9 +111,9 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 								isInvalid={!!errors.last_name}
 								errorMessage={errors.last_name?.message}
 								classNames={{
-									label: 'font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]',
+									label: 'text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]',
 									inputWrapper:
-										'rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-bg)] px-5 shadow-none data-[hover=true]:bg-[var(--theme-bg)] group-data-[focus=true]:border-[var(--brand-accent)]',
+										'rounded-[14px] border border-[var(--line)] bg-[var(--bg)] px-4 shadow-none data-[hover=true]:bg-[var(--bg)] group-data-[focus=true]:border-[var(--ink)]',
 									input: 'font-[family-name:var(--font-body)] text-[0.9375rem]',
 								}}
 							/>
@@ -135,34 +135,35 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 						labelPlacement="outside"
 						isDisabled
 						classNames={{
-							label: 'font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]',
+							label: 'text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]',
 							inputWrapper:
-								'rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[color-mix(in_srgb,var(--theme-text)_4%,transparent)] px-5 shadow-none',
+								'rounded-[14px] border border-[var(--line)] bg-[var(--bg-2)] px-4 shadow-none',
 							input: 'font-[family-name:var(--font-data)] text-[0.9375rem]',
 						}}
 					/>
-					<p className="mt-2 text-[0.75rem] text-[var(--theme-text-muted)]">
-						{t('profile.email_hint')}
-					</p>
+					<p className="mt-2 text-[12px] text-[var(--ink-3)]">{t('profile.email_hint')}</p>
 				</div>
 
 				{state === 'success' && (
-					<div className="flex items-center gap-2 rounded-xl border border-[color-mix(in_srgb,#16A34A_25%,transparent)] bg-[color-mix(in_srgb,#16A34A_10%,transparent)] px-4 py-3 text-[0.875rem] text-[#16A34A]">
-						<Icon icon="mdi:check" width={16} />
+					<div
+						className="flex items-center gap-2 rounded-[12px] px-4 py-3 text-[13.5px] font-[600]"
+						style={{ background: 'rgba(61, 123, 92, 0.10)', color: '#2A5A42' }}
+					>
+						<Icon icon="mdi:check-circle" width={16} />
 						{t('profile.saved')}
 					</div>
 				)}
 
 				{state === 'error' && (
-					<div className="flex items-center gap-2 rounded-xl border border-[color-mix(in_srgb,#DC2626_25%,transparent)] bg-[color-mix(in_srgb,#DC2626_10%,transparent)] px-4 py-3 text-[0.875rem] text-[#DC2626]">
+					<div className="flex items-center gap-2 rounded-[12px] bg-[#DC2626]/10 px-4 py-3 text-[13.5px] font-[600] text-[#DC2626]">
 						<Icon icon="mdi:alert-circle-outline" width={16} />
 						{t('profile.save_error')}
 					</div>
 				)}
 
-				<div className="flex items-center justify-end gap-4 border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-5">
+				<div className="flex items-center justify-end gap-4 border-t border-[var(--line)] pt-5">
 					{!isDirty && state === 'idle' && (
-						<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
+						<span className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
 							{t('profile.no_changes')}
 						</span>
 					)}
@@ -170,8 +171,8 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
 						type="submit"
 						variant="solid"
 						size="lg"
-						className="rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]"
-						style={{ backgroundColor: 'var(--brand-primary)' }}
+						className="rounded-full text-[14px] font-[600] tracking-[-0.005em] text-white"
+						style={{ backgroundColor: 'var(--ink)' }}
 						isLoading={state === 'saving'}
 						isDisabled={!isDirty || state === 'saving'}
 					>

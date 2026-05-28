@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { ITicket } from '@/types';
@@ -27,40 +26,40 @@ export default function TicketCard({ ticket, locale = 'en' }: TicketCardProps) {
 
 	return (
 		<Link href={`/account/tickets/${ticket.id}`} className="group block">
-			<article className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4 transition-all duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_15%,transparent)] hover:shadow-[0_4px_12px_rgba(20,19,18,0.06)]">
-				{/* Event poster thumbnail */}
-				<div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--theme-text)_6%,transparent)]">
-					<Icon icon="mdi:ticket-confirmation" width={24} className="text-[var(--theme-text-muted)]" />
+			<article
+				className="flex items-center gap-4 rounded-[16px] bg-[var(--surface)] p-4 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-hover)]"
+				style={{ boxShadow: 'var(--shadow-2)' }}
+			>
+				<div className="flex h-[68px] w-[52px] shrink-0 items-center justify-center rounded-[10px] bg-[var(--bg-2)] text-[var(--ink-3)]">
+					<Icon icon="mdi:ticket-confirmation-outline" width={22} />
 				</div>
 
-				{/* Details */}
-				<div className="min-w-0 flex-1">
-					<h3 className="truncate font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-text)]">{ticket.event_title}</h3>
-					<p className="mt-0.5 font-[family-name:var(--font-data)] text-[0.8125rem] text-[var(--theme-text-muted)]">{formatDate(ticket.session_date)}</p>
+				<div className="min-w-0 flex-1 leading-[1.35]">
+					<h3 className="m-0 truncate text-[15px] font-[700] tracking-[-0.012em] text-[var(--ink)]">
+						{ticket.event_title}
+					</h3>
+					<p className="m-0 mt-0.5 text-[12.5px] tabular-nums text-[var(--ink-3)]">
+						{formatDate(ticket.session_date)}
+					</p>
 					<div className="mt-1.5 flex items-center gap-2">
-						<Chip
-							size="sm"
-							variant="flat"
-							className="text-[0.6875rem]"
-							style={{
-								backgroundColor: 'color-mix(in srgb, var(--brand-accent) 12%, transparent)',
-								color: 'var(--brand-accent)',
-							}}
-						>
+						<span className="rounded-full bg-[var(--bg-2)] px-2 py-0.5 text-[10.5px] font-[700] uppercase tracking-[0.06em] text-[var(--ink-2)]">
 							{ticket.ticket_type}
-						</Chip>
-						<span className="truncate text-[0.6875rem] text-[var(--theme-text-muted)]">{ticket.attendee_name}</span>
+						</span>
+						<span className="truncate text-[11.5px] text-[var(--ink-3)]">{ticket.attendee_name}</span>
 					</div>
 					{seat && (
-						<p className="mt-1 flex items-center gap-1 font-[family-name:var(--font-data)] text-[0.6875rem] text-[var(--theme-text-muted)]">
-							<Icon icon="mdi:seat" width={13} className="flex-shrink-0" />
+						<p className="m-0 mt-1 flex items-center gap-1 text-[11.5px] tabular-nums text-[var(--ink-3)]">
+							<Icon icon="mdi:seat-outline" width={12} className="shrink-0" />
 							{t('seating.seat_label', { row: seat.row, seat: seat.seat })}
 						</p>
 					)}
 				</div>
 
-				{/* Arrow */}
-				<Icon icon="mdi:chevron-right" width={20} className="flex-shrink-0 text-[var(--theme-text-muted)] transition-colors duration-200 group-hover:text-[var(--theme-text)]" />
+				<Icon
+					icon="mdi:chevron-right"
+					width={14}
+					className="shrink-0 text-[var(--ink-3)] transition-colors duration-150 group-hover:text-[var(--ink)]"
+				/>
 			</article>
 		</Link>
 	);

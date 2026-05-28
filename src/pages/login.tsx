@@ -44,41 +44,43 @@ const LoginPage: NextPageWithLayout = function LoginPage() {
 			<Head>
 				<title>{`${t('auth.login_title')} — ${organizer?.name ?? ''}`}</title>
 			</Head>
-			<div className="flex min-h-[70vh] items-center justify-center bg-[var(--theme-bg)] px-4 py-12 md:py-20">
-					<div className="w-full max-w-[27rem]">
-						<div className="mb-6 flex flex-col items-center gap-5 text-center">
-							<div className="flex h-16 w-16 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--brand-accent)_25%,transparent)] bg-[color-mix(in_srgb,var(--brand-accent)_6%,transparent)]">
-								<Icon icon="mdi:email-outline" width={28} className="text-[var(--brand-accent)]" />
-							</div>
-							<div>
-								<div className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
-									{organizer?.name}
-								</div>
-								<h1 className="mt-2 font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
-									{t('auth.login_title')}
-								</h1>
-								<p className="mt-2 text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)]">
-									{step === 'email' ? t('auth.login_subtitle') : t('auth.code_sent_to', { email })}
-								</p>
-							</div>
+			<div className="flex min-h-[70vh] items-center justify-center bg-[var(--bg)] px-4 py-12 md:py-20">
+				<div className="w-full max-w-[27rem]">
+					<div className="mb-6 flex flex-col items-center gap-5 text-center">
+						<div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--bg-2)] text-[var(--ink)]">
+							<Icon icon="mdi:email-outline" width={26} />
 						</div>
-						<div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6 shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] sm:p-7">
-							{step === 'email' ? (
-								<EmailEntryForm onCodeSent={handleCodeSent} autoFocus />
-							) : (
-								<OtpForm
-									email={email}
-									initialResendTime={resendTime}
-									onBack={() => setStep('email')}
-									onSuccess={async () => {
-										await refresh();
-										await router.push(nextPath);
-									}}
-								/>
+						<div>
+							{organizer?.name && (
+								<div className="text-[11px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
+									{organizer.name}
+								</div>
 							)}
+							<h1 className="m-0 mt-2 text-[28px] font-[800] tracking-[-0.03em] text-[var(--ink)] sm:text-[32px]">
+								{t('auth.login_title')}
+							</h1>
+							<p className="mt-2 text-[14px] leading-[1.55] text-[var(--ink-3)]">
+								{step === 'email' ? t('auth.login_subtitle') : t('auth.code_sent_to', { email })}
+							</p>
 						</div>
 					</div>
+					<div className="rounded-[18px] bg-[var(--surface)] p-6 sm:p-7" style={{ boxShadow: 'var(--shadow-2)' }}>
+						{step === 'email' ? (
+							<EmailEntryForm onCodeSent={handleCodeSent} autoFocus />
+						) : (
+							<OtpForm
+								email={email}
+								initialResendTime={resendTime}
+								onBack={() => setStep('email')}
+								onSuccess={async () => {
+									await refresh();
+									await router.push(nextPath);
+								}}
+							/>
+						)}
+					</div>
 				</div>
+			</div>
 			</>
 		);
 };

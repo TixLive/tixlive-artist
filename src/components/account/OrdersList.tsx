@@ -14,20 +14,20 @@ export default function OrdersList({ orders, locale }: OrdersListProps) {
 
 	if (orders.length === 0) {
 		return (
-			<div className="flex flex-col items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] py-20 text-center">
-				<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--theme-text)_6%,transparent)]">
-					<Icon icon="mdi:receipt-text-outline" width={28} className="text-[var(--theme-text-muted)]" />
+			<div
+				className="flex flex-col items-center gap-4 rounded-[18px] bg-[var(--surface)] py-16 text-center"
+				style={{ boxShadow: 'var(--shadow-2)' }}
+			>
+				<div className="flex h-16 w-16 items-center justify-center rounded-[14px] bg-[var(--bg-2)] text-[var(--ink-3)]">
+					<Icon icon="mdi:receipt-text-outline" width={26} />
 				</div>
 				<div>
-					<p className="text-[1rem] font-medium text-[var(--theme-text-muted)]">
-						{t('orders.empty_title')}
-					</p>
+					<p className="m-0 text-[15px] font-[500] text-[var(--ink-3)]">{t('orders.empty_title')}</p>
 					<Link
 						href="/"
-						className="mt-2 inline-flex items-center gap-1 font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)]"
+						className="mt-2 inline-flex items-center gap-1 text-[14px] font-[600] tracking-[-0.005em] text-[var(--ink)] underline-offset-2 hover:underline"
 					>
-						{t('orders.empty_cta')}
-						<Icon icon="mdi:arrow-right" width={16} />
+						{t('orders.empty_cta')} <Icon icon="mdi:arrow-right" width={14} />
 					</Link>
 				</div>
 			</div>
@@ -35,7 +35,7 @@ export default function OrdersList({ orders, locale }: OrdersListProps) {
 	}
 
 	return (
-		<div className="space-y-3">
+		<div className="flex flex-col gap-2.5">
 			{orders.map((order) => (
 				<OrderCard key={order.id} order={order} locale={locale} />
 			))}

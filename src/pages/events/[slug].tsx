@@ -340,7 +340,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
               >
                 <div className="px-6">
                   <div className={`border-b ${hairline} py-4`}>
-                    <div className={monoLabel}>Data</div>
+                    <div className={monoLabel}>{t('event.date_label')}</div>
                     <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
                       {fmtDate(event.date_start)}
                     </div>
@@ -351,7 +351,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
                   {event.venue_name && (
                     <div className={`border-b ${hairline} py-4`}>
-                      <div className={monoLabel}>Locație</div>
+                      <div className={monoLabel}>{t('event.location')}</div>
                       <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
                         {event.venue_name}
                       </div>
@@ -362,17 +362,17 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                   )}
 
                   <div className="py-4">
-                    <div className={monoLabel}>Preț</div>
+                    <div className={monoLabel}>{t('event.price_label')}</div>
                     <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
                       {priceFrom > 0
                         ? maxPrice > priceFrom
                           ? `${priceFrom} – ${maxPrice} ${currency}`
                           : `${priceFrom} ${currency}`
-                        : 'Gratuit'}
+                        : t('event.free')}
                     </div>
                     {ticketTypes.length > 0 && (
                       <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
-                        {ticketTypes.length} {ticketTypes.length === 1 ? 'tip de bilet' : 'tipuri de bilete'}
+                        {ticketTypes.length} {t('event.ticket_types_count', { count: ticketTypes.length })}
                       </div>
                     )}
                   </div>
@@ -661,7 +661,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
               </div>
             </div>
             <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--theme-bg)_25%,transparent)] px-5 py-2.5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] sm:inline-flex">
-              Vezi toate <Icon icon="mdi:arrow-right" width={16} />
+              {t('event.see_all')} <Icon icon="mdi:arrow-right" width={16} />
             </span>
           </Link>
           )}
@@ -676,7 +676,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
             >
               <span className="text-left">
                 <span className="block font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] opacity-55">
-                  Bilete
+                  {t('event.tickets')}
                 </span>
                 <span className="block font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em]">
                   {priceFrom > 0 ? `${t('event.from_price')} ${priceFrom} ${currency}` : t('seating.select_seats')}

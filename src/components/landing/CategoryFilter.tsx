@@ -12,7 +12,8 @@ interface CategoryFilterProps {
 
 export default function CategoryFilter({ active, onChange, availableTypes }: CategoryFilterProps) {
   const { t } = useTranslation('common');
-  // Only show "All" + types that actually have events
+  // Only show "All" + types that actually have events. "All" is a state sentinel;
+  // the chip is rendered with the translated label below.
   const tabs = ['All', ...availableTypes];
 
   if (tabs.length <= 1) return null;
@@ -49,7 +50,7 @@ export default function CategoryFilter({ active, onChange, availableTypes }: Cat
               }
               onClick={() => onChange(cat)}
             >
-              {cat}
+              {cat === 'All' ? t('landing.category_all') : cat}
             </Chip>
           );
         })}

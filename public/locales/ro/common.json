@@ -79,7 +79,13 @@
 			"ssl_256": "SSL 256-bit",
 			"email_phone": "Email & telefon",
 			"easy_refund": "Rambursare ușoară"
-		}
+		},
+		"date_label": "Data",
+		"price_label": "Preț",
+		"free": "Gratuit",
+		"ticket_types_count_one": "tip de bilet",
+		"ticket_types_count_other": "tipuri de bilete",
+		"see_all": "Vezi toate"
 	},
 	"map": {
 		"unavailable": "Hartă indisponibilă",
@@ -88,7 +94,8 @@
 		"open_in_google_maps": "Deschide în Google Maps"
 	},
 	"landing": {
-		"categories_label": "Categorii evenimente"
+		"categories_label": "Categorii evenimente",
+		"category_all": "Toate"
 	},
 	"checkout": {
 		"attendee_details": "Detalii Participant",
@@ -258,6 +265,20 @@
 	"sponsors": {
 		"partners": "Parteneri"
 	},
+	"organizer": {
+		"verified": "VERIFICAT",
+		"event_count_one": "{{count}} eveniment",
+		"event_count_other": "{{count}} evenimente",
+		"social_label": "{{name}} pe {{platform}}"
+	},
+	"payment": {
+		"card_form_coming_soon": "Formular card pentru {{name}} (în curând)"
+	},
+	"home": {
+		"title": "{{name}} — Evenimente",
+		"title_fallback": "Evenimente",
+		"og_description": "Evenimente de {{name}}"
+	},
 	"auth": {
 		"login_title": "Acceseaza biletele tale",
 		"login_subtitle": "Introdu emailul. Iti trimitem un cod din 6 cifre.",
@@ -350,6 +371,7 @@
 		"version_mismatch_title": "Harta locurilor a fost actualizata",
 		"version_mismatch_body": "Harta locurilor s-a schimbat de cand s-a incarcat pagina. Te rugam sa reimprospatezi pentru a continua.",
 		"refresh": "Reimprospateaza",
+		"page_title": "Alege locul — {{event}}",
 		"loading_map": "Se încarcă harta…",
 		"seats_available": "locuri disponibile",
 		"row": "Rând",

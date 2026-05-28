@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import { IOrganizer } from '@/types';
 
 interface OrganizerIdentityBarProps {
@@ -17,6 +18,7 @@ const SOCIAL_ICONS: Record<string, string> = {
 };
 
 export default function OrganizerIdentityBar({ organizer, eventCount }: OrganizerIdentityBarProps) {
+  const { t } = useTranslation('common');
   const socialEntries = Object.entries(organizer.social_links || {}).filter(([, url]) => url);
 
   return (
@@ -48,12 +50,12 @@ export default function OrganizerIdentityBar({ organizer, eventCount }: Organize
                 {organizer.name}
               </span>
               <span className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-2.5 py-0.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
-                VERIFIED
+                {t('organizer.verified')}
               </span>
             </div>
             {eventCount > 0 && (
               <p className="mt-1.5 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
-                {eventCount} event{eventCount !== 1 ? 's' : ''}
+                {t('organizer.event_count', { count: eventCount })}
               </p>
             )}
           </div>
@@ -76,7 +78,7 @@ export default function OrganizerIdentityBar({ organizer, eventCount }: Organize
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] text-[var(--theme-text)] transition-colors duration-200 hover:text-[var(--brand-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
-                aria-label={`${organizer.name} on ${platform}`}
+                aria-label={t('organizer.social_label', { name: organizer.name, platform })}
               >
                 <Icon icon={SOCIAL_ICONS[platform] || 'mdi:link'} width={18} />
               </a>

@@ -79,7 +79,13 @@
 			"ssl_256": "SSL 256-bit",
 			"email_phone": "Email & phone",
 			"easy_refund": "Easy refund"
-		}
+		},
+		"date_label": "Date",
+		"price_label": "Price",
+		"free": "Free",
+		"ticket_types_count_one": "ticket type",
+		"ticket_types_count_other": "ticket types",
+		"see_all": "See all"
 	},
 	"map": {
 		"unavailable": "Map unavailable",
@@ -88,7 +94,8 @@
 		"open_in_google_maps": "Open in Google Maps"
 	},
 	"landing": {
-		"categories_label": "Event categories"
+		"categories_label": "Event categories",
+		"category_all": "All"
 	},
 	"checkout": {
 		"attendee_details": "Attendee Details",
@@ -258,6 +265,20 @@
 	"sponsors": {
 		"partners": "Partners"
 	},
+	"organizer": {
+		"verified": "VERIFIED",
+		"event_count_one": "{{count}} event",
+		"event_count_other": "{{count}} events",
+		"social_label": "{{name}} on {{platform}}"
+	},
+	"payment": {
+		"card_form_coming_soon": "Card form for {{name}} (coming soon)"
+	},
+	"home": {
+		"title": "{{name}} — Events",
+		"title_fallback": "Events",
+		"og_description": "Events by {{name}}"
+	},
 	"auth": {
 		"login_title": "Access your tickets",
 		"login_subtitle": "Enter your email. We'll send you a 6-digit code.",
@@ -348,6 +369,7 @@
 		"version_mismatch_title": "Seat map updated",
 		"version_mismatch_body": "The seating map has changed since this page loaded. Please refresh to continue.",
 		"refresh": "Refresh",
+		"page_title": "Choose your seat — {{event}}",
 		"loading_map": "Loading map…",
 		"seats_available": "seats available",
 		"row": "Row",

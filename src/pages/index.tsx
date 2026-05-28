@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import Head from 'next/head';
+import { useTranslation } from 'next-i18next';
 import { useGetEvents } from '@/queries/events/useGetEvents';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
@@ -10,6 +11,7 @@ import EventGrid from '@/components/landing/EventGrid';
 import HomePageSkeleton from '@/components/landing/HomePageSkeleton';
 
 const Home: NextPageWithLayout = function Home() {
+	const { t } = useTranslation('common');
 	const { organizer } = useOrganizer();
 	const {
 		data,
@@ -48,10 +50,10 @@ const Home: NextPageWithLayout = function Home() {
 	return (
 		<>
 			<Head>
-				<title>{organizer ? `${organizer.name} — Events` : 'Events'}</title>
+				<title>{organizer ? t('home.title', { name: organizer.name }) : t('home.title_fallback')}</title>
 				{organizer && <>
-					<meta property="og:title" content={`${organizer.name} — Events`} />
-					<meta property="og:description" content={organizer.bio || `Events by ${organizer.name}`} />
+					<meta property="og:title" content={t('home.title', { name: organizer.name })} />
+					<meta property="og:description" content={organizer.bio || t('home.og_description', { name: organizer.name })} />
 					{organizer.logo_url && <meta property="og:image" content={organizer.logo_url} />}
 				</>}
 			</Head>

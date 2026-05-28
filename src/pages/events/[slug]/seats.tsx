@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 
 import SeatSelection from '@/components/seating/SeatSelection';
 import { fetchEvent } from '@/queries/events/useGetEvent';
@@ -26,6 +27,7 @@ interface SeatsState {
 }
 
 export default function SeatsPage() {
+	const { t } = useTranslation('common');
 	const router = useRouter();
 	// Static export: router.query.slug is '_' (shell placeholder); read real slug from URL
 	const [slug, setSlug] = useState<string | undefined>(undefined);
@@ -136,7 +138,7 @@ export default function SeatsPage() {
 	return (
 		<>
 			<Head>
-				<title>{`Alege locul — ${state.eventTitle}`}</title>
+				<title>{t('seating.page_title', { event: state.eventTitle })}</title>
 				<meta name="robots" content="noindex" />
 				<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 			</Head>

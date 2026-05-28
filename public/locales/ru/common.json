@@ -73,7 +73,15 @@
 			"ssl_256": "SSL 256-бит",
 			"email_phone": "Email и телефон",
 			"easy_refund": "Лёгкий возврат"
-		}
+		},
+		"date_label": "Дата",
+		"price_label": "Цена",
+		"free": "Бесплатно",
+		"ticket_types_count_one": "тип билета",
+		"ticket_types_count_few": "типа билетов",
+		"ticket_types_count_many": "типов билетов",
+		"ticket_types_count_other": "типов билетов",
+		"see_all": "Смотреть все"
 	},
 	"map": {
 		"unavailable": "Карта недоступна",
@@ -82,7 +90,8 @@
 		"open_in_google_maps": "Открыть в Google Maps"
 	},
 	"landing": {
-		"categories_label": "Категории событий"
+		"categories_label": "Категории событий",
+		"category_all": "Все"
 	},
 	"checkout": {
 		"attendee_details": "Данные Участника",
@@ -256,6 +265,22 @@
 	"sponsors": {
 		"partners": "Партнёры"
 	},
+	"organizer": {
+		"verified": "ПРОВЕРЕН",
+		"event_count_one": "{{count}} событие",
+		"event_count_few": "{{count}} события",
+		"event_count_many": "{{count}} событий",
+		"event_count_other": "{{count}} событий",
+		"social_label": "{{name}} в {{platform}}"
+	},
+	"payment": {
+		"card_form_coming_soon": "Форма карты для {{name}} (скоро)"
+	},
+	"home": {
+		"title": "{{name}} — События",
+		"title_fallback": "События",
+		"og_description": "События от {{name}}"
+	},
 	"auth": {
 		"login_title": "Доступ к вашим билетам",
 		"login_subtitle": "Введите email. Мы пришлём 6-значный код.",
@@ -350,6 +375,7 @@
 		"version_mismatch_title": "Схема зала обновлена",
 		"version_mismatch_body": "Схема зала изменилась с момента загрузки страницы. Пожалуйста, обновите страницу, чтобы продолжить.",
 		"refresh": "Обновить",
+		"page_title": "Выбор места — {{event}}",
 		"loading_map": "Загрузка схемы…",
 		"seats_available": "мест доступно",
 		"row": "Ряд",

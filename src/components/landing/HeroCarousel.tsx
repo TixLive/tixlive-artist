@@ -89,7 +89,7 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
 	};
 
 	return (
-		<section className="mx-auto max-w-[1200px] px-4 pt-8 sm:px-5 md:px-8">
+		<section className="mx-auto max-w-[1200px] px-4 pt-4 sm:px-5 sm:pt-6 md:px-8">
 			{featured.poster_portrait_url ? <SplitHero {...parts} /> : <BannerHero {...parts} />}
 		</section>
 	);
@@ -114,12 +114,15 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 				// aspect-ratio inside it — that's how the artwork stays bigger
 				// without forcing letterbox.
 				gridTemplateColumns: '1fr auto',
-				// Keep the hero within one viewport (svh handles mobile chrome).
-				maxHeight: 'calc(100svh - 6rem)',
+				// Explicit height (not max-height) so the grid actually uses the
+				// available vertical space — otherwise the row collapses to the
+				// text card's natural content height and the poster gets tiny.
+				// Capped at 820px so it doesn't tower on 4K monitors.
+				height: 'min(calc(100svh - 5.5rem), 820px)',
+				minHeight: 480,
 			}}
 		>
 			<style>{`
-				.hero-split { min-height: 460px; }
 				.hero-text-card, .hero-poster-card { min-height: 0; }
 				@media (max-width: 820px) {
 					.hero-split {
@@ -133,7 +136,7 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 					.hero-poster-card {
 						width: 100% !important;
 						aspect-ratio: var(--poster-aspect) !important;
-						max-height: 70svh !important;
+						height: auto !important;
 					}
 					.hero-cta-buy { width: 100%; justify-content: center; }
 				}

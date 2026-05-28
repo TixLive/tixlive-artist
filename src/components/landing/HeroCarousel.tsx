@@ -141,15 +141,33 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 				<HeroText {...{ t, featured, dowShort, day, mon, year, time, venueLine }} variant="split" />
 			</div>
 
-			{/* RIGHT — full portrait poster, never cropped. Ink-filled letterbox
-			    appears only if the slot's aspect drifts from the image's own. */}
-			<div className="hero-poster-card relative overflow-hidden bg-[var(--ink)]">
+			{/* RIGHT — full portrait poster, never cropped. A blurred copy of the
+			    same poster fills any aspect-ratio drift, picking up the artwork's
+			    own colors instead of dead-black letterbox bars. */}
+			<div className="hero-poster-card relative isolate overflow-hidden bg-[var(--ink)]">
+				{/* Blurred backdrop — extends the poster's colors to the edges */}
+				<Image
+					src={portraitUrl}
+					alt=""
+					aria-hidden="true"
+					fill
+					className="object-cover"
+					sizes="(max-width: 820px) 100vw, 600px"
+					style={{
+						filter: 'blur(48px) saturate(1.4) brightness(0.85)',
+						transform: 'scale(1.2)',
+						zIndex: 0,
+					}}
+					priority
+				/>
+				{/* Sharp poster — full image, no cropping */}
 				<Image
 					src={portraitUrl}
 					alt={`${featured.title} poster`}
 					fill
 					className="object-contain"
 					sizes="(max-width: 820px) 100vw, 600px"
+					style={{ zIndex: 1 }}
 					priority
 				/>
 			</div>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
@@ -20,6 +21,33 @@ interface HeroParts {
 	year: number;
 	time: string;
 	venueLine: string;
+}
+
+/**
+ * Returns the natural aspect ratio (w / h) of the image at `src`, or null
+ * while it loads. Used by the split hero to size the poster slot so the
+ * artwork fills it edge-to-edge — no letterbox, no cropping.
+ */
+function useImageAspect(src: string | null | undefined): number | null {
+	const [aspect, setAspect] = useState<number | null>(null);
+	useEffect(() => {
+		if (!src) {
+			setAspect(null);
+			return;
+		}
+		let cancelled = false;
+		const img = new window.Image();
+		img.onload = () => {
+			if (!cancelled && img.naturalHeight > 0) {
+				setAspect(img.naturalWidth / img.naturalHeight);
+			}
+		};
+		img.src = src;
+		return () => {
+			cancelled = true;
+		};
+	}, [src]);
+	return aspect;
 }
 
 /**
@@ -70,6 +98,10 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
 function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time, venueLine }: HeroParts) {
 	// poster_portrait_url is guaranteed by the caller's branch check.
 	const portraitUrl = featured.poster_portrait_url!;
+	// Detect the poster's actual aspect so the slot can hug it edge-to-edge.
+	// Default to a typical 2:3 movie-poster ratio while loading.
+	const detected = useImageAspect(portraitUrl);
+	const aspect = detected ?? 2 / 3;
 
 	return (
 		<Link
@@ -78,25 +110,31 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 			onTouchStart={() => prefetch(featured.slug)}
 			className="hero-split group relative isolate grid overflow-hidden rounded-[22px] shadow-[var(--shadow-cinema)] sm:rounded-[28px]"
 			style={{
-				gridTemplateColumns: '1.05fr 1fr',
+				// Text card flexes; poster column is sized by the slot's own
+				// aspect-ratio inside it — that's how the artwork stays bigger
+				// without forcing letterbox.
+				gridTemplateColumns: '1fr auto',
 				// Keep the hero within one viewport (svh handles mobile chrome).
-				// 8rem leaves room for the sticky 72px header + breathing space.
-				maxHeight: 'calc(100svh - 8rem)',
+				maxHeight: 'calc(100svh - 6rem)',
 			}}
 		>
 			<style>{`
-				.hero-split { min-height: 480px; }
+				.hero-split { min-height: 460px; }
 				.hero-text-card, .hero-poster-card { min-height: 0; }
 				@media (max-width: 820px) {
 					.hero-split {
 						display: flex !important;
 						flex-direction: column !important;
 						min-height: 0 !important;
-						height: calc(100svh - 6rem);
+						max-height: none !important;
 					}
-					.hero-text-card { padding: 28px 22px !important; gap: 18px !important; flex-shrink: 0; }
-					.hero-text-card h2 { font-size: clamp(24px, 6.5vw, 36px) !important; }
-					.hero-poster-card { flex: 1 1 0 !important; min-height: 0 !important; }
+					.hero-text-card { padding: 24px 20px !important; gap: 14px !important; flex-shrink: 0; }
+					.hero-text-card h2 { font-size: clamp(22px, 6vw, 32px) !important; }
+					.hero-poster-card {
+						width: 100% !important;
+						aspect-ratio: var(--poster-aspect) !important;
+						max-height: 70svh !important;
+					}
 					.hero-cta-buy { width: 100%; justify-content: center; }
 				}
 			`}</style>
@@ -106,8 +144,8 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 				className="hero-text-card relative isolate flex flex-col justify-between overflow-hidden text-white"
 				style={{
 					background: 'rgba(10,10,10,0.55)',
-					padding: '44px 48px',
-					gap: 28,
+					padding: '40px 44px',
+					gap: 24,
 					backdropFilter: 'blur(20px) saturate(180%)',
 					WebkitBackdropFilter: 'blur(20px) saturate(180%)',
 				}}
@@ -141,33 +179,26 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 				<HeroText {...{ t, featured, dowShort, day, mon, year, time, venueLine }} variant="split" />
 			</div>
 
-			{/* RIGHT — full portrait poster, never cropped. A blurred copy of the
-			    same poster fills any aspect-ratio drift, picking up the artwork's
-			    own colors instead of dead-black letterbox bars. */}
-			<div className="hero-poster-card relative isolate overflow-hidden bg-[var(--ink)]">
-				{/* Blurred backdrop — extends the poster's colors to the edges */}
-				<Image
-					src={portraitUrl}
-					alt=""
-					aria-hidden="true"
-					fill
-					className="object-cover"
-					sizes="(max-width: 820px) 100vw, 600px"
-					style={{
-						filter: 'blur(48px) saturate(1.4) brightness(0.85)',
-						transform: 'scale(1.2)',
-						zIndex: 0,
-					}}
-					priority
-				/>
-				{/* Sharp poster — full image, no cropping */}
+			{/* RIGHT — poster slot sized to the artwork's own aspect-ratio so the
+			    image fills it edge-to-edge: no crop, no letterbox. */}
+			<div
+				className="hero-poster-card relative overflow-hidden bg-[var(--ink)]"
+				style={
+					{
+						aspectRatio: aspect,
+						height: '100%',
+						// CSS var consumed by the mobile breakpoint above so the
+						// stacked layout matches the same artwork ratio.
+						'--poster-aspect': aspect,
+					} as React.CSSProperties
+				}
+			>
 				<Image
 					src={portraitUrl}
 					alt={`${featured.title} poster`}
 					fill
-					className="object-contain"
+					className="object-cover"
 					sizes="(max-width: 820px) 100vw, 600px"
-					style={{ zIndex: 1 }}
 					priority
 				/>
 			</div>

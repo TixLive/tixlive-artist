@@ -11,39 +11,35 @@ export default function ProgramSection({ items }: ProgramSectionProps) {
 	if (!items.length) return null;
 
 	return (
-		<SectionShell label={t('sections.program')}>
-			<div className="overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
-				{items.map((item, idx) => (
-					<div
-						key={item.id}
-						className={`flex gap-4 p-4 sm:gap-5 sm:p-5 ${
-							idx < items.length - 1
-								? 'border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)]'
-								: ''
-						}`}
-					>
-						{/* Time */}
-						<div className="w-16 shrink-0">
-							{item.start_time && (
-								<span className="font-[family-name:var(--font-data)] text-[0.8125rem] font-medium tabular-nums text-[var(--brand-accent)]">
-									{item.start_time}
+		<SectionShell label={t('sections.program')} sub={t('sections.program_sub')}>
+			<div className="rounded-[18px] bg-[var(--surface)] p-1.5" style={{ boxShadow: 'var(--shadow-2)' }}>
+				{items.map((item, idx) => {
+					const isLast = idx === items.length - 1;
+					return (
+						<div
+							key={item.id}
+							className="grid items-center gap-4 px-[18px] py-[14px]"
+							style={{
+								gridTemplateColumns: '88px 1fr',
+								borderBottom: isLast ? 'none' : '1px solid var(--line-2)',
+							}}
+						>
+							<span className="text-[15px] font-[800] tracking-[-0.012em] tabular-nums text-[var(--ink)]">
+								{item.start_time ?? '—'}
+							</span>
+							<div className="min-w-0">
+								<span className="text-[14px] font-[600] tracking-[-0.005em] text-[var(--ink-2)]">
+									{item.title}
 								</span>
-							)}
+								{item.description && (
+									<p className="mt-1 text-[13px] leading-[1.5] text-[var(--ink-3)]">
+										{item.description}
+									</p>
+								)}
+							</div>
 						</div>
-
-						{/* Content */}
-						<div className="min-w-0 flex-1">
-							<p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-								{item.title}
-							</p>
-							{item.description && (
-								<p className="mt-1.5 text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
-									{item.description}
-								</p>
-							)}
-						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 		</SectionShell>
 	);

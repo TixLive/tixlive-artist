@@ -37,21 +37,18 @@ export default function CampingInfoSection(props: CampingInfoSectionProps) {
 					return (
 						<div
 							key={item.key}
-							className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4"
+							className="rounded-[14px] bg-[var(--surface)] p-4"
+							style={{ boxShadow: 'var(--shadow-1)' }}
 						>
-							<div className="mb-2.5 flex items-center gap-2">
-								<Icon
-									icon={item.icon}
-									width={16}
-									className="text-[var(--brand-accent)]"
-								/>
-								<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
+							<div className="mb-2 flex items-center gap-2">
+								<span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[var(--bg-2)] text-[var(--ink)]">
+									<Icon icon={item.icon} width={14} />
+								</span>
+								<span className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
 									{t(`camping.${item.key}`)}
 								</span>
 							</div>
-							<p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] leading-snug tracking-[-0.01em] text-[var(--theme-text)]">
-								{value}
-							</p>
+							<p className="text-[15px] font-[700] leading-snug tracking-[-0.012em] text-[var(--ink)]">{value}</p>
 						</div>
 					);
 				})}

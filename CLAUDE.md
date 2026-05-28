@@ -23,9 +23,9 @@ npm run lint     # ESLint
 - `@/*` maps to `src/*`
 - Pages use `getStaticProps` + `serverSideTranslations` (static export means no `getServerSideProps`)
 - Dynamic routes (`[slug]`, `[ticketId]`, `[token]`, `[page]`) use a `'_'` placeholder shell in `getStaticPaths` and read the real param from `window.location.pathname` on mount
-- Event-type theming via `[data-event-type]` CSS attribute on `<main>`
-- Never hardcode hex colors — use CSS custom properties (`--brand-primary`, `--theme-text`, etc.)
-- Use `color-mix(in srgb, var(--theme-text) X%, transparent)` for adaptive opacity (NOT `bg-white/X`)
+- Single design system app-wide — no per-event-type theming (the `[data-event-type]` convention was removed 2026-05-28)
+- Never hardcode hex colors — use CSS custom properties (`--ink`, `--bg`, `--line`, `--accent`). Legacy `--brand-primary`, `--theme-text`, etc. are kept as aliases but new code should use the canonical tokens.
+- Use `color-mix(in srgb, var(--ink) X%, transparent)` for adaptive opacity (NOT `bg-white/X`)
 
 ## Data Layer
 

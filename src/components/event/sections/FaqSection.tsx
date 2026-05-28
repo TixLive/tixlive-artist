@@ -10,51 +10,48 @@ interface FaqSectionProps {
 
 export default function FaqSection({ items }: FaqSectionProps) {
 	const { t } = useTranslation('common');
-	const [openId, setOpenId] = useState<number | null>(null);
+	const [openId, setOpenId] = useState<number | null>(items[0]?.id ?? null);
 
 	if (!items.length) return null;
 
 	return (
-		<SectionShell label={t('sections.faq')}>
-			<div className="space-y-3">
-				{items.map((faq) => {
+		<SectionShell
+			label={t('sections.faq')}
+			rightSlot={
+				<span className="text-[11px] font-[700] uppercase tracking-[0.14em] text-[var(--ink-3)]">
+					{items.length} {items.length === 1 ? t('sections.item_one') : t('sections.item_other')}
+				</span>
+			}
+		>
+			<div className="overflow-hidden rounded-[18px] bg-[var(--surface)]" style={{ boxShadow: 'var(--shadow-2)' }}>
+				{items.map((faq, i) => {
 					const isOpen = openId === faq.id;
+					const isLast = i === items.length - 1;
 					return (
-						<div
-							key={faq.id}
-							className="overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)]"
-						>
+						<div key={faq.id} className={isLast ? '' : 'border-b border-[var(--line-2)]'}>
 							<button
-								className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--theme-text)_4%,transparent)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-inset"
+								className="flex w-full items-center justify-between gap-3.5 px-5 py-[18px] text-left"
 								onClick={() => setOpenId(isOpen ? null : faq.id)}
 								aria-expanded={isOpen}
 							>
-								<span className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+								<span className="text-[15px] font-[700] tracking-[-0.01em] text-[var(--ink)]">
 									{faq.question}
 								</span>
 								<span
-									className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
-										isOpen
-											? 'bg-[var(--brand-accent)] text-[var(--theme-bg)]'
-											: 'bg-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] text-[var(--theme-text-muted)]'
-									}`}
+									className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--bg-2)] text-[var(--ink)] transition-transform duration-250"
+									style={{ transform: isOpen ? 'rotate(45deg)' : 'rotate(0)' }}
 								>
-									<Icon
-										icon="mdi:chevron-down"
-										width={18}
-										className={`transition-transform duration-200 ${
-											isOpen ? 'rotate-180' : ''
-										}`}
-									/>
+									<Icon icon="mdi:plus" width={12} />
 								</span>
 							</button>
-							{isOpen && (
-								<div className="px-5 pb-5">
-									<p className="text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
-										{faq.answer}
-									</p>
-								</div>
-							)}
+							<div
+								className="overflow-hidden transition-[max-height] duration-350 ease-out"
+								style={{ maxHeight: isOpen ? 240 : 0 }}
+							>
+								<p className="m-0 px-5 pb-[18px] text-[14px] font-[500] leading-[1.55] text-[var(--ink-3)]">
+									{faq.answer}
+								</p>
+							</div>
 						</div>
 					);
 				})}

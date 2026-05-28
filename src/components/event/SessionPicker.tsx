@@ -49,7 +49,7 @@ export default function SessionPicker({ sessions, activeSessionId, onSelect }: S
       ref={containerRef}
       role="tablist"
       aria-label={t('sessions.label')}
-      className="inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-1.5"
+      className="inline-flex max-w-full gap-1 overflow-x-auto rounded-full bg-[var(--bg-2)] p-1.5"
       style={{ scrollbarWidth: 'none' }}
       onKeyDown={handleKeyDown}
     >
@@ -62,12 +62,11 @@ export default function SessionPicker({ sessions, activeSessionId, onSelect }: S
             role="tab"
             aria-selected={isActive}
             tabIndex={isActive ? 0 : -1}
-            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 font-[family-name:var(--font-body)] text-[0.875rem] font-[600] transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] ${
+            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[13.5px] font-[600] tracking-[-0.005em] transition-colors duration-150 ${
               isActive
-                ? 'text-[var(--theme-bg)]'
-                : 'text-[var(--theme-text)] hover:bg-[color-mix(in_srgb,var(--theme-text)_5%,transparent)]'
+                ? 'bg-[var(--ink)] text-white'
+                : 'text-[var(--ink)] hover:bg-[var(--bg-3)]'
             }`}
-            style={isActive ? { backgroundColor: 'var(--brand-primary)' } : undefined}
             onClick={() => onSelect(session.id)}
           >
             {session.label || formatSessionDate(session.date)}

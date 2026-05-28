@@ -1,28 +1,37 @@
 import type { ReactNode } from 'react';
 
 interface SectionShellProps {
-	/** Section heading text (display font). */
 	label: string;
-	/** Optional right-aligned element (e.g. a price range or a link). */
+	/** Optional sub-heading line displayed under the title (var(--ink-3), 13.5px). */
+	sub?: string;
+	/** Optional right-aligned element (e.g. a price range or count). */
 	rightSlot?: ReactNode;
-	/** Optional anchor id for in-page navigation. */
 	id?: string;
 	children: ReactNode;
 }
 
 /**
- * Shared V2 section wrapper: renders the `<section>`, the editorial heading row,
- * and the spacing beneath it. Carries NO outer margin — the event page controls
- * vertical rhythm via a flex-gap column. Every event-type section renders through
- * this so headings stay visually consistent.
+ * Section wrapper for event sub-sections. Heading is 22–28px Manrope 800,
+ * subhead muted on second line, optional right slot floats baseline-aligned.
  */
-export default function SectionShell({ label, rightSlot, id, children }: SectionShellProps) {
+export default function SectionShell({ label, sub, rightSlot, id, children }: SectionShellProps) {
 	return (
 		<section id={id}>
-			<div className="mb-5 flex items-baseline justify-between gap-4">
-				<h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
-					{label}
-				</h2>
+			<div className="mb-[18px] flex flex-wrap items-end justify-between gap-3">
+				<div className="flex min-w-0 flex-col gap-0.5">
+					<h2
+						className="m-0 text-[var(--ink)]"
+						style={{
+							fontSize: 'clamp(22px, 2.4vw, 28px)',
+							fontWeight: 800,
+							letterSpacing: '-0.024em',
+							lineHeight: 1.15,
+						}}
+					>
+						{label}
+					</h2>
+					{sub && <span className="text-[13.5px] font-[500] text-[var(--ink-3)]">{sub}</span>}
+				</div>
 				{rightSlot}
 			</div>
 			{children}

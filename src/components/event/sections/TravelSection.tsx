@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import SectionShell from '@/components/event/sections/SectionShell';
@@ -7,92 +8,91 @@ interface TravelSectionProps {
 	recommendations: ITravelRec[];
 }
 
-const TYPE_ICONS: Record<string, string> = {
-	hotel: 'mdi:bed',
-	restaurant: 'mdi:silverware-fork-knife',
-	flight: 'mdi:airplane',
-	transport: 'mdi:bus',
-	other: 'mdi:map-marker-star',
-};
+const TYPE_ORDER = ['hotel', 'restaurant', 'flight', 'transport', 'other'] as const;
 
 export default function TravelSection({ recommendations }: TravelSectionProps) {
 	const { t } = useTranslation('common');
-	if (!recommendations.length) return null;
 
-	// Group by type
 	const grouped = recommendations.reduce<Record<string, ITravelRec[]>>((acc, rec) => {
-		if (!acc[rec.type]) acc[rec.type] = [];
-		acc[rec.type].push(rec);
+		(acc[rec.type] ??= []).push(rec);
 		return acc;
 	}, {});
+	const presentTypes = TYPE_ORDER.filter((tp) => grouped[tp]?.length);
 
-	const typeOrder = ['hotel', 'restaurant', 'flight', 'transport', 'other'];
-	const sortedTypes = Object.keys(grouped).sort(
-		(a, b) => typeOrder.indexOf(a) - typeOrder.indexOf(b)
-	);
+	const [tab, setTab] = useState<string>(presentTypes[0] ?? 'hotel');
+	if (!recommendations.length || !presentTypes.length) return null;
+
+	const items = grouped[tab] ?? [];
 
 	return (
-		<SectionShell label={t('sections.travel')}>
-			<div className="space-y-6">
-				{sortedTypes.map((type) => {
-					const icon = TYPE_ICONS[type] || TYPE_ICONS.other;
+		<SectionShell label={t('sections.travel')} sub={t('sections.travel_sub')}>
+			{/* Pill tabs with count */}
+			<div className="mb-3.5 flex flex-wrap gap-2">
+				{presentTypes.map((tp) => {
+					const active = tab === tp;
+					const count = grouped[tp]?.length ?? 0;
 					return (
-						<div key={type}>
-							<p className="mb-3 flex items-center gap-2 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
-								<Icon
-									icon={icon}
-									width={14}
-									className="text-[var(--brand-accent)]"
-								/>
-								{t(`travel.${type}`, { defaultValue: t('travel.other') })}
-							</p>
-							<div className="space-y-3">
-								{grouped[type].map((rec) => (
-									<div
-										key={rec.id}
-										className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4"
-									>
-										<div className="flex items-start justify-between gap-3">
-											<div className="min-w-0">
-												{rec.url && /^https?:\/\//i.test(rec.url) ? (
-													<a
-														href={rec.url}
-														target="_blank"
-														rel="noopener noreferrer"
-														className="rounded-sm font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--brand-accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
-													>
-														{rec.name}
-													</a>
-												) : (
-													<p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-														{rec.name}
-													</p>
-												)}
-												{rec.address && (
-													<p className="mt-1 flex items-center gap-1 text-[0.8125rem] text-[var(--theme-text-muted)]">
-														<Icon
-															icon="mdi:map-marker-outline"
-															width={14}
-															className="shrink-0 text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]"
-														/>
-														{rec.address}
-													</p>
-												)}
-											</div>
-											{rec.price_range && (
-												<span className="shrink-0 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] px-2.5 py-1 font-[family-name:var(--font-data)] text-[0.75rem] font-medium tabular-nums text-[var(--theme-text-muted)]">
-													{rec.price_range}
-												</span>
-											)}
-										</div>
-										{rec.description && (
-											<p className="mt-2.5 text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
-												{rec.description}
-											</p>
-										)}
-									</div>
-								))}
+						<button
+							key={tp}
+							onClick={() => setTab(tp)}
+							className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-[600] tracking-[-0.005em] transition-colors duration-150 ${
+								active ? 'bg-[var(--ink)] text-white' : 'bg-[var(--bg-2)] text-[var(--ink)] hover:bg-[var(--bg-3)]'
+							}`}
+						>
+							{t(`travel.${tp}`, { defaultValue: t('travel.other') })}
+							<span
+								className={`rounded-full px-[7px] py-[1px] text-[11px] font-[700] tabular-nums ${
+									active ? 'bg-white/15 text-white' : 'bg-[var(--bg-3)] text-[var(--ink-2)]'
+								}`}
+							>
+								{count}
+							</span>
+						</button>
+					);
+				})}
+			</div>
+
+			{/* Card grid */}
+			<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+				{items.map((rec) => {
+					const isLink = rec.url && /^https?:\/\//i.test(rec.url);
+					const cardCls = 'flex flex-col gap-2 rounded-[16px] bg-[var(--surface)] p-[18px] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-hover)]';
+					const inner = (
+						<>
+							<div className="flex items-start justify-between gap-3">
+								<span className="text-[16px] font-[800] tracking-[-0.018em] text-[var(--ink)]">{rec.name}</span>
+								{isLink && <Icon icon="mdi:open-in-new" width={13} className="text-[var(--ink-3)]" />}
 							</div>
+							{rec.description && (
+								<span className="text-[13px] leading-[1.5] text-[var(--ink-3)]">{rec.description}</span>
+							)}
+							{rec.address && (
+								<span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ink-4)]">
+									<Icon icon="mdi:map-marker-outline" width={11} />
+									{rec.address}
+								</span>
+							)}
+							{rec.price_range && (
+								<span className="mt-1 self-start rounded-full bg-[var(--bg-2)] px-2.5 py-1 text-[11.5px] font-[700] tracking-[-0.005em] text-[var(--ink-2)]">
+									{rec.price_range}
+								</span>
+							)}
+						</>
+					);
+					return isLink ? (
+						<a
+							key={rec.id}
+							href={rec.url!}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={cardCls}
+							style={{ boxShadow: 'var(--shadow-2)' }}
+						>
+							{inner}
+						</a>
+					) : (
+						<div key={rec.id} className={cardCls} style={{ boxShadow: 'var(--shadow-2)' }}>
+							{inner}
 						</div>
 					);
 				})}

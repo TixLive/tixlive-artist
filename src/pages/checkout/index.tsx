@@ -25,7 +25,6 @@ import ApiService, { ApiError, getAccessToken, getRefreshToken } from '@/service
 import { fetchEvent } from '@/queries/events/useGetEvent';
 import { useCreateOrder } from '@/queries/orders/useCreateOrder';
 import { useOrganizer } from '@/contexts/OrganizerContext';
-import { useEventType } from '@/hooks/useEventType';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
 import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
 
@@ -64,8 +63,6 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
 
   const { isOpen: drawerOpen, onOpen: openDrawer, onOpenChange: setDrawerOpen } = useDisclosure();
   const createOrderMutation = useCreateOrder();
-
-  useEventType(event?.event_type);
 
   const idempotencyKeyRef = useRef<string>('');
   if (!idempotencyKeyRef.current) {

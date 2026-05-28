@@ -7,81 +7,93 @@ interface SponsorsSectionProps {
 	sponsors: ISponsor[];
 }
 
+const TIER_ORDER = ['Platinum', 'Gold', 'Silver'];
+
+/**
+ * Infinite-scroll marquee of sponsor chips. Track is duplicated for a
+ * seamless loop. Pause on hover. Soft fade-out edges via mask + ::before/after.
+ */
 export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 	const { t } = useTranslation('common');
 	if (!sponsors.length) return null;
 
-	const partnersLabel = t('sponsors.partners');
-
-	// Group sponsors by category
-	const grouped = sponsors.reduce<Record<string, ISponsor[]>>((acc, sponsor) => {
-		const cat = sponsor.category || partnersLabel;
-		if (!acc[cat]) acc[cat] = [];
-		acc[cat].push(sponsor);
-		return acc;
-	}, {});
-
-	// Sort tiers: Platinum > Gold > Silver > others
-	const tierOrder = ['Platinum', 'Gold', 'Silver'];
-	const sortedCategories = Object.keys(grouped).sort((a, b) => {
-		const ai = tierOrder.indexOf(a);
-		const bi = tierOrder.indexOf(b);
-		if (ai !== -1 && bi !== -1) return ai - bi;
-		if (ai !== -1) return -1;
-		if (bi !== -1) return 1;
-		return a.localeCompare(b);
+	const sorted = [...sponsors].sort((a, b) => {
+		const ai = TIER_ORDER.indexOf(a.category ?? '');
+		const bi = TIER_ORDER.indexOf(b.category ?? '');
+		return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
 	});
+	const loop = [...sorted, ...sorted];
 
 	return (
-		<SectionShell label={t('sections.sponsors')}>
-			<div className="space-y-7">
-				{sortedCategories.map((category) => (
-					<div key={category}>
-						<p className="mb-3 text-center font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
-							{category}
-						</p>
-						<div className="flex flex-wrap justify-center gap-3">
-							{grouped[category].map((sponsor) => {
-								const content = (
-									<div
-										key={sponsor.id}
-										className="flex h-16 items-center justify-center rounded-xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-6 transition-colors hover:border-[color-mix(in_srgb,var(--theme-text)_18%,transparent)]"
-									>
-										{sponsor.logo_url ? (
-											<Image
-												src={sponsor.logo_url}
-												alt={sponsor.name}
-												width={120}
-												height={40}
-												className="max-h-10 w-auto object-contain"
-											/>
-										) : (
-											<span className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--theme-text)]">
-												{sponsor.name}
-											</span>
-										)}
-									</div>
-								);
-
-								if (sponsor.website_url && /^https?:\/\//i.test(sponsor.website_url)) {
-									return (
-										<a
-											key={sponsor.id}
-											href={sponsor.website_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
-										>
-											{content}
-										</a>
-									);
-								}
-								return <div key={sponsor.id}>{content}</div>;
-							})}
-						</div>
-					</div>
-				))}
+		<SectionShell label={t('sections.sponsors')} sub={t('sections.sponsors_sub')}>
+			<div
+				className="sponsor-marquee relative overflow-hidden rounded-[18px] bg-[var(--surface)] py-1.5"
+				style={{ boxShadow: 'var(--shadow-2)' }}
+			>
+				<style>{`
+					.sponsor-marquee::before,
+					.sponsor-marquee::after {
+						content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; pointer-events: none;
+					}
+					.sponsor-marquee::before { left: 0; background: linear-gradient(90deg, var(--surface) 0%, transparent 100%); }
+					.sponsor-marquee::after  { right: 0; background: linear-gradient(270deg, var(--surface) 0%, transparent 100%); }
+					.sponsor-marquee:hover .sponsor-track { animation-play-state: paused; }
+				`}</style>
+				<div
+					className="sponsor-track flex"
+					style={{ width: 'max-content', animation: 'marquee 36s linear infinite' }}
+				>
+					{loop.map((sponsor, i) => (
+						<SponsorChip key={`${sponsor.id}-${i}`} sponsor={sponsor} />
+					))}
+				</div>
 			</div>
 		</SectionShell>
 	);
+}
+
+function SponsorChip({ sponsor }: { sponsor: ISponsor }) {
+	const isPrincipal = sponsor.category === 'Platinum' || sponsor.category === 'Gold';
+	const inner = (
+		<div
+			className="flex shrink-0 flex-col items-center justify-center gap-1.5 border-r border-[var(--line-2)]"
+			style={{ minWidth: 200, padding: '18px 32px' }}
+		>
+			{sponsor.logo_url ? (
+				<Image
+					src={sponsor.logo_url}
+					alt={sponsor.name}
+					width={140}
+					height={40}
+					className="block max-h-10 w-auto object-contain"
+				/>
+			) : (
+				<span
+					className="text-center text-[var(--ink)]"
+					style={{
+						fontSize: isPrincipal ? 19 : 17,
+						fontWeight: 800,
+						letterSpacing: '-0.024em',
+						whiteSpace: 'nowrap',
+					}}
+				>
+					{sponsor.name}
+				</span>
+			)}
+			{sponsor.category && (
+				<span className="text-[9.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
+					{sponsor.category}
+				</span>
+			)}
+		</div>
+	);
+
+	if (sponsor.website_url && /^https?:\/\//i.test(sponsor.website_url)) {
+		return (
+			<a href={sponsor.website_url} target="_blank" rel="noopener noreferrer">
+				{inner}
+			</a>
+		);
+	}
+	return inner;
 }

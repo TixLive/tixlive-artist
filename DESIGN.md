@@ -5,203 +5,196 @@
 - **Who it's for:** Attendees buying tickets from organizer-branded sites
 - **Space/industry:** Live event ticketing (concerts, conferences, sports)
 - **Project type:** Consumer web app (event discovery + checkout)
-- **Comparable products:** DICE, Eventbrite, Songkick, Ticketmaster
+- **Comparable products:** DICE, Eventbrite, Songkick, Apple, Linear
 
 ## Aesthetic Direction
-- **Direction:** Warm Editorial Gallery
-- **Decoration level:** Minimal — the event poster IS the decoration
-- **Mood:** Quiet confidence. A well-lit gallery where posters are hung on warm linen walls. The platform recedes, the artwork speaks. Typography and whitespace do the heavy lifting.
-- **Reference sites:** DICE (authenticity, custom type), Eventbrite (clean layout), Songkick (music-forward)
+- **Direction:** Premium B&W — Apple-style
+- **Decoration level:** Minimal — typography, whitespace, and the event poster do all the work
+- **Mood:** Quiet, premium, editorial. Pure-white canvas, sharp near-black ink, soft shadows instead of heavy borders. The platform recedes; the artwork and price are loud.
+- **Reference sites:** Apple (typography, whitespace, glass blur), Linear (restraint), DICE (poster-forward)
 
 ## Typography
 
-Four fonts, each with a clear purpose. No overused fonts (Inter, Roboto, Poppins).
+Two fonts, one purpose each. No "designer" fonts, no AI defaults.
 
 | Role | Font | Weights | Rationale |
 |------|------|---------|-----------|
-| Display/Hero | Cabinet Grotesk | 700, 800, 900 | Cinematic, poster-like. Tight tracking creates dense, impactful headlines. |
-| Body/Labels | Instrument Sans | 400, 500, 600 | Clean humanist sans-serif. Modern without being generic. Excellent readability. |
-| Data/Prices | Geist | 400, 500, 700 | Crisp numbers, supports `tabular-nums`. Used for prices, capacity, metrics. |
-| Code/Mono | Geist Mono | 400 | Timestamps, ticket IDs, order references. |
+| Display + Body | Manrope | 400, 500, 600, 700, 800 | Geometric humanist sans-serif. Tight tracking at 800 reads as poster-headline; at 500 reads as clean body. One family covers the whole stack, simplifying the cascade. |
+| Code/Mono | JetBrains Mono | 400, 500 | Ticket IDs, order references, accent eyebrows that need monospaced rhythm. |
 
-**Loading:**
-- Cabinet Grotesk: Fontshare CDN — `https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800,900&display=swap`
-- Instrument Sans: Fontshare CDN — `https://api.fontshare.com/v2/css?f[]=instrument-sans@400,500,600&display=swap`
-- Geist, Geist Mono: Google Fonts via `next/font`
+**Inter Tight** is listed as a hardcoded fallback in CSS only — it never actually loads. Manrope renders identically across our weight range.
 
-**Why Cabinet Grotesk:** Bold, geometric, cinematic. At weight 900 with tight tracking it creates poster-energy headlines that feel intentional and curated. No ticketing competitor uses it.
+**Loading:** Both via `next/font/google` in `src/styles/font.ts`. The CSS variables `--font-manrope` and `--font-jetbrains-mono` are attached on the root `<div>` in `_app.tsx`.
 
-**Why Instrument Sans:** Clean and modern without being the default AI font. Better character than Inter/DM Sans, excellent Latin Extended support for Romanian/Russian content.
+**Why Manrope:** Premium, modern, distinct from Inter/DM Sans/Poppins. Excellent Latin Extended + Cyrillic for our `ro`/`ru` locales. At weight 800 with -0.04em tracking it has poster energy; at 500 with -0.01em it disappears into body copy. One family, full range.
 
-**CSS Custom Properties:**
+**Why JetBrains Mono:** Crisp tabular numerals for ticket IDs and prices, distinct from generic SF Mono/Roboto Mono.
+
+**CSS Custom Properties (in `:root`):**
 ```css
---font-display: 'Cabinet Grotesk', 'Instrument Sans', system-ui, sans-serif;
---font-body: 'Instrument Sans', system-ui, sans-serif;
---font-data: 'Geist', system-ui, sans-serif;
---font-mono: 'Geist Mono', ui-monospace, monospace;
+--font-display: 'Manrope', 'Inter Tight', system-ui, sans-serif;
+--font-body:    'Manrope', 'Inter Tight', system-ui, sans-serif;
+--font-data:    'Manrope', 'Inter Tight', system-ui, sans-serif;
+--font-mono:    'JetBrains Mono', ui-monospace, monospace;
 ```
 
-**Important:** These are defined with hardcoded font names in `:root`, NOT via `var(--font-x)` references. Next.js `next/font` variables are scoped to `<main>` class names, not `:root`.
+**Important:** Tokens are hardcoded font names in `:root`, NOT `var(--font-manrope)` references. Next.js font-family variables are scoped to the descendant of the className they're attached to, not `:root`.
 
 **Type Scale:**
-| Level | Size | Font | Weight | Tracking | Usage |
-|-------|------|------|--------|----------|-------|
-| display | 2.5rem (40px) | Cabinet Grotesk | 900 | -2px | Event titles, hero headline |
-| h1 | 2rem (32px) | Cabinet Grotesk | 800 | -1px | Organizer name, page titles |
-| h2 | 1.5rem (24px) | Cabinet Grotesk | 700 | -0.5px | Section headers |
-| h3 | 1.125rem (18px) | Instrument Sans | 600 | — | Ticket type names, checkout headings |
-| body | 0.9375rem (15px) | Instrument Sans | 400 | — | Descriptions, form labels |
-| small | 0.8125rem (13px) | Instrument Sans | 500 | — | Secondary info, captions |
-| caption | 0.75rem (12px) | Geist | 500 | 0.5px | Date, venue, price labels |
+| Level | Size | Weight | Tracking | Line-Height | Usage |
+|-------|------|--------|----------|-------------|-------|
+| h1 / display | clamp(40px, 5.4vw, 64px) | 800 | -0.04em | 1.0 | Event titles, landing hero |
+| h2 | clamp(28px, 3vw, 40px) | 800 | -0.032em | 1.06 | Section headers |
+| h3 | 21px | 700 | -0.022em | 1.2 | Card titles, ticket type names |
+| h4 | 15px | 700 | -0.014em | 1.25 | Inline labels, sidebar headings |
+| body | 15px | 500 | -0.01em | 1.55 | Descriptions, form labels |
+| micro | 13px | 500 | — | 1.45 | Captions, secondary info |
+| eyebrow | 11px | 700 | 0.08em (uppercase) | — | Category tags, section eyebrows |
 
-**Usage in code:** `font-[family-name:var(--font-display)]` for Tailwind classes.
+**Usage in code:** `font-[family-name:var(--font-display)]` is allowed, but since `--font-display` and `--font-body` are both Manrope, you generally don't need to set font-family at all — the cascade does the work.
 
-**Blacklist:** Never use Papyrus, Comic Sans, Lobster, Impact, Jokerman, Courier New (for body), or any decorative script fonts.
+**Blacklist:** Never use Papyrus, Comic Sans, Lobster, Impact, Inter, Roboto, Poppins, DM Sans, or any decorative script fonts.
 
 ## Color
 
-- **Approach:** Warm editorial. Restrained palette where color is rare and meaningful. The warm canvas is the signature.
+- **Approach:** Premium B&W. Color is almost absent. The contrast between near-black ink (#0A0A0A) and pure-white canvas (#FFFFFF) does the dramatic work; accents appear only on the CTA and the brand identity.
 
-### Default Tokens (warm editorial)
+### Tokens (canonical)
 ```css
---brand-primary: #2D2A26;    /* Warm near-black — primary buttons, strong actions */
---brand-accent: #8B6914;     /* Aged gold — links, highlights, selected states */
---theme-bg: #FAFAF8;         /* Warm off-white canvas */
---theme-surface: #F3F2EF;    /* Warm gray — cards, elevated surfaces */
---theme-text: #141312;       /* Warm charcoal — primary text */
---theme-text-muted: #7A756D; /* Warm gray — secondary text */
+/* Canvas */
+--bg:           #FFFFFF;  /* Page canvas */
+--bg-2:         #F5F5F7;  /* Hover surfaces, filter chips, soft pill backgrounds */
+--bg-3:         #EBEBEF;  /* Active surfaces, deeper pill hover */
+--surface:      #FFFFFF;  /* Cards, modals */
+--surface-elev: #FAFAFC;  /* Slightly elevated surfaces */
+
+/* Ink scale */
+--ink:    #0A0A0A;  /* Primary text, primary CTA */
+--ink-2:  #1D1D1F;  /* CTA hover, slightly softer headings */
+--ink-3:  #6E6E73;  /* Secondary text, footer */
+--ink-4:  #98989F;  /* Placeholder text, tertiary */
+--ink-5:  #C7C7CC;  /* Hairline dividers in dark contexts */
+
+/* Hairlines */
+--line:   #E8E8ED;  /* Default border */
+--line-2: #F0F0F2;  /* Soft inner divider */
+
+/* Accent */
+--accent:        #0A0A0A;  /* Default = ink. Organizer brand_accent overrides. */
+--accent-fg:     #FFFFFF;  /* Foreground on --accent */
+--accent-hover:  #1D1D1F;
 ```
 
-### Concert Theme (slightly cooler accent)
-```css
---brand-primary: #2D2A26;
---brand-accent: #6B5CE7;     /* Cool violet — nightlife energy */
---theme-bg: #FAFAF8;
---theme-surface: #F3F2EF;
---theme-text: #141312;
---theme-text-muted: #7A756D;
-```
+### Legacy aliases (preserved, do not extend)
+`--brand-primary`, `--brand-accent`, `--theme-bg`, `--theme-surface`, `--theme-text`, `--theme-text-muted` are kept as aliases of the canonical tokens above so the older components render correctly without per-file edits. **New components should always use the canonical `--ink/--bg/--line/--accent` tokens.**
 
-### Conference Theme (navy accent)
-```css
---brand-primary: #2D2A26;
---brand-accent: #1D4ED8;     /* Navy blue — trust, authority */
---theme-bg: #FAFAF8;
---theme-surface: #F3F2EF;
---theme-text: #141312;
---theme-text-muted: #7A756D;
-```
-
-### Sports Theme (warm red accent)
-```css
---brand-primary: #2D2A26;
---brand-accent: #C53030;     /* Warm red — competition, energy */
---theme-bg: #FAFAF8;
---theme-surface: #F3F2EF;
---theme-text: #141312;
---theme-text-muted: #7A756D;
-```
-
-### Semantic Colors (consistent across all themes)
+### Semantic Colors (consistent across the system)
 | Purpose | Hex | Usage |
 |---------|-----|-------|
-| Success | #16A34A | Checkout success, promo applied |
+| Success | #16A34A | Checkout success, promo applied, live-pulse dot |
 | Warning | #D97706 | Low capacity badges ("14 left") |
 | Error | #DC2626 | Critical capacity, form errors, "Sold Out" |
 | Info | #2563EB | Magic-link confirmation, informational banners |
 
 ### Color Rules
-1. **Never hardcode hex colors in components.** Use `var(--brand-primary)`, `var(--theme-text)`, etc.
-2. **For adaptive opacity:** Use `color-mix(in srgb, var(--theme-text) 15%, transparent)` — NOT `bg-white/15` or Tailwind opacity modifiers with hardcoded colors.
-3. **Warm canvas is sacred.** All themes share the same `--theme-bg` and `--theme-surface`. Only `--brand-accent` changes per event type.
-4. **Elevation:** Surfaces use `--theme-surface` (slightly darker than bg). Subtle borders at 8% opacity for separation.
-5. **Contrast ratios:** All text on `--theme-bg`: min 4.5:1 (body), min 3:1 (large text 18px+).
+1. **Never hardcode hex colors in components.** Use `var(--ink)`, `var(--bg)`, `var(--line)`, `var(--accent)`, etc.
+2. **For adaptive opacity:** Use `color-mix(in srgb, var(--ink) 8%, transparent)` — NOT Tailwind `text-black/8`.
+3. **Pure-white canvas is non-negotiable.** Cards float on `--bg` (#FFFFFF). Surfaces lift via shadow, never via heavy borders.
+4. **Hairlines, not borders.** Default separation is `1px solid var(--line)` (#E8E8ED). Never use thick borders.
+5. **No event-type theming.** All event types share the same B&W system. Only the organizer's accent color may differ (see below).
+6. **Contrast:** Body text on `--bg` ≥ 4.5:1. `--ink-3` (#6E6E73) passes on `--bg` for 14px+ text.
 
 ### Organizer Brand Override
-Organizers can set custom `brand_primary` and `brand_accent` colors in the besttix admin. These override the defaults at request time via `getServerSideProps`. Components should never assume a specific primary color.
+Organizers can set `brand_primary` and `brand_accent` in the besttix admin. `BrandInjector` in `_app.tsx` overrides `--brand-primary` and `--brand-accent` (the legacy aliases) at request time. **For the new design, prefer mapping organizer-supplied colors onto `--accent` and `--ink` directly in BrandInjector if/when we need per-organizer color identity.**
 
-## Spacing
+## Spacing & Radius
 - **Base unit:** 4px
-- **Density:** Comfortable with generous whitespace
-- **Scale:** 2xs(2px) xs(4px) sm(8px) md(16px) lg(24px) xl(32px) 2xl(48px) 3xl(64px) 4xl(80px)
-
-## Layout
-- **Approach:** Grid-disciplined with breathing room
-- **Grid:** 2 cols mobile, 3 sm, 4 lg, 5 xl (event grid)
-- **Max content width:** `max-w-6xl` (1152px)
-- **Two-column pages:** Event detail and checkout use `md:flex md:gap-10` with `flex-1` left + `w-[360px]` sticky right sidebar
+- **Density:** Generous whitespace — 56px+ gutters between hero/sidebar; 28-32px between sections on mobile
+- **Scale:** 4 / 8 / 12 / 16 / 20 / 24 / 28 / 32 / 48 / 56 / 80
 
 ### Border Radius (hierarchical)
-| Element | Radius | Token |
-|---------|--------|-------|
-| Event cards | 16px | `rounded-2xl` |
-| Primary CTAs | 12px | `rounded-xl` |
-| Secondary buttons | 10px | `rounded-[10px]` |
-| Inputs | 12px | `rounded-xl` |
-| Badges/chips | 9999px | `rounded-full` |
-| Sidebar cards | 20px | `rounded-[20px]` |
+| Element | Token | Value |
+|---------|-------|-------|
+| Cards | `--r-card` | 18px |
+| Large cards (hero, posters) | `--r-card-lg` | 28px |
+| Buttons | `--r-pill` | 9999px (full pill) |
+| Inputs | `--r-input` | 14px |
+| Inline chips/badges | `--r-pill` | 9999px |
+
+**Pill buttons are the system default.** Apple-style. Secondary surfaces (filter chips, language switcher, account button) also pill. Inputs stay at 14px so they read as form elements, not pills.
 
 ### Shadows
-- Event cards: **NO shadow** — poster fills card edge-to-edge, lift via subtle `translateY`
-- Surface cards: Very subtle `shadow-[0_1px_3px_rgba(20,19,18,0.04)]`
-- Sticky bottom CTA: `shadow-[0_-4px_20px_rgba(20,19,18,0.08)]` (soft upward shadow)
+```css
+--shadow-1:      0 1px 2px rgba(0,0,0,0.04);                                              /* default card */
+--shadow-2:      0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);                  /* hovered card */
+--shadow-float:  0 10px 30px -8px rgba(0,0,0,0.12), 0 4px 12px -4px rgba(0,0,0,0.08);     /* dropdowns, modals */
+--shadow-hover:  0 12px 36px -8px rgba(0,0,0,0.15), 0 4px 12px -4px rgba(0,0,0,0.08);     /* card lift */
+--shadow-cinema: 0 40px 80px -20px rgba(0,0,0,0.30), 0 20px 40px -12px rgba(0,0,0,0.18);  /* hero poster */
+```
+
+Cards mostly use `--shadow-1` with a `1px solid var(--line)` border. Lift comes from `translateY(-2px)` + `--shadow-hover`, never from changing the border.
+
+## Layout
+- **Grid:** 2 cols mobile, 3 sm, 4 lg, 5 xl (event grid)
+- **Max content width:** `1200px` shell (was 1152px in the old system)
+- **Two-column pages:** Event detail / checkout use `grid-template-columns: 1fr 380px` with 56px gap and a static-on-mobile sidebar
+- **Header height:** 72px (was 64px)
 
 ## Motion
-- **Approach:** Minimal-functional
-- **Easing:** enter(ease-out) exit(ease-in) move(ease-in-out)
-- **Duration:** micro(50-100ms) short(150-250ms) medium(250-400ms)
-- **Urgency pulse:** `animation: urgency-pulse 1.5s ease-in-out infinite` (critical capacity badge only)
-- **`prefers-reduced-motion`:** All animations disabled.
+- **Approach:** Minimal-functional with one indulgence — the urgency CTA breath + shimmer
+- **Easing:** `cubic-bezier(.2, .7, .2, 1)` for everything that's not standard ease
+- **Duration:** micro (80–150ms) / short (220–350ms) / page-in (350ms)
+- **Press feedback:** `transform: scale(0.97-0.98)` on `:active` for 80ms
+- **Page mount:** 350ms fade + 8px translateY rise
+- **Urgency CTA:** `urgency-breath` 3.2s + `urgency-shimmer` 3.8s (paused on hover/focus)
+- **`prefers-reduced-motion`:** All animations disabled (see `globals.css`)
 - **Never animate:** `width`, `height`, `top`, `left` — only `transform` and `opacity`
 - **Never use:** `transition: all` — always list specific properties
 
 ## Component Vocabulary
 
-Built on HeroUI (`@heroui/react`). Never use raw HTML `<button>` or `<input>`.
+Built on HeroUI (`@heroui/react`) with the theme override in `src/styles/hero.ts`. HeroUI's `primary` color maps to `--ink`; default radii lifted to 10/14/18px.
 
 | Component | HeroUI | Variant | Notes |
 |-----------|--------|---------|-------|
-| Primary CTA | `<Button>` | `variant="solid"` | Warm near-black bg (#2D2A26), warm white text, rounded-xl |
-| Secondary CTA | `<Button>` | `variant="ghost"` | Outlined with theme-text border, subtle hover fill |
-| Text input | `<Input>` | — | `rounded-xl`, warm border, warm surface bg |
-| Chips/filters | `<Chip>` | `bordered` / `solid` | Active=solid brand-accent, inactive=bordered theme-text-muted |
-| Tabs | `<Tab>` | — | Underline style, brand-accent for active |
+| Primary CTA | `<Button color="primary">` | `solid` | Pill, near-black bg (#0A0A0A), white text, scale-press feedback |
+| Secondary CTA | `<Button>` | `bordered` / `light` | Pill, ink-on-white with `--line` border, hover fill `--bg-2` |
+| Text input | `<Input>` | — | `radius="md"` (14px), `--line` border, focus ring on `--ink` |
+| Chip/filter | `<Chip>` | `bordered` (inactive), `solid` (active) | Inactive `--ink-3` outline; active `--ink` bg + white text |
+| Tabs | `<Tab>` | — | Underline style, `--ink` for active |
 
 ### Custom Components
-- `CapacityBadge` — 4-tier: Available (>20, hidden), Low (<=20, amber), Critical (<=5, red + pulse), Sold Out (0, red + strikethrough)
-- `SessionPicker` — Horizontal scrollable date tabs with proper ARIA tablist/tab roles
-- `StickyBuyBar` — Mobile-only bottom bar with price + CTA, `env(safe-area-inset-bottom)`
-- `ShareButton` — Warm muted styling, subtle hover
+- `CapacityBadge` — Available (>20, hidden), Low (≤20, amber), Critical (≤5, red + pulse), Sold Out (0, red + strikethrough)
+- `SessionPicker` — Horizontal pill date tabs with ARIA tablist/tab
+- `StickyBuyBar` (event/listing) — Fixed bottom black bar with white CTA pill, `env(safe-area-inset-bottom)`
+- `ShareButton` — Pill, ink-on-bg-2
 
 ## Accessibility
-
-- **Touch targets:** Minimum 44x44px on all interactive elements
-- **Focus:** `focus-visible` ring using `--brand-accent`, never `outline: none` without replacement
-- **Keyboard:** All interactions reachable via keyboard
-- **Screen readers:** Proper ARIA labels on buttons, form groups with `role="group"`, tab panels
-- **Color:** Never color-only encoding — always pair with labels or icons
+- **Touch targets:** 44×44px minimum
+- **Focus:** `focus-visible` outline 2px `var(--ink)` with 3px offset
+- **Keyboard:** All interactions reachable
+- **ARIA:** Tablists, comboboxes, dialogs labeled
 - **Viewport:** Never `user-scalable=no` or `maximum-scale=1`
 
 ## Anti-Patterns (AI Slop Blacklist)
-
-Never include in any page or component:
-- Purple/violet gradient backgrounds as decoration
+Never include:
+- Purple / violet gradient backgrounds, glowy halos
 - 3-column feature grid with icons in colored circles
-- `text-align: center` on all headings and descriptions
-- Uniform bubbly border-radius on every element
+- Center-aligned headings and paragraphs everywhere
 - Decorative blobs, floating circles, wavy SVG dividers
-- Emoji as design elements in headings
-- Colored left-border on cards (`border-left: 3px solid`)
-- Generic hero copy ("Welcome to X", "Unlock the power of", "Your all-in-one solution")
-- Cookie-cutter section rhythm (hero -> 3 features -> testimonials -> pricing -> CTA)
+- Emoji in headings or buttons
+- Colored left-border accent on cards
+- Generic copy ("Welcome to X", "Unlock the power of...")
+- Cookie-cutter section rhythm (hero → 3 features → testimonials → pricing → CTA)
+- Heavy borders (>1px) used for separation — use `--shadow-1` + hairline instead
+- Per-event-type accent overrides (concert=violet, sports=red, etc.) — **removed in 2026-05-28 redesign**
 
 ## Decisions Log
 | Date | Decision | Rationale |
 |------|----------|-----------|
-| 2026-04-04 | Warm off-white canvas (#FAFAF8) | Gallery aesthetic, differentiates from sterile-white (Eventbrite) and dark (DICE/Songkick) competitors |
-| 2026-04-04 | Cabinet Grotesk 900 for display | Cinematic poster-energy headlines, distinctive in ticketing space |
-| 2026-04-04 | Instrument Sans for body | Clean modern sans-serif, not overused, good Latin Extended support |
-| 2026-04-04 | Near-black primary (#2D2A26) + gold accent (#8B6914) | Editorial luxury feel, deliberate departure from typical blue/purple CTAs |
-| 2026-04-04 | Consistent warm canvas across event types | Only accent color changes per event type, warm bg stays the same |
-| 2026-04-04 | Subtle borders at 8% opacity | Warmer, softer separation than previous 10-12% |
-| 2026-04-04 | Rounded-xl (12px) buttons instead of rounded-full pills | More editorial, less generic SaaS |
+| 2026-04-04 | Warm Editorial Gallery direction (Cabinet Grotesk + #FAFAF8 + #8B6914 gold) | Differentiated from sterile-white competitors |
+| 2026-05-28 | **Replaced** Warm Editorial with Premium B&W (Manrope + pure white + near-black) | User-led full redesign. Apple-style restraint reads more premium for high-ticket events; one font family simplifies cascade; pure-white canvas pairs cleanly with poster artwork |
+| 2026-05-28 | Dropped multi-event-type theming (`[data-event-type]` selectors) | New system has a single accent. Per-event-type color was visual noise without information value. Organizer-supplied `brand_accent` still overrides for white-label identity |
+| 2026-05-28 | Pill buttons (`--r-pill`) became default | Apple-style; secondary surfaces (language switch, account, filter chips) all pill for consistency |
+| 2026-05-28 | Hairlines (`--line` = #E8E8ED) replace 8–12% opacity borders | Cleaner against pure-white canvas; pairs with `--shadow-1` for soft elevation |
+| 2026-05-28 | Header height 64→72px | Matches the new design's breathing-room spacing; `BuyFlowSteps` sticky offset updated accordingly |

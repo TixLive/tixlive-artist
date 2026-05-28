@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
@@ -8,64 +9,85 @@ interface LineupSectionProps {
 	artists: IArtist[];
 }
 
+/**
+ * Horizontal scroll rail of 240px artist cards. Right-side arrow buttons (38px
+ * pill, prev=bg-2 / next=ink) scroll 80% of the visible rail width.
+ */
 export default function LineupSection({ artists }: LineupSectionProps) {
 	const { t } = useTranslation('common');
+	const railRef = useRef<HTMLDivElement>(null);
 	if (!artists.length) return null;
 
-	return (
-		<SectionShell label={t('sections.lineup')}>
-			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-				{artists.map((artist) => {
-					const isHeadliner = artist.role ? /headlin/i.test(artist.role) : false;
+	const scroll = (dir: -1 | 1) => {
+		const el = railRef.current;
+		if (!el) return;
+		el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+	};
 
-					return (
+	const sub = t('sections.lineup_sub', { count: artists.length });
+
+	return (
+		<SectionShell
+			label={t('sections.lineup')}
+			sub={sub}
+			rightSlot={
+				<div className="flex items-center gap-2">
+					<button
+						onClick={() => scroll(-1)}
+						aria-label={t('sections.scroll_prev')}
+						className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[var(--bg-2)] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)]"
+					>
+						<Icon icon="mdi:chevron-left" width={14} />
+					</button>
+					<button
+						onClick={() => scroll(1)}
+						aria-label={t('sections.scroll_next')}
+						className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[var(--ink)] text-white transition-colors duration-150 hover:bg-[var(--ink-2)]"
+					>
+						<Icon icon="mdi:chevron-right" width={14} />
+					</button>
+				</div>
+			}
+		>
+			<div
+				ref={railRef}
+				className="flex gap-3.5 overflow-x-auto pb-2"
+				style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}
+			>
+				{artists.map((artist) => (
+					<div
+						key={artist.id}
+						className="rounded-[18px] bg-[var(--surface)] p-3.5"
+						style={{ flex: '0 0 240px', scrollSnapAlign: 'start', boxShadow: 'var(--shadow-2)' }}
+					>
 						<div
-							key={artist.id}
-							className={`group relative overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] ${
-								isHeadliner ? 'col-span-2' : ''
-							}`}
+							className="relative overflow-hidden rounded-[12px] bg-[var(--bg-2)]"
+							style={{ aspectRatio: '1 / 1' }}
 						>
-							<div className={`relative ${isHeadliner ? 'aspect-[1/0.75]' : 'aspect-[1/1.15]'}`}>
-								{artist.image_url ? (
-									<Image
-										src={artist.image_url}
-										alt={artist.name}
-										fill
-										className="object-cover transition-transform duration-500 group-hover:scale-105"
-										sizes="(max-width: 640px) 50vw, 33vw"
-									/>
-								) : (
-									<div className="flex h-full w-full items-center justify-center bg-[color-mix(in_srgb,var(--brand-accent)_6%,transparent)]">
-										<Icon
-											icon="mdi:account-music"
-											width={48}
-											className="text-[color-mix(in_srgb,var(--brand-accent)_55%,transparent)]"
-										/>
-									</div>
-								)}
-								<div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-3.5 pb-3.5 pt-12">
-									{artist.role && (
-										<span className="inline-flex rounded-full bg-[color-mix(in_srgb,#ffffff_18%,transparent)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-white/85 backdrop-blur-sm">
-											{artist.role}
-										</span>
-									)}
-									<p className={`mt-1.5 font-[family-name:var(--font-display)] font-[700] leading-tight tracking-[-0.01em] text-white ${
-										isHeadliner ? 'text-[1.25rem]' : 'text-[1.0625rem]'
-									}`}>
-										{artist.name}
-									</p>
-								</div>
-							</div>
-							{artist.category && (
-								<div className="px-3.5 py-2.5">
-									<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
-										{artist.category}
-									</span>
+							{artist.image_url ? (
+								<Image
+									src={artist.image_url}
+									alt={artist.name}
+									fill
+									className="object-cover"
+									sizes="240px"
+								/>
+							) : (
+								<div className="flex h-full w-full items-center justify-center text-[36px] font-[800] tracking-[-0.03em] text-[var(--ink-3)]">
+									{artist.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}
 								</div>
 							)}
 						</div>
-					);
-				})}
+						<div className="mt-3 flex min-w-0 flex-col gap-0.5">
+							<span className="truncate text-[15px] font-[700] tracking-[-0.012em] text-[var(--ink)]">
+								{artist.name}
+							</span>
+							{artist.role && (
+								<span className="text-[12px] font-[500] text-[var(--ink-3)]">{artist.role}</span>
+							)}
+						</div>
+					</div>
+				))}
 			</div>
 		</SectionShell>
 	);

@@ -14,39 +14,33 @@ export default function DressCodeSection({ type, recommended, forbidden }: Dress
 
 	return (
 		<SectionShell label={t('sections.dress_code')}>
-			<div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5 sm:p-6">
+			<div className="rounded-[18px] bg-[var(--surface)] p-5 sm:p-6" style={{ boxShadow: 'var(--shadow-2)' }}>
 				{type && (
 					<div className="mb-5 flex items-center gap-3">
-						<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--brand-accent)_6%,transparent)]">
-							<Icon icon="mdi:hanger" width={20} className="text-[var(--brand-accent)]" />
+						<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--bg-2)] text-[var(--ink)]">
+							<Icon icon="mdi:hanger" width={18} />
 						</span>
-						<span className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-							{type}
-						</span>
+						<span className="text-[16px] font-[700] tracking-[-0.012em] text-[var(--ink)]">{type}</span>
 					</div>
 				)}
 
 				{recommended && (
 					<div className="mb-4">
-						<p className="mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[#16A34A]">
+						<p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-[700] uppercase tracking-[0.12em] text-[#3D7B5C]">
 							<Icon icon="mdi:check" width={14} />
 							{t('dress_code.recommended')}
 						</p>
-						<p className="text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
-							{recommended}
-						</p>
+						<p className="text-[13.5px] leading-[1.5] text-[var(--ink-2)]">{recommended}</p>
 					</div>
 				)}
 
 				{forbidden && (
 					<div>
-						<p className="mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[#DC2626]">
+						<p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-[700] uppercase tracking-[0.12em] text-[#C73E3E]">
 							<Icon icon="mdi:close" width={14} />
 							{t('dress_code.not_allowed')}
 						</p>
-						<p className="text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
-							{forbidden}
-						</p>
+						<p className="text-[13.5px] leading-[1.5] text-[var(--ink-2)]">{forbidden}</p>
 					</div>
 				)}
 			</div>

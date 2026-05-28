@@ -28,7 +28,7 @@ export default function CapacityBadge({
   if (remainingCapacity === 0) {
     return (
       <span
-        className="inline-block rounded-md bg-[#DC2626]/10 px-2 py-0.5 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-[#DC2626] line-through"
+        className="inline-block rounded-full bg-[#DC2626]/10 px-2.5 py-1 text-[10.5px] font-[700] uppercase tracking-[0.06em] text-[#DC2626] line-through"
         aria-label="0 tickets remaining"
       >
         {t('event.sold_out')}
@@ -41,7 +41,7 @@ export default function CapacityBadge({
   if (remainingCapacity <= 5) {
     return (
       <span
-        className="animate-urgency-pulse inline-block rounded-md bg-[#DC2626]/10 px-2 py-0.5 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-[#DC2626]"
+        className="animate-urgency-pulse inline-block rounded-full bg-[#DC2626]/10 px-2.5 py-1 text-[10.5px] font-[700] uppercase tracking-[0.06em] text-[#DC2626]"
         aria-label={`${remainingCapacity} tickets remaining`}
       >
         {t('event.only_left', { count: remainingCapacity })}
@@ -52,7 +52,7 @@ export default function CapacityBadge({
   // <=20
   return (
     <span
-      className="inline-block rounded-md bg-[#D97706]/10 px-2 py-0.5 font-[family-name:var(--font-data)] text-[0.6875rem] font-semibold text-[#D97706]"
+      className="inline-block rounded-full bg-[#D97706]/10 px-2.5 py-1 text-[10.5px] font-[700] uppercase tracking-[0.06em] text-[#D97706]"
       aria-label={`${remainingCapacity} tickets remaining`}
     >
       {t('event.left', { count: remainingCapacity })}

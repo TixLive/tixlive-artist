@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import SectionShell from '@/components/event/sections/SectionShell';
 import type { ITravelRec } from '@/types';
 
@@ -6,15 +7,16 @@ interface TravelSectionProps {
 	recommendations: ITravelRec[];
 }
 
-const typeConfig: Record<string, { icon: string; label: string }> = {
-	hotel: { icon: 'mdi:bed', label: 'Accommodation' },
-	restaurant: { icon: 'mdi:silverware-fork-knife', label: 'Food & Drink' },
-	flight: { icon: 'mdi:airplane', label: 'Flights' },
-	transport: { icon: 'mdi:bus', label: 'Getting There' },
-	other: { icon: 'mdi:map-marker-star', label: 'Recommendations' },
+const TYPE_ICONS: Record<string, string> = {
+	hotel: 'mdi:bed',
+	restaurant: 'mdi:silverware-fork-knife',
+	flight: 'mdi:airplane',
+	transport: 'mdi:bus',
+	other: 'mdi:map-marker-star',
 };
 
 export default function TravelSection({ recommendations }: TravelSectionProps) {
+	const { t } = useTranslation('common');
 	if (!recommendations.length) return null;
 
 	// Group by type
@@ -30,19 +32,19 @@ export default function TravelSection({ recommendations }: TravelSectionProps) {
 	);
 
 	return (
-		<SectionShell label="Travel & Stay">
+		<SectionShell label={t('sections.travel')}>
 			<div className="space-y-6">
 				{sortedTypes.map((type) => {
-					const config = typeConfig[type] || typeConfig.other;
+					const icon = TYPE_ICONS[type] || TYPE_ICONS.other;
 					return (
 						<div key={type}>
 							<p className="mb-3 flex items-center gap-2 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
 								<Icon
-									icon={config.icon}
+									icon={icon}
 									width={14}
 									className="text-[var(--brand-accent)]"
 								/>
-								{config.label}
+								{t(`travel.${type}`, { defaultValue: t('travel.other') })}
 							</p>
 							<div className="space-y-3">
 								{grouped[type].map((rec) => (

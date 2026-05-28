@@ -134,12 +134,127 @@
 		"me_error_fallback_note": "Данные аккаунта недоступны — используем кэш."
 	},
 	"success": {
-		"payment_successful": "Оплата Успешна!",
-		"download_tickets": "Скачать Билеты",
-		"save_to_account": "Сохранить в Аккаунт",
+		"payment_successful": "Оплата успешна!",
+		"download_tickets": "Скачать билеты",
+		"save_to_account": "Сохранить в аккаунт",
 		"save_to_account_description": "Введите email, чтобы получить код доступа к вашим билетам.",
 		"send_code": "Отправить код",
-		"check_inbox": "Проверьте почту для кода доступа"
+		"check_inbox": "Проверьте почту для кода доступа",
+		"page_title": "Оплата успешна!",
+		"processing_title": "Обработка платежа…",
+		"processing_body": "Ожидаем подтверждения от банка. Пожалуйста, не закрывайте страницу.",
+		"failed_title": "Оплата не прошла",
+		"failed_body": "Карта была отклонена. Вернитесь и попробуйте снова.",
+		"back_to_events": "Назад к событиям",
+		"not_found": "Заказ не найден.",
+		"paid_title": "Оплата успешна!",
+		"paid_body": "Ваши билеты подтверждены. Проверьте email для деталей.",
+		"download_your_tickets": "Скачать ваши билеты",
+		"share_this_event": "Поделиться событием",
+		"share_default_title": "Посмотрите это событие!"
+	},
+	"price_breakdown": {
+		"tickets": "Билеты",
+		"addons": "Дополнения",
+		"discount": "Скидка",
+		"service_fee": "Комиссия",
+		"total": "Итого"
+	},
+	"order_summary": {
+		"event": "Событие",
+		"per_ticket": "(за билет)",
+		"seat": "Место",
+		"seats": "Места"
+	},
+	"buy_flow": {
+		"choose_seats": "Выбор мест",
+		"details_payment": "Данные и оплата",
+		"your_ticket": "Ваш билет"
+	},
+	"fomo": {
+		"viewing_now_one": "<b>{{count}}</b> человек смотрит сейчас",
+		"viewing_now_few": "<b>{{count}}</b> человека смотрят сейчас",
+		"viewing_now_many": "<b>{{count}}</b> человек смотрят сейчас",
+		"viewing_now_other": "<b>{{count}}</b> человек смотрят сейчас",
+		"sold_recently_one": "<b>{{count}}</b> билет продан недавно",
+		"sold_recently_few": "<b>{{count}}</b> билета продано недавно",
+		"sold_recently_many": "<b>{{count}}</b> билетов продано недавно",
+		"sold_recently_other": "<b>{{count}}</b> билетов продано недавно"
+	},
+	"countdown": {
+		"event_starts_in": "До начала события",
+		"days": "Дней",
+		"hours": "Часов",
+		"minutes": "Минут",
+		"seconds": "Секунд"
+	},
+	"availability": {
+		"sold_out_title": "Распродано",
+		"sold_out_subtitle": "Это событие больше не доступно",
+		"coming_soon_title": "Скоро",
+		"coming_soon_subtitle": "Билеты ещё не в продаже",
+		"closed_title": "Продажи закрыты",
+		"closed_subtitle": "Продажа билетов на это событие завершена"
+	},
+	"sessions": {
+		"label": "Сессии события"
+	},
+	"addon": {
+		"per_ticket": "за билет",
+		"one_off": "разово",
+		"qty_for": "Количество для {{name}}",
+		"increase": "Увеличить {{name}}",
+		"decrease": "Уменьшить {{name}}"
+	},
+	"ticket_row": {
+		"qty_for": "Количество для {{name}}",
+		"increase": "Увеличить количество для {{name}}",
+		"decrease": "Уменьшить количество для {{name}}"
+	},
+	"sections": {
+		"dress_code": "Дресс-код",
+		"camping_info": "Кемпинг",
+		"lineup": "Лайнап",
+		"faq": "Вопросы и ответы",
+		"program": "Программа",
+		"packing": "Что взять с собой",
+		"match": "Матч",
+		"rules": "Правила",
+		"speakers": "Спикеры",
+		"video": "Видео",
+		"sponsors": "Спонсоры",
+		"travel": "Проживание и транспорт",
+		"special_message": "Особое сообщение",
+		"aftermovie": "Афтермуви",
+		"event_video": "Видео события"
+	},
+	"camping": {
+		"checkin": "Заезд",
+		"checkout": "Выезд",
+		"showers": "Душевые",
+		"electricity": "Электричество"
+	},
+	"rules": {
+		"allowed": "Разрешено",
+		"not_allowed": "Запрещено"
+	},
+	"packing": {
+		"essential": "Обязательно",
+		"recommended": "Рекомендуется"
+	},
+	"dress_code": {
+		"recommended": "Рекомендуется",
+		"not_allowed": "Запрещено"
+	},
+	"travel": {
+		"hotel": "Проживание",
+		"restaurant": "Еда и напитки",
+		"flight": "Перелёты",
+		"transport": "Как добраться",
+		"other": "Рекомендации"
+	},
+	"sponsors": {
+		"partners": "Партнёры"
 	},
 	"auth": {
 		"login_title": "Доступ к вашим билетам",

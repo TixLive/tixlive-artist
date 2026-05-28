@@ -1,3 +1,4 @@
+import { useTranslation } from 'next-i18next';
 import SectionShell from '@/components/event/sections/SectionShell';
 
 interface VideoSectionProps {
@@ -19,7 +20,7 @@ function getEmbedUrl(url: string): string | null {
 	return null;
 }
 
-function VideoEmbed({ url, label }: { url: string; label?: string }) {
+function VideoEmbed({ url, label, fallbackTitle }: { url: string; label?: string; fallbackTitle: string }) {
 	const embedUrl = getEmbedUrl(url);
 	if (!embedUrl) return null;
 
@@ -33,7 +34,7 @@ function VideoEmbed({ url, label }: { url: string; label?: string }) {
 			<div className="relative aspect-video overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--brand-primary)]">
 				<iframe
 					src={embedUrl}
-					title={label || 'Event video'}
+					title={label || fallbackTitle}
 					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 					allowFullScreen
 					loading="lazy"
@@ -46,17 +47,20 @@ function VideoEmbed({ url, label }: { url: string; label?: string }) {
 }
 
 export default function VideoSection({ videoUrl, aftermovieUrl }: VideoSectionProps) {
+	const { t } = useTranslation('common');
 	const hasVideo = videoUrl && getEmbedUrl(videoUrl);
 	const hasAftermovie = aftermovieUrl && getEmbedUrl(aftermovieUrl);
 
 	if (!hasVideo && !hasAftermovie) return null;
 
+	const fallbackTitle = t('sections.event_video');
+
 	return (
-		<SectionShell label="Video">
+		<SectionShell label={t('sections.video')}>
 			<div className="space-y-5">
-				{hasVideo && <VideoEmbed url={videoUrl} />}
+				{hasVideo && <VideoEmbed url={videoUrl} fallbackTitle={fallbackTitle} />}
 				{hasAftermovie && (
-					<VideoEmbed url={aftermovieUrl} label="Aftermovie" />
+					<VideoEmbed url={aftermovieUrl} label={t('sections.aftermovie')} fallbackTitle={fallbackTitle} />
 				)}
 			</div>
 		</SectionShell>

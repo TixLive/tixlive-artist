@@ -51,7 +51,7 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 
   const handleShare = async () => {
     const shareData = {
-      title: order?.event_title ?? 'Check out this event!',
+      title: order?.event_title ?? t('success.share_default_title'),
       url: window.location.origin,
     };
     if (navigator.share) {
@@ -66,7 +66,7 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
   return (
     <>
       <Head>
-        <title>Payment Successful!</title>
+        <title>{t('success.page_title')}</title>
       </Head>
 
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-20">
@@ -77,10 +77,10 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
               <Icon icon="mdi:loading" width={40} className="animate-spin text-[var(--brand-primary)]" />
             </div>
             <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2.25rem]">
-              Se procesează plata...
+              {t('success.processing_title')}
             </h1>
             <p className="mt-3 text-[0.9375rem] text-[var(--theme-text-muted)]">
-              Așteptăm confirmarea de la bancă. Nu închideți pagina.
+              {t('success.processing_body')}
             </p>
           </div>
         ) : order && order.status === 'failed' ? (
@@ -89,19 +89,19 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
               <Icon icon="mdi:close-circle-outline" width={40} className="text-[#DC2626]" />
             </div>
             <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2.25rem]">
-              Plata nu a reușit
+              {t('success.failed_title')}
             </h1>
             <p className="mt-3 text-[0.9375rem] text-[var(--theme-text-muted)]">
-              Cardul a fost refuzat de bancă. Întoarce-te și încearcă din nou.
+              {t('success.failed_body')}
             </p>
             <a href="/" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-6 py-3 font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]">
               <Icon icon="mdi:arrow-left" width={18} />
-              Înapoi la evenimente
+              {t('success.back_to_events')}
             </a>
           </div>
         ) : notFound ? (
           <div className="mb-10 flex flex-col items-center text-center">
-            <p className="text-[var(--theme-text-muted)]">Order not found.</p>
+            <p className="text-[var(--theme-text-muted)]">{t('success.not_found')}</p>
           </div>
         ) : (
           <div className="mb-10 flex flex-col items-center text-center">
@@ -109,10 +109,10 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
               <Icon icon="mdi:check-bold" width={40} className="text-[#16A34A]" />
             </div>
             <h1 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2.25rem]">
-              Plată reușită!
+              {t('success.paid_title')}
             </h1>
             <p className="mt-3 text-[0.9375rem] text-[var(--theme-text-muted)]">
-              Biletele tale sunt confirmate. Verifică email-ul pentru detalii.
+              {t('success.paid_body')}
             </p>
           </div>
         )}
@@ -167,7 +167,7 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
                   size="lg"
                 >
                   <Icon icon="mdi:download" width={20} className="mr-2" />
-                  Download your tickets
+                  {t('success.download_your_tickets')}
                 </Button>
               </a>
             )}
@@ -178,7 +178,7 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
                 className="rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
                 onPress={handleShare}
               >
-                Share this event
+                {t('success.share_this_event')}
                 <Icon icon="mdi:arrow-right" width={18} className="ml-1" />
               </Button>
             </div>

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { useTranslation } from 'next-i18next';
 import { IEventDetail, ICartItem, IAddonCartItem } from '@/types';
 
 interface OrderSummaryProps {
@@ -11,6 +12,7 @@ interface OrderSummaryProps {
 }
 
 export default function OrderSummary({ event, sessionDate, cart, addonCart, seatLabels }: OrderSummaryProps) {
+  const { t } = useTranslation('common');
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -44,7 +46,7 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart, seat
         </div>
         <div className="min-w-0 flex-1">
           <div className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
-            Eveniment
+            {t('order_summary.event')}
           </div>
           <h2 className="mt-1 truncate font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
             {event.title}
@@ -75,7 +77,7 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart, seat
                 <span className="text-[var(--theme-text-muted)]">
                   <b className="font-[family-name:var(--font-display)] font-[700]">{addon.quantity}×</b>
                   <span className="ml-2">{addon.addon_name}</span>
-                  {addon.per_ticket && <span className="ml-1 text-[0.6875rem] opacity-60">(per ticket)</span>}
+                  {addon.per_ticket && <span className="ml-1 text-[0.6875rem] opacity-60">{t('order_summary.per_ticket')}</span>}
                 </span>
                 <span className="font-[family-name:var(--font-data)] font-medium tabular-nums text-[var(--theme-text)]">
                   +{(addon.price * addon.quantity * (addon.per_ticket ? ticketCount : 1)).toFixed(2)} {addon.currency}
@@ -88,7 +90,7 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart, seat
         {seatLabels && seatLabels.length > 0 && (
           <div className="mt-1 border-t border-[color-mix(in_srgb,var(--theme-text)_6%,transparent)] pt-3">
             <p className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
-              {seatLabels.length === 1 ? 'Seat' : 'Seats'}
+              {seatLabels.length === 1 ? t('order_summary.seat') : t('order_summary.seats')}
             </p>
             <p className="mt-1 font-[family-name:var(--font-data)] text-[0.8125rem] tabular-nums text-[var(--theme-text)]">
               {seatLabels.join(', ')}

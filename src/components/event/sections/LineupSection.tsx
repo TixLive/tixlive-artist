@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import type { IArtist } from '@/types';
 import SectionShell from '@/components/event/sections/SectionShell';
 
@@ -8,10 +9,11 @@ interface LineupSectionProps {
 }
 
 export default function LineupSection({ artists }: LineupSectionProps) {
+	const { t } = useTranslation('common');
 	if (!artists.length) return null;
 
 	return (
-		<SectionShell label="Lineup">
+		<SectionShell label={t('sections.lineup')}>
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 				{artists.map((artist) => {
 					const isHeadliner = artist.role ? /headlin/i.test(artist.role) : false;

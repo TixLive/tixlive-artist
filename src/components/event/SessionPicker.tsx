@@ -1,4 +1,5 @@
 import { useRef, useCallback } from 'react';
+import { useTranslation } from 'next-i18next';
 import { IEventSession } from '@/types';
 
 interface SessionPickerProps {
@@ -8,6 +9,7 @@ interface SessionPickerProps {
 }
 
 export default function SessionPicker({ sessions, activeSessionId, onSelect }: SessionPickerProps) {
+  const { t } = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const formatSessionDate = (dateStr: string) => {
@@ -46,7 +48,7 @@ export default function SessionPicker({ sessions, activeSessionId, onSelect }: S
     <div
       ref={containerRef}
       role="tablist"
-      aria-label="Event sessions"
+      aria-label={t('sessions.label')}
       className="inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-1.5"
       style={{ scrollbarWidth: 'none' }}
       onKeyDown={handleKeyDown}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'next-i18next';
 import { ICartItem, IAddonCartItem } from '@/types';
 import { computeCheckoutFees } from '@/lib/orderFees';
 
@@ -26,6 +27,7 @@ export default function PriceBreakdown({
   platformFeeFixed = 0,
   providerFeePercent = 0,
 }: PriceBreakdownProps) {
+  const { t } = useTranslation('common');
   const ticketSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const addonSubtotal = (addonItems ?? []).reduce((sum, addon) => {
@@ -63,7 +65,7 @@ export default function PriceBreakdown({
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between text-[0.875rem]">
-        <span className="text-[var(--theme-text-muted)]">Tickets</span>
+        <span className="text-[var(--theme-text-muted)]">{t('price_breakdown.tickets')}</span>
         <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
           {formatPrice(ticketSubtotal)} {currency}
         </span>
@@ -71,7 +73,7 @@ export default function PriceBreakdown({
 
       {addonSubtotal > 0 && (
         <div className="flex items-center justify-between text-[0.875rem]">
-          <span className="text-[var(--theme-text-muted)]">Add-ons</span>
+          <span className="text-[var(--theme-text-muted)]">{t('price_breakdown.addons')}</span>
           <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
             {formatPrice(addonSubtotal)} {currency}
           </span>
@@ -81,7 +83,7 @@ export default function PriceBreakdown({
       {discount && discountAmount > 0 && (
         <div className="flex items-center justify-between text-[0.875rem] text-[#16A34A]">
           <span>
-            Discount
+            {t('price_breakdown.discount')}
             {discount.percent ? ` (${discount.percent}%)` : ''}
           </span>
           <span className="font-[family-name:var(--font-data)] tabular-nums">
@@ -92,7 +94,7 @@ export default function PriceBreakdown({
 
       {serviceFee > 0 && (
         <div className="flex items-center justify-between text-[0.875rem]">
-          <span className="text-[var(--theme-text-muted)]">Service fee</span>
+          <span className="text-[var(--theme-text-muted)]">{t('price_breakdown.service_fee')}</span>
           <span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
             +{formatPrice(serviceFee)} {currency}
           </span>
@@ -100,7 +102,7 @@ export default function PriceBreakdown({
       )}
 
       <div className="mt-1 flex items-baseline justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-4">
-        <span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">Total</span>
+        <span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">{t('price_breakdown.total')}</span>
         <span className="font-[family-name:var(--font-display)] text-[1.625rem] font-[800] leading-none tracking-[-0.02em] tabular-nums text-[var(--theme-text)]">
           {formatPrice(total)} <span className="text-[0.8125rem] font-[700]">{currency}</span>
         </span>

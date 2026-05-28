@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { Trans, useTranslation } from 'next-i18next';
 
 interface KeyFactsStripProps {
   event: {
@@ -21,6 +22,7 @@ function seededValue(seed: number, min: number, max: number): number {
 }
 
 export default function KeyFactsStrip({ event }: KeyFactsStripProps) {
+  useTranslation('common');
   const showViewers = !!(event.fomo_enabled && event.fomo_live_viewers);
   const showRecentSales = !!(event.fomo_enabled && event.fomo_recent_sales);
 
@@ -36,7 +38,11 @@ export default function KeyFactsStrip({ event }: KeyFactsStripProps) {
         <span className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-[#16A34A] animate-v2-pulse-dot" />
           <span>
-            <b className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">{viewers}</b> people viewing now
+            <Trans
+              i18nKey="fomo.viewing_now"
+              count={viewers}
+              components={{ b: <b className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]" /> }}
+            />
           </span>
         </span>
       )}
@@ -50,7 +56,11 @@ export default function KeyFactsStrip({ event }: KeyFactsStripProps) {
         <span className="flex items-center gap-1.5">
           <Icon icon="mdi:fire" width={15} className="text-[#D97706]" />
           <span>
-            <b className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]">{recentSales}</b> tickets sold recently
+            <Trans
+              i18nKey="fomo.sold_recently"
+              count={recentSales}
+              components={{ b: <b className="font-[family-name:var(--font-display)] font-[700] text-[var(--theme-text)]" /> }}
+            />
           </span>
         </span>
       )}

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { useTranslation } from 'next-i18next';
 import type { ISponsor } from '@/types';
 import SectionShell from '@/components/event/sections/SectionShell';
 
@@ -7,11 +8,14 @@ interface SponsorsSectionProps {
 }
 
 export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
+	const { t } = useTranslation('common');
 	if (!sponsors.length) return null;
+
+	const partnersLabel = t('sponsors.partners');
 
 	// Group sponsors by category
 	const grouped = sponsors.reduce<Record<string, ISponsor[]>>((acc, sponsor) => {
-		const cat = sponsor.category || 'Partners';
+		const cat = sponsor.category || partnersLabel;
 		if (!acc[cat]) acc[cat] = [];
 		acc[cat].push(sponsor);
 		return acc;
@@ -29,7 +33,7 @@ export default function SponsorsSection({ sponsors }: SponsorsSectionProps) {
 	});
 
 	return (
-		<SectionShell label="Sponsors">
+		<SectionShell label={t('sections.sponsors')}>
 			<div className="space-y-7">
 				{sortedCategories.map((category) => (
 					<div key={category}>

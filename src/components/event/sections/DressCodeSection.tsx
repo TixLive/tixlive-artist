@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import SectionShell from '@/components/event/sections/SectionShell';
 
 interface DressCodeSectionProps {
@@ -8,10 +9,11 @@ interface DressCodeSectionProps {
 }
 
 export default function DressCodeSection({ type, recommended, forbidden }: DressCodeSectionProps) {
+	const { t } = useTranslation('common');
 	if (!type && !recommended && !forbidden) return null;
 
 	return (
-		<SectionShell label="Dress Code">
+		<SectionShell label={t('sections.dress_code')}>
 			<div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5 sm:p-6">
 				{type && (
 					<div className="mb-5 flex items-center gap-3">
@@ -28,7 +30,7 @@ export default function DressCodeSection({ type, recommended, forbidden }: Dress
 					<div className="mb-4">
 						<p className="mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[#16A34A]">
 							<Icon icon="mdi:check" width={14} />
-							Recommended
+							{t('dress_code.recommended')}
 						</p>
 						<p className="text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
 							{recommended}
@@ -40,7 +42,7 @@ export default function DressCodeSection({ type, recommended, forbidden }: Dress
 					<div>
 						<p className="mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[#DC2626]">
 							<Icon icon="mdi:close" width={14} />
-							Not Allowed
+							{t('dress_code.not_allowed')}
 						</p>
 						<p className="text-[0.875rem] leading-relaxed text-[var(--theme-text-muted)]">
 							{forbidden}

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import type { ITeam } from '@/types';
 import SectionShell from '@/components/event/sections/SectionShell';
 
@@ -8,12 +9,13 @@ interface TeamsSectionProps {
 }
 
 export default function TeamsSection({ teams }: TeamsSectionProps) {
+	const { t } = useTranslation('common');
 	if (teams.length < 2) return null;
 
 	const [teamA, teamB] = teams;
 
 	return (
-		<SectionShell label="Match">
+		<SectionShell label={t('sections.match')}>
 			<div className="flex items-center justify-center gap-4 rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-7 shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] sm:gap-8">
 				{/* Team A */}
 				<div className="flex flex-1 flex-col items-center text-center">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import SectionShell from '@/components/event/sections/SectionShell';
 import type { IFaq } from '@/types';
 
@@ -8,12 +9,13 @@ interface FaqSectionProps {
 }
 
 export default function FaqSection({ items }: FaqSectionProps) {
+	const { t } = useTranslation('common');
 	const [openId, setOpenId] = useState<number | null>(null);
 
 	if (!items.length) return null;
 
 	return (
-		<SectionShell label="FAQ">
+		<SectionShell label={t('sections.faq')}>
 			<div className="space-y-3">
 				{items.map((faq) => {
 					const isOpen = openId === faq.id;

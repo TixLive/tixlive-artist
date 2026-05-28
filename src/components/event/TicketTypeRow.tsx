@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import { ITicketType } from '@/types';
 import CapacityBadge from '@/components/event/CapacityBadge';
 
@@ -23,6 +24,7 @@ export default function TicketTypeRow({
   showLowStockUrgency,
   index,
 }: TicketTypeRowProps) {
+  const { t } = useTranslation('common');
   const isSoldOut = ticket.remaining_capacity === 0;
   const maxQty = Math.min(
     ticket.remaining_capacity ?? Infinity,
@@ -78,7 +80,7 @@ export default function TicketTypeRow({
         <div className="flex items-center justify-end">
           {isSoldOut ? (
             <span className="inline-flex items-center rounded-full bg-[#DC2626]/10 px-3 py-1.5 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em] text-[#DC2626]">
-              Sold Out
+              {t('event.sold_out')}
             </span>
           ) : (
             <QuantityStepper
@@ -86,6 +88,7 @@ export default function TicketTypeRow({
               maxQty={maxQty}
               ticketName={ticket.name}
               onChange={(qty) => onQuantityChange(ticket.id, qty)}
+              t={t}
             />
           )}
         </div>
@@ -99,23 +102,25 @@ function QuantityStepper({
   maxQty,
   ticketName,
   onChange,
+  t,
 }: {
   quantity: number;
   maxQty: number;
   ticketName: string;
   onChange: (qty: number) => void;
+  t: (key: string, opts?: { name?: string }) => string;
 }) {
   return (
     <div
       className="inline-flex h-9 items-stretch rounded-full border border-[color-mix(in_srgb,var(--theme-text)_10%,transparent)] bg-[var(--theme-bg)] p-0.5"
       role="group"
-      aria-label={`Quantity for ${ticketName}`}
+      aria-label={t('ticket_row.qty_for', { name: ticketName })}
     >
       <button
         className="flex w-8 items-center justify-center rounded-full text-[var(--theme-text-muted)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--theme-text)_5%,transparent)] disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
         onClick={() => onChange(Math.max(0, quantity - 1))}
         disabled={quantity === 0}
-        aria-label={`Decrease quantity for ${ticketName}`}
+        aria-label={t('ticket_row.decrease', { name: ticketName })}
       >
         <Icon icon="mdi:minus" width={16} />
       </button>
@@ -130,7 +135,7 @@ function QuantityStepper({
         className="flex w-8 items-center justify-center rounded-full text-[var(--theme-text)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--theme-text)_5%,transparent)] disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
         onClick={() => onChange(Math.min(maxQty, quantity + 1))}
         disabled={quantity >= maxQty}
-        aria-label={`Increase quantity for ${ticketName}`}
+        aria-label={t('ticket_row.increase', { name: ticketName })}
       >
         <Icon icon="mdi:plus" width={16} />
       </button>

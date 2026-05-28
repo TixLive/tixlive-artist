@@ -140,12 +140,123 @@
 		"me_error_fallback_note": "Date cont indisponibile — folosim datele in cache."
 	},
 	"success": {
-		"payment_successful": "Plata Reusita!",
-		"download_tickets": "Descarca Biletele",
-		"save_to_account": "Salveaza in Contul Tau",
+		"payment_successful": "Plată reușită!",
+		"download_tickets": "Descarcă biletele",
+		"save_to_account": "Salvează în contul tău",
 		"save_to_account_description": "Introdu emailul pentru a primi un cod de acces la biletele tale.",
 		"send_code": "Trimite cod",
-		"check_inbox": "Verifica inboxul pentru codul de acces"
+		"check_inbox": "Verifică inboxul pentru codul de acces",
+		"page_title": "Plată reușită!",
+		"processing_title": "Se procesează plata…",
+		"processing_body": "Așteptăm confirmarea de la bancă. Nu închideți pagina.",
+		"failed_title": "Plata nu a reușit",
+		"failed_body": "Cardul a fost refuzat de bancă. Întoarce-te și încearcă din nou.",
+		"back_to_events": "Înapoi la evenimente",
+		"not_found": "Comanda nu a fost găsită.",
+		"paid_title": "Plată reușită!",
+		"paid_body": "Biletele tale sunt confirmate. Verifică email-ul pentru detalii.",
+		"download_your_tickets": "Descarcă biletele tale",
+		"share_this_event": "Distribuie evenimentul",
+		"share_default_title": "Vezi acest eveniment!"
+	},
+	"price_breakdown": {
+		"tickets": "Bilete",
+		"addons": "Suplimente",
+		"discount": "Reducere",
+		"service_fee": "Comision serviciu",
+		"total": "Total"
+	},
+	"order_summary": {
+		"event": "Eveniment",
+		"per_ticket": "(per bilet)",
+		"seat": "Loc",
+		"seats": "Locuri"
+	},
+	"buy_flow": {
+		"choose_seats": "Alege locuri",
+		"details_payment": "Date & plată",
+		"your_ticket": "Biletul tău"
+	},
+	"fomo": {
+		"viewing_now_one": "<b>{{count}}</b> persoană vede acum",
+		"viewing_now_other": "<b>{{count}}</b> persoane văd acum",
+		"sold_recently_one": "<b>{{count}}</b> bilet vândut recent",
+		"sold_recently_other": "<b>{{count}}</b> bilete vândute recent"
+	},
+	"countdown": {
+		"event_starts_in": "Evenimentul începe în",
+		"days": "Zile",
+		"hours": "Ore",
+		"minutes": "Minute",
+		"seconds": "Secunde"
+	},
+	"availability": {
+		"sold_out_title": "Vândute",
+		"sold_out_subtitle": "Acest eveniment nu mai este disponibil",
+		"coming_soon_title": "În curând",
+		"coming_soon_subtitle": "Biletele nu sunt încă în vânzare",
+		"closed_title": "Vânzări încheiate",
+		"closed_subtitle": "Vânzarea biletelor pentru acest eveniment s-a încheiat"
+	},
+	"sessions": {
+		"label": "Sesiuni eveniment"
+	},
+	"addon": {
+		"per_ticket": "per bilet",
+		"one_off": "o singură dată",
+		"qty_for": "Cantitate pentru {{name}}",
+		"increase": "Mărește {{name}}",
+		"decrease": "Micșorează {{name}}"
+	},
+	"ticket_row": {
+		"qty_for": "Cantitate pentru {{name}}",
+		"increase": "Mărește cantitatea pentru {{name}}",
+		"decrease": "Micșorează cantitatea pentru {{name}}"
+	},
+	"sections": {
+		"dress_code": "Cod vestimentar",
+		"camping_info": "Info camping",
+		"lineup": "Lineup",
+		"faq": "Întrebări frecvente",
+		"program": "Program",
+		"packing": "Ce să iei cu tine",
+		"match": "Meci",
+		"rules": "Reguli",
+		"speakers": "Speakeri",
+		"video": "Video",
+		"sponsors": "Sponsori",
+		"travel": "Cazare & Transport",
+		"special_message": "Un mesaj special",
+		"aftermovie": "Aftermovie",
+		"event_video": "Video eveniment"
+	},
+	"camping": {
+		"checkin": "Check-in",
+		"checkout": "Check-out",
+		"showers": "Dușuri",
+		"electricity": "Electricitate"
+	},
+	"rules": {
+		"allowed": "Permis",
+		"not_allowed": "Interzis"
+	},
+	"packing": {
+		"essential": "Esențial",
+		"recommended": "Recomandat"
+	},
+	"dress_code": {
+		"recommended": "Recomandat",
+		"not_allowed": "Interzis"
+	},
+	"travel": {
+		"hotel": "Cazare",
+		"restaurant": "Mâncare & băutură",
+		"flight": "Zboruri",
+		"transport": "Cum ajungi",
+		"other": "Recomandări"
+	},
+	"sponsors": {
+		"partners": "Parteneri"
 	},
 	"auth": {
 		"login_title": "Acceseaza biletele tale",

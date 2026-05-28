@@ -1,3 +1,4 @@
+import { useTranslation } from 'next-i18next';
 import SectionShell from '@/components/event/sections/SectionShell';
 import type { IAgendaItem } from '@/types';
 
@@ -6,10 +7,11 @@ interface ProgramSectionProps {
 }
 
 export default function ProgramSection({ items }: ProgramSectionProps) {
+	const { t } = useTranslation('common');
 	if (!items.length) return null;
 
 	return (
-		<SectionShell label="Program">
+		<SectionShell label={t('sections.program')}>
 			<div className="overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
 				{items.map((item, idx) => (
 					<div

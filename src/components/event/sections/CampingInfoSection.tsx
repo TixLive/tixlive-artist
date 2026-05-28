@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import SectionShell from '@/components/event/sections/SectionShell';
 
 interface CampingInfoSectionProps {
@@ -8,14 +9,15 @@ interface CampingInfoSectionProps {
 	electricity?: string;
 }
 
-const infoItems = [
-	{ key: 'checkin', icon: 'mdi:login-variant', label: 'Check-in' },
-	{ key: 'checkout', icon: 'mdi:logout-variant', label: 'Check-out' },
-	{ key: 'showers', icon: 'mdi:shower', label: 'Showers' },
-	{ key: 'electricity', icon: 'mdi:flash', label: 'Electricity' },
+const INFO_ICONS = [
+	{ key: 'checkin', icon: 'mdi:login-variant' },
+	{ key: 'checkout', icon: 'mdi:logout-variant' },
+	{ key: 'showers', icon: 'mdi:shower' },
+	{ key: 'electricity', icon: 'mdi:flash' },
 ] as const;
 
 export default function CampingInfoSection(props: CampingInfoSectionProps) {
+	const { t } = useTranslation('common');
 	const hasContent = props.checkin || props.checkout || props.showers || props.electricity;
 	if (!hasContent) return null;
 
@@ -27,9 +29,9 @@ export default function CampingInfoSection(props: CampingInfoSectionProps) {
 	};
 
 	return (
-		<SectionShell label="Camping Info">
+		<SectionShell label={t('sections.camping_info')}>
 			<div className="grid grid-cols-2 gap-3">
-				{infoItems.map((item) => {
+				{INFO_ICONS.map((item) => {
 					const value = valueMap[item.key];
 					if (!value) return null;
 					return (
@@ -44,7 +46,7 @@ export default function CampingInfoSection(props: CampingInfoSectionProps) {
 									className="text-[var(--brand-accent)]"
 								/>
 								<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
-									{item.label}
+									{t(`camping.${item.key}`)}
 								</span>
 							</div>
 							<p className="font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] leading-snug tracking-[-0.01em] text-[var(--theme-text)]">

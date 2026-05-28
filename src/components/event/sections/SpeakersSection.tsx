@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import type { ISpeaker } from '@/types';
 import SectionShell from '@/components/event/sections/SectionShell';
 
@@ -8,10 +9,11 @@ interface SpeakersSectionProps {
 }
 
 export default function SpeakersSection({ speakers }: SpeakersSectionProps) {
+	const { t } = useTranslation('common');
 	if (!speakers.length) return null;
 
 	return (
-		<SectionShell label="Speakers">
+		<SectionShell label={t('sections.speakers')}>
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{speakers.map((speaker) => (
 					<div

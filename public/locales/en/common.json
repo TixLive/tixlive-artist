@@ -145,7 +145,118 @@
 		"save_to_account": "Save to Your Account",
 		"save_to_account_description": "Enter your email to get a code and access your tickets anytime.",
 		"send_code": "Send code",
-		"check_inbox": "Check your inbox for the access code"
+		"check_inbox": "Check your inbox for the access code",
+		"page_title": "Payment Successful!",
+		"processing_title": "Processing payment…",
+		"processing_body": "Waiting for confirmation from the bank. Please don't close this page.",
+		"failed_title": "Payment failed",
+		"failed_body": "Your card was declined. Please go back and try again.",
+		"back_to_events": "Back to events",
+		"not_found": "Order not found.",
+		"paid_title": "Payment successful!",
+		"paid_body": "Your tickets are confirmed. Check your email for details.",
+		"download_your_tickets": "Download your tickets",
+		"share_this_event": "Share this event",
+		"share_default_title": "Check out this event!"
+	},
+	"price_breakdown": {
+		"tickets": "Tickets",
+		"addons": "Add-ons",
+		"discount": "Discount",
+		"service_fee": "Service fee",
+		"total": "Total"
+	},
+	"order_summary": {
+		"event": "Event",
+		"per_ticket": "(per ticket)",
+		"seat": "Seat",
+		"seats": "Seats"
+	},
+	"buy_flow": {
+		"choose_seats": "Choose seats",
+		"details_payment": "Details & payment",
+		"your_ticket": "Your ticket"
+	},
+	"fomo": {
+		"viewing_now_one": "<b>{{count}}</b> person viewing now",
+		"viewing_now_other": "<b>{{count}}</b> people viewing now",
+		"sold_recently_one": "<b>{{count}}</b> ticket sold recently",
+		"sold_recently_other": "<b>{{count}}</b> tickets sold recently"
+	},
+	"countdown": {
+		"event_starts_in": "Event starts in",
+		"days": "Days",
+		"hours": "Hours",
+		"minutes": "Minutes",
+		"seconds": "Seconds"
+	},
+	"availability": {
+		"sold_out_title": "Sold Out",
+		"sold_out_subtitle": "This event is no longer available",
+		"coming_soon_title": "Coming Soon",
+		"coming_soon_subtitle": "Tickets are not on sale yet",
+		"closed_title": "Sales Ended",
+		"closed_subtitle": "Ticket sales for this event have closed"
+	},
+	"sessions": {
+		"label": "Event sessions"
+	},
+	"addon": {
+		"per_ticket": "per ticket",
+		"one_off": "one-off",
+		"qty_for": "Quantity for {{name}}",
+		"increase": "Increase {{name}}",
+		"decrease": "Decrease {{name}}"
+	},
+	"ticket_row": {
+		"qty_for": "Quantity for {{name}}",
+		"increase": "Increase quantity for {{name}}",
+		"decrease": "Decrease quantity for {{name}}"
+	},
+	"sections": {
+		"dress_code": "Dress Code",
+		"camping_info": "Camping Info",
+		"lineup": "Lineup",
+		"faq": "FAQ",
+		"program": "Program",
+		"packing": "What to Bring",
+		"match": "Match",
+		"rules": "Rules",
+		"speakers": "Speakers",
+		"video": "Video",
+		"sponsors": "Sponsors",
+		"travel": "Travel & Stay",
+		"special_message": "A Special Message",
+		"aftermovie": "Aftermovie",
+		"event_video": "Event video"
+	},
+	"camping": {
+		"checkin": "Check-in",
+		"checkout": "Check-out",
+		"showers": "Showers",
+		"electricity": "Electricity"
+	},
+	"rules": {
+		"allowed": "Allowed",
+		"not_allowed": "Not Allowed"
+	},
+	"packing": {
+		"essential": "Essential",
+		"recommended": "Recommended"
+	},
+	"dress_code": {
+		"recommended": "Recommended",
+		"not_allowed": "Not Allowed"
+	},
+	"travel": {
+		"hotel": "Accommodation",
+		"restaurant": "Food & Drink",
+		"flight": "Flights",
+		"transport": "Getting There",
+		"other": "Recommendations"
+	},
+	"sponsors": {
+		"partners": "Partners"
 	},
 	"auth": {
 		"login_title": "Access your tickets",

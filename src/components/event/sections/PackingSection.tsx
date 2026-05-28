@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from 'next-i18next';
 import SectionShell from '@/components/event/sections/SectionShell';
 import type { IPackingItem } from '@/types';
 
@@ -7,19 +8,20 @@ interface PackingSectionProps {
 }
 
 export default function PackingSection({ items }: PackingSectionProps) {
+	const { t } = useTranslation('common');
 	if (!items.length) return null;
 
 	const essential = items.filter((i) => i.type === 'essential');
 	const recommended = items.filter((i) => i.type === 'recommended');
 
 	return (
-		<SectionShell label="What to Bring">
+		<SectionShell label={t('sections.packing')}>
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{essential.length > 0 && (
 					<div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
 						<p className="mb-4 flex items-center gap-2 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[#D97706]">
 							<Icon icon="mdi:alert-circle" width={14} />
-							Essential
+							{t('packing.essential')}
 						</p>
 						<ul className="space-y-3">
 							{essential.map((item) => (
@@ -42,7 +44,7 @@ export default function PackingSection({ items }: PackingSectionProps) {
 					<div className="rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-5">
 						<p className="mb-4 flex items-center gap-2 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
 							<Icon icon="mdi:plus-circle" width={14} />
-							Recommended
+							{t('packing.recommended')}
 						</p>
 						<ul className="space-y-3">
 							{recommended.map((item) => (

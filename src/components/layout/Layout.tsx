@@ -22,8 +22,8 @@ export default function Layout({ children }: LayoutProps) {
 	const name = organizer?.name ?? '';
 	const logo = organizer?.logo_url;
 	const links = organizer?.social_links;
-	const bio = organizer?.bio;
 	const legalPages = organizer?.pages;
+	const bio = organizer?.bio;
 
 	return (
 		<div className="flex min-h-screen flex-col">

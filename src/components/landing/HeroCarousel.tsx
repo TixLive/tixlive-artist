@@ -219,64 +219,54 @@ function BannerHero({ href, prefetch, t, featured, dowShort, day, mon, year, tim
 			href={href}
 			onMouseEnter={() => prefetch(featured.slug)}
 			onTouchStart={() => prefetch(featured.slug)}
-			className="hero-banner group relative isolate grid overflow-hidden rounded-[22px] bg-[var(--ink)] shadow-[var(--shadow-cinema)] sm:rounded-[28px]"
-			style={{ gridTemplateRows: '1fr auto', maxHeight: 'calc(100svh - 8rem)' }}
+			className="hero-banner group relative isolate overflow-hidden rounded-[22px] bg-[var(--ink)] shadow-[var(--shadow-cinema)] sm:rounded-[28px]"
+			style={{ aspectRatio: '16 / 9' }}
 		>
 			<style>{`
-				.hero-banner-cover { min-height: 0; }
-				@media (max-width: 760px) {
-					.hero-banner-cover { aspect-ratio: 16 / 9 !important; }
-					.hero-banner-title { padding: 18px 22px 22px !important; }
-					.hero-banner-title h2 { font-size: clamp(24px, 6vw, 34px) !important; }
+				.hero-banner {
+					max-height: min(calc(100svh - 5.5rem), 680px);
+				}
+				.hero-banner-text { padding: 36px 44px 40px; }
+				.hero-banner-text h2 { font-size: clamp(32px, 4vw, 56px); }
+				@media (max-width: 820px) {
+					.hero-banner {
+						aspect-ratio: 4 / 5 !important;
+						max-height: calc(100svh - 6rem) !important;
+					}
+					.hero-banner-text { padding: 22px 22px 26px !important; gap: 12px !important; }
+					.hero-banner-text h2 { font-size: clamp(24px, 6vw, 36px) !important; }
 					.hero-banner-cta { width: 100%; justify-content: center; }
 				}
 			`}</style>
 
-			{/* Top — 21:9 landscape cover */}
-			<div className="hero-banner-cover relative overflow-hidden bg-[var(--ink)]" style={{ aspectRatio: '21 / 9' }}>
-				{coverUrl && (
-					<Image
-						src={coverUrl}
-						alt={featured.title}
-						fill
-						className="object-cover"
-						sizes="(max-width: 1200px) 100vw, 1200px"
-						priority
-					/>
-				)}
-			</div>
-
-			{/* Bottom — glass title zone */}
-			<div className="relative isolate">
-				{coverUrl && (
-					<Image
-						src={coverUrl}
-						alt=""
-						aria-hidden="true"
-						fill
-						className="object-cover"
-						style={{
-							filter: 'blur(80px) saturate(1.5) brightness(0.6)',
-							transform: 'scale(1.4) translateY(-30%)',
-							zIndex: 0,
-						}}
-					/>
-				)}
-				<div
-					aria-hidden="true"
-					className="pointer-events-none absolute inset-0"
-					style={{
-						background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.55) 100%)',
-						zIndex: 1,
-					}}
+			{/* Full-bleed cover */}
+			{coverUrl && (
+				<Image
+					src={coverUrl}
+					alt={featured.title}
+					fill
+					className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+					sizes="(max-width: 1200px) 100vw, 1200px"
+					priority
 				/>
+			)}
 
-				<div
-					className="hero-banner-title relative z-[2] flex flex-col gap-4 text-white"
-					style={{ padding: '24px 36px 28px' }}
-				>
-					<HeroText {...{ t, featured, dowShort, day, mon, year, time, venueLine }} variant="banner" />
-				</div>
+			{/* Gradient scrim — strong at the bottom for text legibility, fades up */}
+			<div
+				aria-hidden="true"
+				className="absolute inset-0"
+				style={{
+					background:
+						'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.88) 100%)',
+				}}
+			/>
+
+			{/* Text overlay — anchored to the bottom */}
+			<div className="hero-banner-text absolute inset-x-0 bottom-0 flex flex-col gap-4 text-white">
+				<HeroText
+					{...{ t, featured, dowShort, day, mon, year, time, venueLine }}
+					variant="banner"
+				/>
 			</div>
 		</Link>
 	);

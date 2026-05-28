@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Button, InputOtp } from '@heroui/react';
+import { InputOtp } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { useValidateLoginCode } from '@/queries/auth/useValidateLoginCode';
@@ -49,9 +49,7 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 	const handleOtpChange = (val: string) => {
 		setOtp(val);
 		setError(false);
-		if (val.length === 6) {
-			submitCode(val);
-		}
+		if (val.length === 6) submitCode(val);
 	};
 
 	const handlePaste = async () => {
@@ -62,9 +60,7 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 				setOtp(cleaned);
 				submitCode(cleaned);
 			}
-		} catch {
-			/* ignore */
-		}
+		} catch {}
 	};
 
 	const handleResend = async () => {
@@ -73,9 +69,7 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 		try {
 			const data = await resend.mutateAsync(email);
 			setResendTime(typeof data.resendTime === 'number' ? data.resendTime : 60);
-		} catch {
-			/* ignore */
-		}
+		} catch {}
 	};
 
 	const formatTime = (totalSeconds: number) => {
@@ -90,17 +84,17 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 				type="button"
 				onClick={onBack}
 				disabled={loading}
-				className="inline-flex items-center gap-1.5 self-start font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] disabled:opacity-60"
+				className="inline-flex items-center gap-1.5 self-start text-[13px] font-[600] tracking-[-0.005em] text-[var(--ink-3)] transition-colors duration-150 hover:text-[var(--ink)] disabled:opacity-60"
 			>
-				<Icon icon="mdi:arrow-left" width={16} />
+				<Icon icon="mdi:chevron-left" width={13} />
 				{t('auth.back')}
 			</button>
 
 			<div className="w-full text-center">
-				<div className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
+				<div className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
 					{t('auth.please_enter_code')}
 				</div>
-				<p className="mt-1.5 font-[family-name:var(--font-data)] text-[0.9375rem] font-[600] text-[var(--theme-text)]">
+				<p className="m-0 mt-1.5 text-[15px] font-[700] tabular-nums tracking-[-0.005em] text-[var(--ink)]">
 					{email}
 				</p>
 			</div>
@@ -115,33 +109,31 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 			/>
 
 			{error && (
-				<p className="font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.05em] text-[#DC2626]">
+				<p className="m-0 text-[11.5px] font-[700] uppercase tracking-[0.06em] text-[#DC2626]">
 					{t('auth.otp_invalid')}
 				</p>
 			)}
 
 			<div className="flex w-full items-center justify-between gap-3">
-				<Button
-					variant="bordered"
-					size="sm"
-					className="rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
-					startContent={<Icon icon="mdi:content-paste" width={16} />}
-					onPress={handlePaste}
-					isDisabled={loading}
+				<button
+					type="button"
+					onClick={handlePaste}
+					disabled={loading}
+					className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-2)] px-4 py-2 text-[12.5px] font-[600] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)] disabled:opacity-60"
 				>
+					<Icon icon="mdi:content-paste" width={13} />
 					{t('auth.paste_code')}
-				</Button>
+				</button>
 
-				<Button
-					variant="light"
-					size="sm"
-					className="rounded-full font-[family-name:var(--font-body)] font-[600] text-[var(--brand-accent)]"
-					onPress={handleResend}
-					isDisabled={resendTime > 0 || loading || resending}
-					isLoading={resending}
+				<button
+					type="button"
+					onClick={handleResend}
+					disabled={resendTime > 0 || loading || resending}
+					className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[12.5px] font-[600] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-2)] disabled:cursor-not-allowed disabled:text-[var(--ink-4)] disabled:hover:bg-transparent"
 				>
+					{resending && <Icon icon="mdi:loading" width={13} className="animate-spin" />}
 					{resendTime > 0 ? t('auth.resend_code_in', { time: formatTime(resendTime) }) : t('auth.resend_code')}
-				</Button>
+				</button>
 			</div>
 
 			<RecaptchaDisclaimer />

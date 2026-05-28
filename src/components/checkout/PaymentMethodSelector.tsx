@@ -3,58 +3,62 @@ import { Icon } from '@iconify/react';
 import { IAvailablePaymentMethod } from '@/types';
 
 interface PaymentMethodSelectorProps {
-  methods: IAvailablePaymentMethod[];
-  selected: number;
-  onSelect: (id: number) => void;
+	methods: IAvailablePaymentMethod[];
+	selected: number;
+	onSelect: (id: number) => void;
 }
 
 export default function PaymentMethodSelector({ methods, selected, onSelect }: PaymentMethodSelectorProps) {
-  const { t } = useTranslation('common');
+	const { t } = useTranslation('common');
+	if (methods.length <= 1) return null;
 
-  // If only one method, auto-selected — render nothing
-  if (methods.length <= 1) return null;
-
-  return (
-    <div className="space-y-3">
-      <header>
-        <h3 className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-          {t('checkout.payment_method_title')}
-        </h3>
-        <p className="mt-0.5 flex items-center gap-1.5 text-[0.75rem] text-[var(--theme-text-muted)]">
-          <Icon icon="mdi:shield-check-outline" width={13} />
-          {t('checkout.payment_method_subtitle')}
-        </p>
-      </header>
-      {methods.map((method) => {
-        const isSelected = method.id === selected;
-        return (
-          <button
-            key={method.id}
-            type="button"
-            onClick={() => onSelect(method.id)}
-            className={`flex w-full items-center gap-3.5 rounded-2xl border px-4 py-3.5 text-left transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] ${
-              isSelected
-                ? 'border-[color-mix(in_srgb,var(--brand-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-accent)_6%,transparent)]'
-                : 'border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] hover:border-[color-mix(in_srgb,var(--theme-text)_18%,transparent)]'
-            }`}
-          >
-            <span
-              className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 ${
-                isSelected ? 'border-[var(--brand-accent)]' : 'border-[color-mix(in_srgb,var(--theme-text)_25%,transparent)]'
-              }`}
-            >
-              {isSelected && <span className="h-2 w-2 rounded-full bg-[var(--brand-accent)]" />}
-            </span>
-            <span className="flex-1 font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-              {method.name}
-            </span>
-            {method.logo_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={method.logo_url} alt="" className="h-5 w-auto shrink-0" />
-            )}
-          </button>
-        );
-      })}
-    </div>
-  );
+	return (
+		<div className="flex flex-col gap-3">
+			<header>
+				<h3 className="text-[16px] font-[700] tracking-[-0.012em] text-[var(--ink)]">
+					{t('checkout.payment_method_title')}
+				</h3>
+				<p className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--ink-3)]">
+					<Icon icon="mdi:shield-check-outline" width={13} />
+					{t('checkout.payment_method_subtitle')}
+				</p>
+			</header>
+			<div className="flex flex-col gap-2">
+				{methods.map((method) => {
+					const isSelected = method.id === selected;
+					return (
+						<button
+							key={method.id}
+							type="button"
+							onClick={() => onSelect(method.id)}
+							className="flex w-full items-center gap-3 rounded-[14px] bg-[var(--surface)] px-4 py-3.5 text-left transition-shadow duration-150"
+							style={{
+								boxShadow: isSelected
+									? '0 0 0 1.5px var(--ink), var(--shadow-1)'
+									: 'inset 0 0 0 1px var(--line)',
+							}}
+						>
+							<span
+								className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full"
+								style={{
+									boxShadow: isSelected
+										? 'inset 0 0 0 2px var(--ink)'
+										: 'inset 0 0 0 2px var(--line)',
+								}}
+							>
+								{isSelected && <span className="h-2 w-2 rounded-full bg-[var(--ink)]" />}
+							</span>
+							<span className="flex-1 text-[14px] font-[700] tracking-[-0.012em] text-[var(--ink)]">
+								{method.name}
+							</span>
+							{method.logo_url && (
+								// eslint-disable-next-line @next/next/no-img-element
+								<img src={method.logo_url} alt="" className="h-5 w-auto shrink-0" />
+							)}
+						</button>
+					);
+				})}
+			</div>
+		</div>
+	);
 }

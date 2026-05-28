@@ -13,7 +13,7 @@ export default function PaymentDetailsSlot({ method }: PaymentDetailsSlotProps) 
 
   if (method.type === 'card') {
     return (
-      <div className="rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-6 text-center text-[0.875rem] text-[var(--theme-text-muted)]">
+      <div className="rounded-[18px] bg-[var(--surface)] p-6 text-center text-[14px] text-[var(--ink-3)]" style={{ boxShadow: 'var(--shadow-1)' }}>
         {t('payment.card_form_coming_soon', { name: method.name })}
       </div>
     );

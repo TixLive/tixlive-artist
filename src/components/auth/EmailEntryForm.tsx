@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Input } from '@heroui/react';
+import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { useRequestLoginCode } from '@/queries/auth/useRequestLoginCode';
 import RecaptchaDisclaimer from '@/components/common/RecaptchaDisclaimer';
@@ -31,40 +31,43 @@ export default function EmailEntryForm({ initialEmail = '', onCodeSent, autoFocu
 	const sending = requestCode.isPending;
 
 	return (
-		<div className="space-y-4">
-			<div className="space-y-2">
-				<label className="block font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
+		<div className="flex flex-col gap-4">
+			<div className="flex flex-col gap-2">
+				<label className="block text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
 					{t('auth.email_placeholder')}
 				</label>
-				<Input
+				<input
 					type="email"
 					placeholder={t('auth.email_placeholder')}
 					value={email}
-					onValueChange={setEmail}
-					autoFocus={autoFocus}
-					classNames={{
-						inputWrapper:
-							'rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-bg)] px-5 shadow-none data-[hover=true]:bg-[var(--theme-bg)] group-data-[focus=true]:border-[var(--brand-accent)]',
-						input: 'font-[family-name:var(--font-body)] text-[0.9375rem]',
-					}}
+					onChange={(e) => setEmail(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') handleSubmit();
 					}}
+					autoFocus={autoFocus}
+					className="w-full rounded-[14px] border border-[var(--line)] bg-[var(--surface)] px-[18px] py-[16px] text-[15px] tracking-[-0.005em] text-[var(--ink)] placeholder:text-[var(--ink-4)] transition-shadow duration-150 focus:border-[var(--ink)] focus:outline-none focus:ring-[3px] focus:ring-black/[0.06]"
 				/>
 			</div>
-			<Button
-				variant="solid"
-				size="lg"
-				className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]"
-				style={{ backgroundColor: 'var(--brand-primary)' }}
-				isLoading={sending}
-				isDisabled={!email.trim() || sending}
-				onPress={handleSubmit}
+			<button
+				type="button"
+				onClick={handleSubmit}
+				disabled={!email.trim() || sending}
+				className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--ink)] px-6 py-[15px] text-[15px] font-[600] tracking-[-0.012em] text-white transition-colors duration-150 hover:bg-[var(--ink-2)] disabled:cursor-not-allowed disabled:bg-[var(--bg-3)] disabled:text-[var(--ink-4)]"
 			>
-				{t('auth.send_code')}
-			</Button>
+				{sending ? (
+					<>
+						<Icon icon="mdi:loading" width={14} className="animate-spin" />
+						{t('auth.send_code')}
+					</>
+				) : (
+					<>
+						{t('auth.send_code')}
+						<Icon icon="mdi:arrow-right" width={13} />
+					</>
+				)}
+			</button>
 			{error && (
-				<p className="text-center font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.05em] text-[#DC2626]">
+				<p className="text-center text-[11.5px] font-[700] uppercase tracking-[0.06em] text-[#DC2626]">
 					{t('auth.login_error')}
 				</p>
 			)}

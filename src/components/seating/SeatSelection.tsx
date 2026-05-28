@@ -317,45 +317,37 @@ export default function SeatSelection({
 
 	// ── Render ────────────────────────────────────────────────────────────────
 	return (
-		<div className="fixed inset-0 flex flex-col overflow-hidden bg-[var(--theme-bg)]">
+		<div className="fixed inset-0 flex flex-col overflow-hidden bg-[var(--bg)]">
 
 			{/* ── Top bar ───────────────────────────────────────────────────── */}
-			<header className="flex h-[52px] flex-shrink-0 items-center gap-3 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-4">
+			<header className="flex h-[56px] flex-shrink-0 items-center gap-3 border-b border-[var(--line)] bg-[var(--bg)]/85 px-4 backdrop-blur-md">
 				<Link
 					href={`/events/${slug}`}
-					className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
+					className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[var(--bg-2)] pl-3 pr-3.5 text-[13px] font-[600] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)]"
 					aria-label={t('seating.back_to_event')}
 				>
-					<Icon icon="mdi:arrow-left" width={18} />
+					<Icon icon="mdi:chevron-left" width={13} />
+					<span className="hidden sm:inline">{t('seating.back')}</span>
 				</Link>
 
-				<div className="min-w-0 flex-1">
-					<p className="truncate font-[family-name:var(--font-display)] text-[0.9375rem] font-[700] leading-tight tracking-[-0.01em] text-[var(--theme-text)]">
+				<div className="min-w-0 flex-1 text-center">
+					<p className="m-0 truncate text-[10px] font-[700] uppercase tracking-[0.14em] text-[var(--ink-3)]">
+						{t('seating.map_title')}
+					</p>
+					<p className="m-0 mt-0.5 truncate text-[14px] font-[800] leading-tight tracking-[-0.018em] text-[var(--ink)]">
 						{eventTitle}
 					</p>
 				</div>
 
-				{(dateStr || venueName) && (
-					<div className="hidden shrink-0 items-center gap-1.5 sm:flex">
-						{dateStr && (
-							<span className="font-[family-name:var(--font-mono)] text-[0.6875rem] text-[var(--theme-text-muted)]">
-								{dateStr}
-							</span>
-						)}
-						{dateStr && venueName && (
-							<span className="text-[var(--theme-text-muted)] opacity-30">·</span>
-						)}
-						{venueName && (
-							<span className="font-[family-name:var(--font-mono)] text-[0.6875rem] text-[var(--theme-text-muted)]">
-								{venueName}
-							</span>
-						)}
-					</div>
-				)}
+				<div className="hidden shrink-0 items-center gap-1.5 text-[11.5px] text-[var(--ink-3)] sm:flex">
+					{dateStr && <span>{dateStr}</span>}
+					{dateStr && venueName && <span aria-hidden>·</span>}
+					{venueName && <span>{venueName}</span>}
+				</div>
 			</header>
 
 			{/* ── Price tags ────────────────────────────────────────────────── */}
-			<div className="flex h-[44px] flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)] px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+			<div className="flex h-[52px] flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-[var(--line)] bg-[var(--bg)] px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 				{uniquePrices.map(({ price, color }) => {
 					const isActive = highlightedPrice === price;
 					return (
@@ -363,10 +355,10 @@ export default function SeatSelection({
 							key={price}
 							type="button"
 							onClick={() => setHighlightedPrice(isActive ? null : price)}
-							className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 font-[family-name:var(--font-body)] text-[0.75rem] font-[600] transition-all duration-150 ${
+							className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-[12.5px] font-[700] tracking-[-0.005em] tabular-nums transition-colors duration-150 ${
 								isActive
-									? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-[var(--theme-bg)]'
-									: 'border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-surface)] text-[var(--theme-text)] hover:border-[color-mix(in_srgb,var(--theme-text)_22%,transparent)]'
+									? 'bg-[var(--ink)] text-white'
+									: 'bg-[var(--bg-2)] text-[var(--ink)] hover:bg-[var(--bg-3)]'
 							}`}
 						>
 							<span
@@ -374,7 +366,7 @@ export default function SeatSelection({
 								style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.7)' : color }}
 								aria-hidden="true"
 							/>
-							<span className="font-[family-name:var(--font-mono)]">
+							<span>
 								{price} {currency}
 							</span>
 						</button>
@@ -384,9 +376,9 @@ export default function SeatSelection({
 					<button
 						type="button"
 						onClick={() => setHighlightedPrice(null)}
-						className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
+						className="shrink-0 text-[11px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)] transition-colors hover:text-[var(--ink)]"
 					>
-						× Toate
+						× {t('seating.clear_filter')}
 					</button>
 				)}
 			</div>
@@ -408,7 +400,7 @@ export default function SeatSelection({
 
 				{/* Available count overlay */}
 				<div className="pointer-events-none absolute left-3 top-3">
-					<span className="rounded-full bg-[var(--theme-bg)]/80 px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)] backdrop-blur-sm">
+					<span className="rounded-full bg-white/80 px-3 py-1.5 text-[10.5px] font-[700] uppercase tracking-[0.1em] tabular-nums text-[var(--ink-2)] backdrop-blur-md" style={{ boxShadow: 'var(--shadow-1)' }}>
 						{availableCount} {t('seating.seats_available')}
 					</span>
 				</div>
@@ -420,59 +412,51 @@ export default function SeatSelection({
 			{/* ── Bottom ───────────────────────────────────────────────────── */}
 			{selected.size === 0 ? (
 				<div
-					className="flex-shrink-0 border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]"
+					className="flex-shrink-0 border-t border-[var(--line)] bg-[var(--bg)]"
 					style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
 				>
 					<div className="flex h-[40px] items-center justify-between px-4">
-						<span className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)]">
+						<span className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
 							{t('seating.no_seats_yet')}
 						</span>
-						<span className="font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)] opacity-40">
-							TixLive
+						<span className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-4)]">
+							TIX.LIVE
 						</span>
 					</div>
 				</div>
 			) : (
-				<div className="flex-shrink-0 bg-[var(--brand-primary)] text-[var(--theme-bg)]">
+				<div className="flex-shrink-0 bg-[var(--ink)] text-white" style={{ boxShadow: '0 -8px 28px -8px rgba(0,0,0,0.25)' }}>
 					{/* Seat cards — scrollable, one card per seat */}
 					<div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 						{selectedItems.map((item) => {
-							// "1-16" → row=1, seat=16
 							const hyphen = item.label.indexOf('-');
 							const rowStr = hyphen >= 0 ? item.label.slice(0, hyphen) : item.label;
 							const locStr = hyphen >= 0 ? item.label.slice(hyphen + 1) : '';
 							return (
 								<div key={item.seatId} className="group relative shrink-0">
-									{/* Card */}
-									<div className="flex min-w-[112px] flex-col gap-0.5 rounded-2xl bg-white/15 px-3 py-2.5 backdrop-blur-sm">
-										{/* Tier name + color dot */}
+									<div className="flex min-w-[120px] flex-col gap-1 rounded-[14px] bg-white/12 px-3.5 py-2.5 backdrop-blur-md">
 										<div className="flex items-center gap-1.5">
 											<span
-												className="h-2 w-2 shrink-0 rounded-full"
+												className="h-1.5 w-1.5 shrink-0 rounded-full"
 												style={{ backgroundColor: item.color }}
 												aria-hidden="true"
 											/>
-											<span className="truncate font-[family-name:var(--font-display)] text-[0.6875rem] font-[700] leading-none">
+											<span className="truncate text-[10px] font-[700] uppercase tracking-[0.08em] text-white/70">
 												{item.tierName}
 											</span>
 										</div>
-										{/* Row + Seat — spelled out */}
-										<p className="font-[family-name:var(--font-mono)] text-[0.75rem] font-[700] leading-tight tabular-nums">
-											{locStr
-												? <>{t('seating.row')} {rowStr} · {t('seating.seat')} {locStr}</>
-												: rowStr}
+										<p className="text-[13px] font-[700] leading-tight tracking-[-0.005em] tabular-nums text-white">
+											{locStr ? <>{t('seating.row')} {rowStr} · {t('seating.seat')} {locStr}</> : rowStr}
 										</p>
-										{/* Price */}
-										<p className="font-[family-name:var(--font-mono)] text-[0.6875rem] tabular-nums opacity-60">
+										<p className="text-[11px] font-[600] tabular-nums text-white/55">
 											{item.price} {currency}
 										</p>
 									</div>
-									{/* Hover X */}
 									<button
 										type="button"
 										onClick={() => handleRemove(item.seatId)}
-										className="absolute -right-1.5 -top-1.5 z-10 hidden h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm group-hover:flex"
-										style={{ color: 'var(--brand-primary)' }}
+										className="absolute -right-1.5 -top-1.5 z-10 hidden h-5 w-5 items-center justify-center rounded-full bg-white text-[var(--ink)] group-hover:flex"
+										style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}
 										aria-label={t('seating.remove_seat')}
 									>
 										<Icon icon="mdi:close" width={11} />
@@ -482,29 +466,27 @@ export default function SeatSelection({
 						})}
 					</div>
 
-					{/* Total + CTA — safe-area padding goes here so button never hugs the edge */}
+					{/* Total + CTA */}
 					<div
 						className="flex items-center gap-4 px-4 pt-3"
 						style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 14px)' }}
 					>
+						<button type="button" onClick={openCheckout} className="min-w-0 flex-1 text-left leading-tight">
+							<span className="block text-[10px] font-[700] uppercase tracking-[0.12em] text-white/55">
+								{t('seating.total')}
+							</span>
+							<span className="block text-[22px] font-[800] tracking-[-0.022em] tabular-nums text-white">
+								{total} <span className="text-[13px] font-[700] text-white/65">{currency}</span>
+							</span>
+						</button>
 						<button
 							type="button"
 							onClick={openCheckout}
-							className="min-w-0 flex-1 text-left"
-						>
-							<p className="font-[family-name:var(--font-display)] text-[1.25rem] font-[800] leading-tight tracking-[-0.02em] tabular-nums">
-								{total} <span className="text-[0.875rem] font-[700] opacity-60">{currency}</span>
-							</p>
-						</button>
-						<Button
-							size="lg"
-							onPress={openCheckout}
-							className="shrink-0 rounded-full font-[family-name:var(--font-body)] font-[700] text-white"
-							style={{ backgroundColor: 'var(--brand-accent)' }}
+							className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-6 py-3.5 text-[14px] font-[600] tracking-[-0.005em] text-[var(--ink)] transition-transform duration-150 hover:scale-[1.03]"
 						>
 							{t('seating.continue')}
-							<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-						</Button>
+							<Icon icon="mdi:arrow-right" width={13} />
+						</button>
 					</div>
 				</div>
 			)}

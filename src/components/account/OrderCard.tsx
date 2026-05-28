@@ -9,9 +9,9 @@ interface OrderCardProps {
 }
 
 const STATUS_COLORS: Record<IOrderDetail['status'], { bg: string; fg: string }> = {
-	paid: { bg: 'color-mix(in srgb, #16A34A 12%, transparent)', fg: '#16A34A' },
-	pending: { bg: 'color-mix(in srgb, #D97706 12%, transparent)', fg: '#D97706' },
-	failed: { bg: 'color-mix(in srgb, #DC2626 12%, transparent)', fg: '#DC2626' },
+	paid: { bg: 'rgba(61, 123, 92, 0.14)', fg: '#2A5A42' },
+	pending: { bg: 'rgba(217, 137, 46, 0.14)', fg: '#8B5A1F' },
+	failed: { bg: 'rgba(199, 62, 62, 0.12)', fg: '#9E2E2E' },
 };
 
 export default function OrderCard({ order, locale = 'en' }: OrderCardProps) {
@@ -31,42 +31,43 @@ export default function OrderCard({ order, locale = 'en' }: OrderCardProps) {
 
 	return (
 		<Link href={`/account/orders/${order.id}`} className="group block">
-			<article className="flex items-center gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4 transition-all duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_18%,transparent)] hover:shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]">
-				<div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--theme-text)_6%,transparent)]">
-					<Icon icon="mdi:receipt-text-outline" width={24} className="text-[var(--theme-text-muted)]" />
+			<article
+				className="flex items-center gap-4 rounded-[16px] bg-[var(--surface)] p-4 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-hover)]"
+				style={{ boxShadow: 'var(--shadow-2)' }}
+			>
+				<div className="flex h-[68px] w-[52px] shrink-0 items-center justify-center rounded-[10px] bg-[var(--bg-2)] text-[var(--ink-3)]">
+					<Icon icon="mdi:receipt-text-outline" width={20} />
 				</div>
 
-				<div className="min-w-0 flex-1">
+				<div className="min-w-0 flex-1 leading-[1.35]">
 					{formattedDate && (
-						<div className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)]">
+						<div className="text-[10.5px] font-[700] uppercase tracking-[0.14em] text-[var(--ink-3)]">
 							{formattedDate}
 						</div>
 					)}
-					<h3 className="mt-1 truncate font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+					<h3 className="m-0 mt-1 truncate text-[15px] font-[700] tracking-[-0.012em] text-[var(--ink)]">
 						{order.event_title}
 					</h3>
-					<div className="mt-1.5 flex items-center gap-2 text-[0.75rem] text-[var(--theme-text-muted)]">
-						<span className="font-[family-name:var(--font-data)] tabular-nums">
-							{t('orders.items_count', { count: itemsCount })}
-						</span>
-						<span className="opacity-50">·</span>
-						<span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text)]">
+					<div className="mt-1 text-[12px] font-[500] text-[var(--ink-3)]">
+						<span className="tabular-nums">{t('orders.items_count', { count: itemsCount })}</span>
+						<span className="mx-1.5 opacity-50">·</span>
+						<span className="tabular-nums">
 							{order.total} {order.currency}
 						</span>
 					</div>
 				</div>
 
-				<div className="flex shrink-0 flex-col items-end gap-2">
+				<div className="flex shrink-0 items-center gap-3">
 					<span
-						className="rounded-full px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] font-[600] uppercase tracking-[0.1em]"
+						className="rounded-full px-2.5 py-1 text-[10.5px] font-[800] uppercase tracking-[0.08em]"
 						style={{ backgroundColor: statusColor.bg, color: statusColor.fg }}
 					>
 						{t(`orders.status_${status}`)}
 					</span>
 					<Icon
 						icon="mdi:chevron-right"
-						width={18}
-						className="text-[color-mix(in_srgb,var(--theme-text)_45%,transparent)] transition-colors duration-200 group-hover:text-[var(--theme-text)]"
+						width={14}
+						className="text-[var(--ink-3)] transition-colors duration-150 group-hover:text-[var(--ink)]"
 					/>
 				</div>
 			</article>

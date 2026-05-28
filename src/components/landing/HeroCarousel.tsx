@@ -77,25 +77,37 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 			onMouseEnter={() => prefetch(featured.slug)}
 			onTouchStart={() => prefetch(featured.slug)}
 			className="hero-split group relative isolate grid overflow-hidden rounded-[22px] shadow-[var(--shadow-cinema)] sm:rounded-[28px]"
-			style={{ gridTemplateColumns: '1.05fr 1fr' }}
+			style={{
+				gridTemplateColumns: '1.05fr 1fr',
+				// Keep the hero within one viewport (svh handles mobile chrome).
+				// 8rem leaves room for the sticky 72px header + breathing space.
+				maxHeight: 'calc(100svh - 8rem)',
+			}}
 		>
 			<style>{`
+				.hero-split { min-height: 480px; }
+				.hero-text-card, .hero-poster-card { min-height: 0; }
 				@media (max-width: 820px) {
-					.hero-split { grid-template-columns: 1fr !important; }
-					.hero-text-card { padding: 32px 26px !important; gap: 24px !important; min-height: 320px; }
-					.hero-text-card h2 { font-size: clamp(28px, 7vw, 40px) !important; }
-					.hero-poster-card { aspect-ratio: 4 / 5 !important; }
+					.hero-split {
+						display: flex !important;
+						flex-direction: column !important;
+						min-height: 0 !important;
+						height: calc(100svh - 6rem);
+					}
+					.hero-text-card { padding: 28px 22px !important; gap: 18px !important; flex-shrink: 0; }
+					.hero-text-card h2 { font-size: clamp(24px, 6.5vw, 36px) !important; }
+					.hero-poster-card { flex: 1 1 0 !important; min-height: 0 !important; }
 					.hero-cta-buy { width: 100%; justify-content: center; }
 				}
 			`}</style>
 
 			{/* LEFT — editorial text card on color spill */}
 			<div
-				className="hero-text-card relative isolate flex flex-col justify-between text-white"
+				className="hero-text-card relative isolate flex flex-col justify-between overflow-hidden text-white"
 				style={{
 					background: 'rgba(10,10,10,0.55)',
 					padding: '44px 48px',
-					gap: 36,
+					gap: 28,
 					backdropFilter: 'blur(20px) saturate(180%)',
 					WebkitBackdropFilter: 'blur(20px) saturate(180%)',
 				}}
@@ -129,13 +141,14 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 				<HeroText {...{ t, featured, dowShort, day, mon, year, time, venueLine }} variant="split" />
 			</div>
 
-			{/* RIGHT — sharp portrait poster */}
-			<div className="hero-poster-card relative overflow-hidden bg-[var(--ink)]" style={{ aspectRatio: '3 / 4' }}>
+			{/* RIGHT — full portrait poster, never cropped. Ink-filled letterbox
+			    appears only if the slot's aspect drifts from the image's own. */}
+			<div className="hero-poster-card relative overflow-hidden bg-[var(--ink)]">
 				<Image
 					src={portraitUrl}
 					alt={`${featured.title} poster`}
 					fill
-					className="object-cover"
+					className="object-contain"
 					sizes="(max-width: 820px) 100vw, 600px"
 					priority
 				/>
@@ -153,9 +166,10 @@ function BannerHero({ href, prefetch, t, featured, dowShort, day, mon, year, tim
 			onMouseEnter={() => prefetch(featured.slug)}
 			onTouchStart={() => prefetch(featured.slug)}
 			className="hero-banner group relative isolate grid overflow-hidden rounded-[22px] bg-[var(--ink)] shadow-[var(--shadow-cinema)] sm:rounded-[28px]"
-			style={{ gridTemplateRows: '1fr auto' }}
+			style={{ gridTemplateRows: '1fr auto', maxHeight: 'calc(100svh - 8rem)' }}
 		>
 			<style>{`
+				.hero-banner-cover { min-height: 0; }
 				@media (max-width: 760px) {
 					.hero-banner-cover { aspect-ratio: 16 / 9 !important; }
 					.hero-banner-title { padding: 18px 22px 22px !important; }

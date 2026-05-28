@@ -14,11 +14,12 @@ export default function SpeakersSection({ speakers }: SpeakersSectionProps) {
 
 	return (
 		<SectionShell label={t('sections.speakers')}>
-			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+			<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 				{speakers.map((speaker) => (
 					<div
 						key={speaker.id}
-						className="flex gap-4 rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-4"
+						className="flex gap-4 rounded-[16px] bg-[var(--surface)] p-4"
+						style={{ boxShadow: 'var(--shadow-2)' }}
 					>
 						{speaker.image_url ? (
 							<Image
@@ -29,27 +30,19 @@ export default function SpeakersSection({ speakers }: SpeakersSectionProps) {
 								className="h-16 w-16 shrink-0 rounded-full object-cover"
 							/>
 						) : (
-							<div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--brand-accent)_25%,transparent)] bg-[color-mix(in_srgb,var(--brand-accent)_6%,transparent)]">
-								<Icon
-									icon="mdi:account"
-									width={32}
-									className="text-[color-mix(in_srgb,var(--brand-accent)_55%,transparent)]"
-								/>
+							<div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--bg-2)] text-[var(--ink-3)]">
+								<Icon icon="mdi:account" width={32} />
 							</div>
 						)}
 						<div className="min-w-0">
-							<p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-								{speaker.name}
-							</p>
+							<p className="text-[16px] font-[700] tracking-[-0.012em] text-[var(--ink)]">{speaker.name}</p>
 							{(speaker.title || speaker.company) && (
-								<p className="mt-0.5 text-[0.8125rem] font-[family-name:var(--font-body)] text-[var(--brand-accent)]">
+								<p className="mt-0.5 text-[13px] text-[var(--ink-3)]">
 									{[speaker.title, speaker.company].filter(Boolean).join(' · ')}
 								</p>
 							)}
 							{speaker.bio && (
-								<p className="mt-2 line-clamp-2 text-[0.8125rem] leading-relaxed text-[var(--theme-text-muted)]">
-									{speaker.bio}
-								</p>
+								<p className="mt-2 line-clamp-2 text-[13px] leading-[1.5] text-[var(--ink-3)]">{speaker.bio}</p>
 							)}
 						</div>
 					</div>

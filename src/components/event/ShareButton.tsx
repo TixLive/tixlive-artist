@@ -34,8 +34,8 @@ export default function ShareButton({ title, variant = 'hero' }: ShareButtonProp
     }
   }, [title]);
 
-  const heroClass = 'rounded-xl bg-white/15 text-white backdrop-blur-sm hover:bg-white/25';
-  const inlineClass = 'rounded-xl text-[var(--theme-text-muted)] hover:text-[var(--brand-accent)] hover:bg-[var(--theme-surface)]';
+  const heroClass = 'rounded-full bg-white/15 text-white backdrop-blur-sm hover:bg-white/25';
+  const inlineClass = 'rounded-full text-[var(--ink-3)] hover:bg-[var(--bg-2)] hover:text-[var(--ink)]';
 
   return (
     <div className="relative">
@@ -51,7 +51,7 @@ export default function ShareButton({ title, variant = 'hero' }: ShareButtonProp
 
       {/* Copied toast */}
       {copied && (
-        <div className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-xl bg-[var(--theme-text)] px-3 py-1.5 text-xs text-[var(--theme-bg)] shadow-lg">
+        <div className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-full bg-[var(--ink)] px-3 py-1.5 text-[12px] font-[600] text-white" style={{ boxShadow: 'var(--shadow-float)' }}>
           {t('event.link_copied')}
         </div>
       )}

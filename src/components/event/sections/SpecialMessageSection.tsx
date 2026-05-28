@@ -11,16 +11,14 @@ export default function SpecialMessageSection({ message }: SpecialMessageSection
 
 	return (
 		<section>
-			<div className="rounded-[22px] border border-[color-mix(in_srgb,var(--brand-accent)_25%,transparent)] bg-[color-mix(in_srgb,var(--brand-accent)_6%,transparent)] p-6 sm:p-7">
+			<div className="rounded-[18px] bg-[var(--ink)] p-6 text-white sm:p-7" style={{ boxShadow: 'var(--shadow-2)' }}>
 				<div className="mb-3 flex items-center gap-2">
-					<Icon icon="mdi:heart" width={18} className="text-[var(--brand-accent)]" />
-					<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--brand-accent)]">
+					<Icon icon="mdi:heart" width={16} className="text-white" />
+					<span className="text-[11px] font-[700] uppercase tracking-[0.12em] text-white/65">
 						{t('sections.special_message')}
 					</span>
 				</div>
-				<p className="whitespace-pre-line font-[family-name:var(--font-body)] text-[0.9375rem] leading-relaxed text-[var(--theme-text)]">
-					{message}
-				</p>
+				<p className="m-0 whitespace-pre-line text-[15px] leading-[1.6] text-white">{message}</p>
 			</div>
 		</section>
 	);

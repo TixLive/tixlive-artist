@@ -44,7 +44,8 @@
 		"events_count_few": "{{count}} события",
 		"events_count_many": "{{count}} событий",
 		"events_count_other": "{{count}} событий",
-		"show_more": "Показать ещё"
+		"show_more": "Показать ещё",
+		"hero_doors": "Двери · {{time}}"
 	},
 	"event": {
 		"buy_ticket": "Купить Билет",
@@ -202,7 +203,10 @@
 		"sold_recently_one": "<b>{{count}}</b> билет продан недавно",
 		"sold_recently_few": "<b>{{count}}</b> билета продано недавно",
 		"sold_recently_many": "<b>{{count}}</b> билетов продано недавно",
-		"sold_recently_other": "<b>{{count}}</b> билетов продано недавно"
+		"sold_recently_other": "<b>{{count}}</b> билетов продано недавно",
+		"viewing_now_value": "<b>{{count}}</b>",
+		"viewing_now_label": "смотрят сейчас",
+		"sold_recently_label": "продано за последний час"
 	},
 	"countdown": {
 		"event_starts_in": "До начала события",
@@ -249,7 +253,16 @@
 		"travel": "Проживание и транспорт",
 		"special_message": "Особое сообщение",
 		"aftermovie": "Афтермуви",
-		"event_video": "Видео события"
+		"event_video": "Видео события",
+		"lineup_sub": "{{count}} артистов в лайнапе",
+		"scroll_prev": "Назад",
+		"scroll_next": "Вперёд",
+		"item_one": "ШТУКА",
+		"item_other": "ШТУК",
+		"program_sub": "От открытия дверей до финала",
+		"rules_sub": "Что разрешено и что нет",
+		"travel_sub": "Жильё, рестораны и транспорт для иногородних гостей",
+		"sponsors_sub": "Благодарим тех, кто делает событие возможным"
 	},
 	"camping": {
 		"checkin": "Заезд",

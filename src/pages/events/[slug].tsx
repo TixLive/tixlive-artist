@@ -9,7 +9,6 @@ import { Icon } from '@iconify/react';
 import { ICartItem } from '@/types';
 import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useOrganizer } from '@/contexts/OrganizerContext';
-import { useEventType } from '@/hooks/useEventType';
 import { useHeaderCart } from '@/contexts/LayoutContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -54,8 +53,6 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
   const { data: event, isFetching } = useGetEvent({ slug });
   const notFound = !!slug && !isFetching && event === null;
-
-  useEventType(event?.event_type);
 
   const [activeSessionId, setActiveSessionId] = useState(0);
   useEffect(() => {
@@ -247,8 +244,13 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     })),
   };
 
-  const hairline = 'border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)]';
-  const monoLabel = 'font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]';
+  const ekey = 'text-[11px] font-[600] uppercase tracking-[0.12em] text-[var(--ink-3)]';
+
+  const heroPriceLabel = priceFrom > 0
+    ? maxPrice > priceFrom
+      ? `${priceFrom} - ${maxPrice} ${currency}`
+      : `${priceFrom} ${currency}`
+    : t('event.free');
 
   return (
     <>
@@ -264,9 +266,15 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
       </Head>
 
       <>
-        <EventHero event={event} />
+        <EventHero
+          event={event}
+          onBuy={salesOpen ? (isSeated || totalQuantity > 0 ? handleBuy : scrollToTickets) : undefined}
+          priceFrom={priceFrom}
+          currency={currency}
+          ctaLabel={isSeated ? t('seating.select_seats') : t('events.get_tickets')}
+        />
 
-        <div className="mx-auto flex max-w-[1120px] flex-col gap-10 px-4 pt-3 pb-10 sm:px-6 md:gap-[72px] md:pt-4 md:pb-16">
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pb-10 pt-10 sm:px-5 md:gap-[56px] md:px-8 md:pb-16">
           {/* Live status row */}
           {(showSocial || showCountdown) && (
             <div className="flex flex-wrap items-center gap-3">
@@ -275,152 +283,146 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
             </div>
           )}
 
-          {/* About + buy card */}
-          <section
-            id="about"
-            className={`grid gap-8 md:items-start md:gap-14 ${
-              (event.description || event.venue_name) ? 'md:grid-cols-[1.6fr_1fr]' : 'md:max-w-md'
-            }`}
-          >
+          {/* Two-column body */}
+          <section id="about" className="event-split grid gap-7 md:gap-14" style={{ gridTemplateColumns: 'minmax(0, 1fr) 380px' }}>
+            <style>{`
+              @media (max-width: 980px) {
+                .event-split { grid-template-columns: 1fr !important; gap: 28px !important; }
+                .event-split aside { position: static !important; }
+              }
+            `}</style>
+
             {/* Left column: description + location */}
-            {(event.description || event.venue_name) && (
-              <div className="flex flex-col gap-10">
-                {event.description && (
-                  <div>
-                    <h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
-                      {t('event.about')}
-                    </h2>
-                    <p
-                      className={`mt-4 whitespace-pre-line text-[0.9375rem] leading-relaxed text-[var(--theme-text-muted)] sm:text-[1.0625rem] ${
-                        descriptionExpanded ? '' : 'line-clamp-6'
-                      }`}
+            <div className="flex flex-col gap-12">
+              {event.description && (
+                <section>
+                  <h2 className="m-0 text-[24px] font-[700] tracking-[-0.018em] text-[var(--ink)]">
+                    {t('event.about')}
+                  </h2>
+                  <p
+                    className={`mt-4 max-w-[620px] whitespace-pre-line text-[15px] leading-[1.6] text-[var(--ink-2)] ${
+                      descriptionExpanded ? '' : 'line-clamp-6'
+                    }`}
+                  >
+                    {event.description}
+                  </p>
+                  {event.description.length > 200 && (
+                    <button
+                      className="mt-3 text-[15px] font-[600] text-[var(--ink)] transition-colors duration-150 hover:text-[var(--ink-3)]"
+                      onClick={() => setDescriptionExpanded((o) => !o)}
                     >
-                      {event.description}
-                    </p>
-                    {event.description.length > 200 && (
-                      <button
-                        className="mt-3 font-[family-name:var(--font-body)] text-[0.9375rem] font-[600] text-[var(--brand-accent)] transition-colors duration-200 hover:text-[var(--theme-text)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
-                        onClick={() => setDescriptionExpanded((o) => !o)}
-                      >
-                        {descriptionExpanded ? t('event.show_less') : t('event.show_more')}
-                      </button>
+                      {descriptionExpanded ? t('event.show_less') : t('event.show_more')}
+                    </button>
+                  )}
+                </section>
+              )}
+
+              {event.venue_name && (
+                <section>
+                  <h2 className="m-0 text-[24px] font-[700] tracking-[-0.018em] text-[var(--ink)]">
+                    {t('event.location')}
+                  </h2>
+                  <div className="mt-5 flex flex-col gap-1.5">
+                    <span className="text-[17px] font-[600] tracking-[-0.01em] text-[var(--ink)]">{event.venue_name}</span>
+                    {event.venue_address && (
+                      <span className="text-[13px] text-[var(--ink-3)]">{event.venue_address}</span>
                     )}
                   </div>
-                )}
-
-                {event.venue_name && (
-                  <div>
-                    <h2 className="font-[family-name:var(--font-display)] text-[1.75rem] font-[700] tracking-[-0.02em] text-[var(--theme-text)] sm:text-[2rem]">
-                      {t('event.location')}
-                    </h2>
-                    <div className="mt-4">
-                      <p className="font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] text-[var(--theme-text)]">
-                        {event.venue_name}
-                      </p>
-                      {event.venue_address && (
-                        <p className="mt-0.5 text-[0.8125rem] text-[var(--theme-text-muted)]">{event.venue_address}</p>
-                      )}
-                    </div>
-                    {event.google_place_id && (
+                  {event.google_place_id && (
+                    <div className="mt-4 overflow-hidden rounded-[16px] border border-[var(--line)]" style={{ height: 280 }}>
                       <AddressMap
                         googlePlaceId={event.google_place_id}
                         address={[event.venue_name, event.venue_address].filter(Boolean).join(', ')}
                         height={280}
                       />
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                    </div>
+                  )}
+                </section>
+              )}
+            </div>
 
-            {/* Right column: buy card + trust badges */}
-            <div className="flex flex-col gap-4">
+            {/* Right sidebar: info card + CTAs + trust */}
+            <aside className="flex flex-col gap-3 self-start md:sticky md:top-[88px]">
+              {/* Info card */}
               <div
-                className={`overflow-hidden rounded-[22px] border ${hairline} bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]`}
+                className="overflow-hidden rounded-[22px] bg-[var(--surface)]"
+                style={{ boxShadow: 'var(--shadow-float)' }}
               >
-                <div className="px-6">
-                  <div className={`border-b ${hairline} py-4`}>
-                    <div className={monoLabel}>{t('event.date_label')}</div>
-                    <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-                      {fmtDate(event.date_start)}
-                    </div>
-                    <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
-                      {t('event.doors_open')} {fmtTime(event.date_start)}
-                    </div>
+                <div className="px-5 py-4">
+                  <div className={ekey}>{t('event.date_label')}</div>
+                  <div className="mt-1.5 text-[17px] font-[700] leading-[1.3] tracking-[-0.015em] text-[var(--ink)]">
+                    {fmtDate(event.date_start)}
                   </div>
-
-                  {event.venue_name && (
-                    <div className={`border-b ${hairline} py-4`}>
-                      <div className={monoLabel}>{t('event.location')}</div>
-                      <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                  <div className="mt-1 text-[13px] leading-[1.45] text-[var(--ink-3)]">
+                    {t('event.doors_open')} {fmtTime(event.date_start)}
+                  </div>
+                </div>
+                {event.venue_name && (
+                  <>
+                    <div className="h-px bg-[var(--line)]" />
+                    <div className="px-5 py-4">
+                      <div className={ekey}>{t('event.location')}</div>
+                      <div className="mt-1.5 text-[17px] font-[700] leading-[1.3] tracking-[-0.015em] text-[var(--ink)]">
                         {event.venue_name}
                       </div>
                       {event.venue_address && (
-                        <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">{event.venue_address}</div>
+                        <div className="mt-1 text-[13px] leading-[1.45] text-[var(--ink-3)]">
+                          {event.venue_address}
+                        </div>
                       )}
                     </div>
-                  )}
-
-                  <div className="py-4">
-                    <div className={monoLabel}>{t('event.price_label')}</div>
-                    <div className="mt-1 font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-                      {priceFrom > 0
-                        ? maxPrice > priceFrom
-                          ? `${priceFrom} – ${maxPrice} ${currency}`
-                          : `${priceFrom} ${currency}`
-                        : t('event.free')}
-                    </div>
-                    {ticketTypes.length > 0 && (
-                      <div className="mt-0.5 text-[0.75rem] text-[var(--theme-text-muted)]">
-                        {ticketTypes.length} {t('event.ticket_types_count', { count: ticketTypes.length })}
-                      </div>
-                    )}
+                  </>
+                )}
+                <div className="h-px bg-[var(--line)]" />
+                <div className="px-5 py-4">
+                  <div className={ekey}>{t('event.price_label')}</div>
+                  <div className="mt-1.5 text-[17px] font-[700] leading-[1.3] tracking-[-0.015em] text-[var(--ink)]">
+                    {heroPriceLabel}
                   </div>
-                </div>
-
-                <div className={`flex flex-col gap-2.5 border-t ${hairline} bg-[var(--theme-bg)] px-5 py-4`}>
-                  {!salesOpen ? (
-                    <Button
-                      isDisabled
-                      variant="flat"
-                      size="lg"
-                      className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700]"
-                    >
-                      {event.status === 'soon' ? t('event.coming_soon') : t('event.sales_ended')}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="solid"
-                      size="lg"
-                      className="w-full rounded-full font-[family-name:var(--font-body)] text-[0.9375rem] font-[700] text-[var(--theme-bg)]"
-                      style={{ backgroundColor: 'var(--brand-primary)' }}
-                      onPress={isSeated || totalQuantity > 0 ? handleBuy : scrollToTickets}
-                    >
-                      {buyCtaLabel}
-                      <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
-                    </Button>
+                  {ticketTypes.length > 0 && (
+                    <div className="mt-1 text-[13px] leading-[1.45] text-[var(--ink-3)]">
+                      {ticketTypes.length} {t('event.ticket_types_count', { count: ticketTypes.length })}
+                    </div>
                   )}
-                  <Button
-                    variant="bordered"
-                    size="lg"
-                    onPress={onShare}
-                    className="w-full rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] text-[0.875rem] font-[600] text-[var(--theme-text)]"
-                  >
-                    {copied ? (
-                      <>
-                        <Icon icon="mdi:check" width={16} className="text-[#16A34A]" /> {t('event.link_copied')}
-                      </>
-                    ) : (
-                      <>
-                        <Icon icon="mdi:share-variant-outline" width={16} /> {t('event.share_event')}
-                      </>
-                    )}
-                  </Button>
                 </div>
               </div>
 
-              {/* Trust badges */}
-              <div className="flex flex-col gap-2">
+              {/* Primary CTA */}
+              {!salesOpen ? (
+                <button
+                  disabled
+                  className="rounded-full bg-[var(--bg-2)] px-6 py-[17px] text-[15px] font-[600] tracking-[-0.012em] text-[var(--ink-3)]"
+                >
+                  {event.status === 'soon' ? t('event.coming_soon') : t('event.sales_ended')}
+                </button>
+              ) : (
+                <button
+                  onClick={isSeated || totalQuantity > 0 ? handleBuy : scrollToTickets}
+                  className="urgency-cta inline-flex items-center justify-center gap-2.5 rounded-full bg-[var(--ink)] px-6 py-[17px] text-[15px] font-[600] tracking-[-0.012em] text-white transition-colors duration-150 hover:bg-[var(--ink-2)]"
+                  style={{ boxShadow: '0 6px 20px -6px rgba(0,0,0,0.25)' }}
+                >
+                  {buyCtaLabel} <Icon icon="mdi:arrow-right" width={14} />
+                </button>
+              )}
+
+              {/* Share */}
+              <button
+                onClick={onShare}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--bg-2)] px-6 py-[15px] text-[14px] font-[600] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)]"
+              >
+                {copied ? (
+                  <>
+                    <Icon icon="mdi:check" width={13} className="text-[#16A34A]" /> {t('event.link_copied')}
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="mdi:share-variant-outline" width={13} /> {t('event.share_event')}
+                  </>
+                )}
+              </button>
+
+              {/* Trust rows */}
+              <div className="mt-1 flex flex-col gap-2">
                 {[
                   { icon: 'mdi:shield-check-outline', title: t('event.trust.secure_payment'), sub: t('event.trust.ssl_256') },
                   { icon: 'mdi:flash-outline', title: t('event.trust.instant_ticket'), sub: t('event.trust.email_phone') },
@@ -428,21 +430,19 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                 ].map((it) => (
                   <div
                     key={it.title}
-                    className={`flex items-center gap-3 rounded-2xl border ${hairline} bg-[var(--theme-surface)] px-4 py-3`}
+                    className="flex items-center gap-3 rounded-[14px] bg-[var(--surface-elev)] px-4 py-[14px]"
                   >
-                    <Icon icon={it.icon} width={22} className="shrink-0 text-[var(--theme-text-muted)]" />
-                    <div className="min-w-0">
-                      <div className="font-[family-name:var(--font-display)] text-[0.8125rem] font-[700] text-[var(--theme-text)]">
-                        {it.title}
-                      </div>
-                      <div className="font-[family-name:var(--font-mono)] text-[0.625rem] tracking-[0.05em] text-[var(--theme-text-muted)]">
-                        {it.sub}
-                      </div>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--bg-2)] text-[var(--ink)]">
+                      <Icon icon={it.icon} width={16} />
+                    </span>
+                    <div className="min-w-0 leading-[1.3]">
+                      <div className="text-[13.5px] font-[600] tracking-[-0.005em] text-[var(--ink)]">{it.title}</div>
+                      <div className="text-[11.5px] text-[var(--ink-3)]">{it.sub}</div>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </aside>
           </section>
 
           {/* Order tickets — GA events always; seated events only when multi-session (for the session picker) */}
@@ -516,69 +516,64 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
                     {/* Cart summary */}
                     {totalQuantity > 0 && (
-                      <div className="overflow-hidden rounded-[22px] bg-[var(--brand-primary)] text-[var(--theme-bg)]">
-                        <div className="flex items-center justify-between border-b border-[color-mix(in_srgb,var(--theme-bg)_12%,transparent)] px-6 py-4">
-                          <span className="font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.15em]">
+                      <div className="overflow-hidden rounded-[22px] bg-[var(--ink)] text-white" style={{ boxShadow: 'var(--shadow-2)' }}>
+                        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+                          <span className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-white">
                             {t('event.your_cart')}
                           </span>
-                          <span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] opacity-55">
+                          <span className="text-[10px] font-[700] uppercase tracking-[0.12em] text-white/55">
                             {t('event.step_1_of_2')}
                           </span>
                         </div>
                         <div className="px-6 py-4">
                           {cartItems.map((item) => (
-                            <div key={item.ticket_type_id} className="flex items-center justify-between py-1.5">
-                              <span className="text-[0.875rem]">
-                                <b className="font-[family-name:var(--font-display)] font-[700]">{item.quantity}×</b>
+                            <div key={item.ticket_type_id} className="flex items-center justify-between py-1.5 text-[14px]">
+                              <span>
+                                <b className="font-[700]">{item.quantity}×</b>
                                 <span className="ml-2">{item.ticket_type_name}</span>
                               </span>
-                              <span className="font-[family-name:var(--font-data)] text-[0.875rem] tabular-nums">
-                                {item.price * item.quantity} {currency}
-                              </span>
+                              <span className="tabular-nums">{item.price * item.quantity} {currency}</span>
                             </div>
                           ))}
                           {addonLines.map((l) => (
-                            <div key={l.id} className="flex items-center justify-between py-1 opacity-80">
-                              <span className="text-[0.8125rem]">
-                                <b className="font-[family-name:var(--font-display)] font-[700]">{l.qty}×</b>
+                            <div key={l.id} className="flex items-center justify-between py-1 text-[13px] text-white/80">
+                              <span>
+                                <b className="font-[700]">{l.qty}×</b>
                                 <span className="ml-2">{l.name}</span>
                               </span>
-                              <span className="font-[family-name:var(--font-data)] text-[0.8125rem] tabular-nums">
+                              <span className="tabular-nums">
                                 +{l.price * l.qty * (l.per_ticket ? totalQuantity : 1)} {currency}
                               </span>
                             </div>
                           ))}
                         </div>
-                        <div className="flex items-center justify-between bg-[var(--theme-bg)] px-6 py-5 text-[var(--theme-text)]">
+                        <div className="flex items-center justify-between bg-white px-6 py-5 text-[var(--ink)]">
                           <div>
-                            <div className={monoLabel}>{t('common.total')}</div>
-                            <div className="font-[family-name:var(--font-display)] text-[1.75rem] font-[800] leading-none tracking-[-0.02em] tabular-nums">
-                              {totalPrice} <span className="text-[0.875rem] font-[700]">{currency}</span>
+                            <div className="text-[10px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">{t('common.total')}</div>
+                            <div className="mt-0.5 text-[28px] font-[800] leading-none tracking-[-0.025em] tabular-nums">
+                              {totalPrice} <span className="text-[14px] font-[700]">{currency}</span>
                             </div>
                           </div>
-                          <Button
-                            variant="solid"
-                            size="lg"
-                            className="rounded-full font-[family-name:var(--font-body)] font-[700] text-white"
-                            style={{ backgroundColor: 'var(--brand-accent)' }}
-                            onPress={handleBuy}
+                          <button
+                            onClick={handleBuy}
+                            className="inline-flex items-center gap-2 rounded-full bg-[var(--ink)] py-3.5 pl-5 pr-4 text-[14px] font-[600] tracking-[-0.005em] text-white transition-colors duration-150 hover:bg-[var(--ink-2)]"
                           >
                             {t('event.continue_to_payment')}
-                            <Icon icon="mdi:arrow-right" className="ml-1" width={18} />
-                          </Button>
+                            <Icon icon="mdi:arrow-right" width={14} />
+                          </button>
                         </div>
                       </div>
                     )}
 
                     {/* Promo code — only for GA events; seated events apply promos at checkout */}
-                    <div className={`flex items-center gap-1.5 rounded-full border ${hairline} bg-[var(--theme-surface)] p-1.5`}>
-                      <Icon icon="mdi:tag-outline" width={18} className="ml-2 shrink-0 text-[var(--theme-text-muted)]" />
+                    <div className="flex items-center gap-1 rounded-full bg-[var(--bg-2)] p-1.5">
+                      <Icon icon="mdi:tag-outline" width={16} className="ml-2.5 shrink-0 text-[var(--ink-3)]" />
                       <input
                         type="text"
                         placeholder={t('event.promo_placeholder')}
-                        className="h-9 min-w-0 flex-1 bg-transparent px-2 font-[family-name:var(--font-mono)] text-[0.8125rem] tracking-[0.03em] text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] focus:outline-none"
+                        className="h-9 min-w-0 flex-1 bg-transparent px-2 text-[14px] tracking-[-0.005em] text-[var(--ink)] placeholder:text-[var(--ink-4)] focus:outline-none"
                       />
-                      <button className="h-9 shrink-0 rounded-full bg-[var(--brand-primary)] px-5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[700] text-[var(--theme-bg)] transition-opacity duration-200 hover:opacity-90">
+                      <button className="h-10 shrink-0 rounded-full bg-[var(--ink)] px-5 text-[13.5px] font-[600] tracking-[-0.005em] text-white transition-colors duration-150 hover:bg-[var(--ink-2)]">
                         {t('event.apply')}
                       </button>
                     </div>
@@ -633,37 +628,35 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
           {/* Organizer card */}
           {organizer && (
-          <Link
-            href="/"
-            className="flex items-center gap-5 rounded-[22px] bg-[var(--brand-primary)] p-6 text-[var(--theme-bg)] transition-opacity duration-200 hover:opacity-95"
-          >
-            {organizer.logo_url ? (
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--theme-bg)] p-2">
-                <Image
-                  src={organizer.logo_url}
-                  alt={organizer.name}
-                  width={160}
-                  height={160}
-                  className="h-full w-full object-contain"
-                />
+            <Link
+              href="/"
+              className="flex items-center gap-5 rounded-[22px] bg-[var(--ink)] p-6 text-white transition-colors duration-150 hover:bg-[var(--ink-2)]"
+            >
+              {organizer.logo_url ? (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] bg-white p-2">
+                  <Image
+                    src={organizer.logo_url}
+                    alt={organizer.name}
+                    width={160}
+                    height={160}
+                    className="h-full w-full object-contain"
+                  />
+                </span>
+              ) : (
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] bg-white text-[24px] font-[800] tracking-[-0.022em] text-[var(--ink)]">
+                  {organizer.name.charAt(0)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-[22px] font-[800] tracking-[-0.022em]">{organizer.name}</div>
+                <div className="mt-1 text-[11px] font-[700] uppercase tracking-[0.12em] text-white/60">
+                  {t('event.all_events')}
+                </div>
+              </div>
+              <span className="hidden shrink-0 items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-[13px] font-[600] tracking-[-0.005em] text-[var(--ink)] sm:inline-flex">
+                {t('event.see_all')} <Icon icon="mdi:arrow-right" width={13} />
               </span>
-            ) : (
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--theme-bg)] font-[family-name:var(--font-display)] text-[1.5rem] font-[800] text-[var(--theme-text)]">
-                {organizer.name.charAt(0)}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="font-[family-name:var(--font-display)] text-[1.375rem] font-[700] tracking-[-0.01em]">
-                {organizer.name}
-              </div>
-              <div className="mt-1 font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em] opacity-60">
-                {t('event.all_events')}
-              </div>
-            </div>
-            <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--theme-bg)_25%,transparent)] px-5 py-2.5 font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] sm:inline-flex">
-              {t('event.see_all')} <Icon icon="mdi:arrow-right" width={16} />
-            </span>
-          </Link>
+            </Link>
           )}
         </div>
 
@@ -672,22 +665,20 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
           <div className="pointer-events-none sticky bottom-7 z-40 -mt-24 hidden justify-center md:flex">
             <button
               onClick={handleBuy}
-              className="pointer-events-auto flex items-center gap-4 rounded-full bg-[var(--brand-primary)] py-2 pl-6 pr-2 text-[var(--theme-bg)] shadow-[0_24px_60px_rgba(20,19,18,0.35)]"
+              className="pointer-events-auto flex items-center gap-5 rounded-full bg-[var(--ink)] py-2 pl-6 pr-2 text-white"
+              style={{ boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
             >
-              <span className="text-left">
-                <span className="block font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] opacity-55">
+              <span className="text-left leading-tight">
+                <span className="block text-[10.5px] font-[700] uppercase tracking-[0.12em] text-white/55">
                   {t('event.tickets')}
                 </span>
-                <span className="block font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em]">
+                <span className="block text-[16px] font-[700] tracking-[-0.012em]">
                   {priceFrom > 0 ? `${t('event.from_price')} ${priceFrom} ${currency}` : t('seating.select_seats')}
                 </span>
               </span>
-              <span
-                className="flex items-center gap-2 rounded-full px-6 py-3 font-[family-name:var(--font-body)] text-[0.875rem] font-[700] text-white"
-                style={{ backgroundColor: 'var(--brand-accent)' }}
-              >
+              <span className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[14px] font-[600] tracking-[-0.005em] text-[var(--ink)]">
                 {t('seating.select_seats')}
-                <Icon icon="mdi:arrow-right" width={16} />
+                <Icon icon="mdi:arrow-right" width={13} />
               </span>
             </button>
           </div>

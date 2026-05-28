@@ -42,7 +42,8 @@
 		"low_stock": "{{count}} rămase",
 		"events_count_one": "{{count}} eveniment",
 		"events_count_other": "{{count}} evenimente",
-		"show_more": "Arată Mai Mult"
+		"show_more": "Arată Mai Mult",
+		"hero_doors": "Porțile · {{time}}"
 	},
 	"event": {
 		"buy_ticket": "Cumpără Bilet",
@@ -192,7 +193,10 @@
 		"viewing_now_one": "<b>{{count}}</b> persoană vede acum",
 		"viewing_now_other": "<b>{{count}}</b> persoane văd acum",
 		"sold_recently_one": "<b>{{count}}</b> bilet vândut recent",
-		"sold_recently_other": "<b>{{count}}</b> bilete vândute recent"
+		"sold_recently_other": "<b>{{count}}</b> bilete vândute recent",
+		"viewing_now_value": "<b>{{count}}</b>",
+		"viewing_now_label": "văd acum",
+		"sold_recently_label": "vândute / ultima oră"
 	},
 	"countdown": {
 		"event_starts_in": "Evenimentul începe în",
@@ -239,7 +243,16 @@
 		"travel": "Cazare & Transport",
 		"special_message": "Un mesaj special",
 		"aftermovie": "Aftermovie",
-		"event_video": "Video eveniment"
+		"event_video": "Video eveniment",
+		"lineup_sub": "{{count}} artiști în line-up",
+		"scroll_prev": "Înapoi",
+		"scroll_next": "Înainte",
+		"item_one": "ITEM",
+		"item_other": "ITEME",
+		"program_sub": "De la deschiderea porților până la final",
+		"rules_sub": "Ce este permis și ce nu",
+		"travel_sub": "Cazare, restaurante și transport pentru participanți din afara orașului",
+		"sponsors_sub": "Mulțumiri celor care fac evenimentul posibil"
 	},
 	"camping": {
 		"checkin": "Check-in",

@@ -3,42 +3,99 @@
 
 @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 
-/* Warm Editorial — default tokens */
+/* ============================================================
+   Premium B&W — Apple-style design tokens
+   ============================================================ */
 :root {
-	--brand-primary: #2D2A26;
-	--brand-accent: #8B6914;
-	--theme-bg: #FAFAF8;
-	--theme-surface: #F3F2EF;
-	--theme-text: #141312;
-	--theme-text-muted: #7A756D;
+	/* Legacy aliases — preserved so existing components keep working
+	   without per-file edits. New components should use --ink/--bg/--line. */
+	--brand-primary: #0A0A0A;
+	--brand-accent: #0A0A0A;
+	--theme-bg: #FFFFFF;
+	--theme-surface: #F5F5F7;
+	--theme-text: #0A0A0A;
+	--theme-text-muted: #6E6E73;
 
-	/* Font families — hardcoded names in :root because Next.js font
-	   variables are scoped to <main>, not :root */
-	--font-display: 'Cabinet Grotesk', 'Instrument Sans', system-ui, sans-serif;
-	--font-body: 'Instrument Sans', system-ui, sans-serif;
-	--font-data: 'Geist', system-ui, sans-serif;
-	--font-mono: 'Geist', 'Instrument Sans', system-ui, sans-serif;
+	/* Canvas */
+	--bg: #FFFFFF;
+	--bg-2: #F5F5F7;
+	--bg-3: #EBEBEF;
+	--surface: #FFFFFF;
+	--surface-elev: #FAFAFC;
+
+	/* Ink scale */
+	--ink: #0A0A0A;
+	--ink-2: #1D1D1F;
+	--ink-3: #6E6E73;
+	--ink-4: #98989F;
+	--ink-5: #C7C7CC;
+
+	/* Hairlines */
+	--line: #E8E8ED;
+	--line-2: #F0F0F2;
+
+	/* Accent (CTA, selected states) */
+	--accent: #0A0A0A;
+	--accent-fg: #FFFFFF;
+	--accent-hover: #1D1D1F;
+
+	/* Shadows — soft, fewer borders */
+	--shadow-1: 0 1px 2px rgba(0, 0, 0, 0.04);
+	--shadow-2: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+	--shadow-float: 0 10px 30px -8px rgba(0, 0, 0, 0.12), 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+	--shadow-hover: 0 12px 36px -8px rgba(0, 0, 0, 0.15), 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+	--shadow-cinema: 0 40px 80px -20px rgba(0, 0, 0, 0.30), 0 20px 40px -12px rgba(0, 0, 0, 0.18);
+
+	/* Radii */
+	--r-card: 18px;
+	--r-card-lg: 28px;
+	--r-pill: 999px;
+	--r-btn: 14px;
+	--r-input: 14px;
+
+	/* Font families — Manrope is the system; JetBrains Mono for ticket IDs/codes.
+	   Hardcoded names in :root because Next.js font variables are scoped to
+	   <main>, not :root. */
+	--font-display: 'Manrope', 'Inter Tight', system-ui, sans-serif;
+	--font-body: 'Manrope', 'Inter Tight', system-ui, sans-serif;
+	--font-data: 'Manrope', 'Inter Tight', system-ui, sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-/* Concert — cool violet accent */
-[data-event-type='concert'] {
-	--brand-accent: #6B5CE7;
+* {
+	box-sizing: border-box;
 }
 
-/* Conference — navy accent */
-[data-event-type='conference'] {
-	--brand-accent: #1D4ED8;
-}
-
-/* Sports — warm red accent */
-[data-event-type='sports'] {
-	--brand-accent: #C53030;
+html {
+	scroll-behavior: smooth;
 }
 
 body {
-	background: var(--theme-bg);
-	color: var(--theme-text);
+	background: var(--bg);
+	color: var(--ink);
 	font-family: var(--font-body);
+	font-feature-settings: 'ss01';
+	letter-spacing: -0.01em;
+	-webkit-font-smoothing: antialiased;
+	min-height: 100vh;
+	overflow-x: hidden;
+}
+
+/* Premium scrollbar */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.18);
+	border-radius: 999px;
+	border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(0, 0, 0, 0.32);
 }
 
 /* reCAPTCHA v2 invisible — hide the floating badge.
@@ -48,34 +105,63 @@ body {
 	visibility: hidden !important;
 }
 
-/* Pulse animation for critical urgency badge */
+/* ============================================================
+   Animations
+   ============================================================ */
+
+/* Critical-urgency capacity badge */
 @keyframes urgency-pulse {
 	0%, 100% { opacity: 1; }
 	50% { opacity: 0.7; }
 }
-
 .animate-urgency-pulse {
 	animation: urgency-pulse 1.5s ease-in-out infinite;
 }
 
-/* V2 event page — soft entrance + live-status pulses */
+/* Page mount fade-in */
 @keyframes v2-fade-in {
 	from { opacity: 0; transform: translateY(4px); }
 	to { opacity: 1; transform: none; }
 }
+.animate-v2-fade-in {
+	animation: v2-fade-in 0.18s ease-out;
+}
 
+/* Live-status pulse dot */
 @keyframes v2-pulse-dot {
 	0% { box-shadow: 0 0 0 0 color-mix(in srgb, #16A34A 55%, transparent); }
 	70% { box-shadow: 0 0 0 6px transparent; }
 	100% { box-shadow: 0 0 0 0 transparent; }
 }
-
-.animate-v2-fade-in {
-	animation: v2-fade-in 0.18s ease-out;
-}
-
 .animate-v2-pulse-dot {
 	animation: v2-pulse-dot 1.6s ease-out infinite;
+}
+
+/* Urgency CTA — breath + shimmer (Apple-style) */
+@keyframes urgency-breath {
+	0%, 100% { transform: scale(1); box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.45); }
+	50% { transform: scale(1.025); box-shadow: 0 14px 36px -8px rgba(0, 0, 0, 0.55); }
+}
+@keyframes urgency-shimmer {
+	0% { transform: translateX(-130%); }
+	55%, 100% { transform: translateX(130%); }
+}
+
+/* Hero image shimmer */
+@keyframes hero-shimmer {
+	50% { transform: translateX(100%); }
+}
+
+/* Marquee scroller */
+@keyframes marquee {
+	from { transform: translateX(0); }
+	to { transform: translateX(-50%); }
+}
+
+/* Slow spin (sticker / asterisk) */
+@keyframes slow-spin {
+	from { transform: rotate(0); }
+	to { transform: rotate(360deg); }
 }
 
 /* Skeleton shimmer */
@@ -83,19 +169,20 @@ body {
 	0% { background-position: -200% 0; }
 	100% { background-position: 200% 0; }
 }
-
 .skeleton {
 	background: linear-gradient(
 		90deg,
-		var(--theme-surface) 0%,
-		color-mix(in srgb, var(--theme-surface) 50%, var(--theme-bg)) 50%,
-		var(--theme-surface) 100%
+		var(--bg-2) 0%,
+		color-mix(in srgb, var(--bg-2) 50%, var(--bg)) 50%,
+		var(--bg-2) 100%
 	);
 	background-size: 200% 100%;
 	animation: skeleton-shimmer 1.6s ease-in-out infinite;
 }
 
-/* react-phone-number-input — white-label phone field */
+/* ============================================================
+   react-phone-number-input — white-label phone field
+   ============================================================ */
 .tixlive-phone-input.PhoneInput {
 	display: flex;
 	align-items: center;
@@ -109,7 +196,7 @@ body {
 	gap: 0.375rem;
 	padding-right: 0.625rem;
 	margin-right: 0.125rem;
-	border-right: 1px solid color-mix(in srgb, var(--theme-text) 10%, transparent);
+	border-right: 1px solid var(--line);
 	height: 1.75rem;
 }
 
@@ -118,12 +205,12 @@ body {
 	height: 1.125rem;
 	border-radius: 2px;
 	overflow: hidden;
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-text) 8%, transparent);
+	box-shadow: 0 0 0 1px var(--line);
 	background: transparent;
 }
 
 .tixlive-phone-input .PhoneInputCountryIcon--border {
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-text) 8%, transparent);
+	box-shadow: 0 0 0 1px var(--line);
 }
 
 .tixlive-phone-input .PhoneInputCountryIconImg {
@@ -136,7 +223,7 @@ body {
 .tixlive-phone-input .PhoneInputCountrySelectArrow {
 	width: 0.4rem;
 	height: 0.4rem;
-	border-color: var(--theme-text-muted);
+	border-color: var(--ink-3);
 	opacity: 0.7;
 	margin-left: 0.125rem;
 }
@@ -152,15 +239,15 @@ body {
 	font-family: var(--font-body);
 	font-size: 0.9375rem;
 	line-height: 1.4;
-	color: var(--theme-text);
-	letter-spacing: 0;
+	color: var(--ink);
+	letter-spacing: -0.005em;
 	-webkit-appearance: none;
 	appearance: none;
 }
 
 .tixlive-phone-input .PhoneInputInput::placeholder {
-	color: var(--theme-text-muted);
-	opacity: 0.7;
+	color: var(--ink-4);
+	opacity: 1;
 }
 
 .tixlive-phone-input .PhoneInputInput:focus,
@@ -169,21 +256,23 @@ body {
 	box-shadow: none;
 }
 
-/* Kill autofill's inner outline/background that visually shrinks the field */
 .tixlive-phone-input .PhoneInputInput:-webkit-autofill,
 .tixlive-phone-input .PhoneInputInput:-webkit-autofill:hover,
 .tixlive-phone-input .PhoneInputInput:-webkit-autofill:focus,
 .tixlive-phone-input .PhoneInputInput:-webkit-autofill:active {
-	-webkit-text-fill-color: var(--theme-text);
-	-webkit-box-shadow: 0 0 0 1000px var(--theme-surface) inset;
-	box-shadow: 0 0 0 1000px var(--theme-surface) inset;
-	caret-color: var(--theme-text);
+	-webkit-text-fill-color: var(--ink);
+	-webkit-box-shadow: 0 0 0 1000px var(--bg-2) inset;
+	box-shadow: 0 0 0 1000px var(--bg-2) inset;
+	caret-color: var(--ink);
 	transition: background-color 9999s ease-in-out 0s;
 }
 
 /* Reduced motion: disable all animations */
 @media (prefers-reduced-motion: reduce) {
-	.animate-urgency-pulse {
+	.animate-urgency-pulse,
+	.animate-v2-fade-in,
+	.animate-v2-pulse-dot,
+	.skeleton {
 		animation: none;
 	}
 

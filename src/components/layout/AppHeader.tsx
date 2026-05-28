@@ -23,19 +23,26 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 	const hasCart = (cartQuantity ?? 0) > 0;
 
 	return (
-		<header className="sticky top-0 z-50 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/95 backdrop-blur-md">
-			<div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-4 sm:px-6">
-				{/* Logo / mark */}
-				<Link href="/" className="flex shrink-0 items-center gap-2.5">
+		<header
+			className="sticky top-0 z-50 border-b border-[var(--line)]"
+			style={{
+				background: 'rgba(255,255,255,0.85)',
+				backdropFilter: 'saturate(180%) blur(20px)',
+				WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+			}}
+		>
+			<div className="mx-auto flex h-[72px] max-w-[1200px] items-center justify-between px-4 sm:px-5 md:px-8">
+				{/* Logo */}
+				<Link href="/" className="flex h-10 shrink-0 items-center gap-2.5">
 					{logoUrl ? (
 						// eslint-disable-next-line @next/next/no-img-element
-						<img src={logoUrl} alt={organizerName} className="h-9 w-auto max-w-[160px] rounded-md object-contain" />
+						<img src={logoUrl} alt={organizerName} className="block h-10 w-auto max-w-[180px] object-contain" />
 					) : (
 						<>
-							<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary)] font-[family-name:var(--font-display)] text-[1.0625rem] font-[800] leading-none text-[var(--theme-bg)]">
+							<span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--ink)] text-[1.0625rem] font-[800] leading-none text-white">
 								{organizerName.charAt(0)}
 							</span>
-							<span className="font-[family-name:var(--font-display)] text-[1rem] font-[800] tracking-[-0.01em] text-[var(--theme-text)]">
+							<span className="text-[1rem] font-[800] tracking-[-0.014em] text-[var(--ink)]">
 								{organizerName}
 							</span>
 						</>
@@ -43,27 +50,26 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 				</Link>
 
 				{/* Right — language + cart / account */}
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-1.5">
 					<LanguageSwitcher />
 
 					{hasCart ? (
 						<button
 							onClick={onCartClick}
-							className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.8125rem] font-[600] text-[var(--theme-bg)] transition-opacity duration-200 hover:opacity-90"
-							style={{ backgroundColor: 'var(--brand-primary)' }}
+							className="inline-flex items-center gap-2 rounded-full bg-[var(--ink)] py-2.5 pl-3.5 pr-4 text-[13.5px] font-[600] tracking-[-0.005em] text-white transition-colors duration-150 hover:bg-[var(--ink-2)]"
 						>
-							<Icon icon="mdi:ticket-outline" width={16} />
-							<span className="font-[family-name:var(--font-data)] tabular-nums">
+							<Icon icon="mdi:ticket-outline" width={14} />
+							<span className="tabular-nums">
 								{cartQuantity} · {cartTotal} {currency}
 							</span>
 						</button>
 					) : (
 						<Link
 							href="/account"
-							className="inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] px-3 py-2 text-[0.8125rem] font-[500] text-[var(--theme-text)] transition-colors duration-200 hover:bg-[var(--theme-surface)] sm:px-4"
+							className="inline-flex items-center gap-[7px] rounded-full bg-[var(--ink)] py-2.5 pl-3.5 pr-[18px] text-[13.5px] font-[600] tracking-[-0.005em] text-white transition-colors duration-150 hover:bg-[var(--ink-2)]"
 							aria-label={t('header.my_account')}
 						>
-							<Icon icon="mdi:account-circle-outline" width={16} />
+							<Icon icon="mdi:account-outline" width={14} />
 							<span className="hidden sm:inline">{t('header.my_account')}</span>
 						</Link>
 					)}
@@ -100,19 +106,19 @@ function LanguageSwitcher() {
 		<div ref={ref} className="relative">
 			<button
 				onClick={() => setOpen((o) => !o)}
-				className="flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] bg-[var(--theme-surface)] px-3 py-2 text-[var(--theme-text)] transition-colors duration-200 hover:border-[color-mix(in_srgb,var(--theme-text)_22%,transparent)]"
+				className="inline-flex items-center gap-[7px] rounded-full bg-[var(--bg-2)] py-2.5 pl-3.5 pr-4 text-[13.5px] font-[600] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)]"
 				aria-label={t('header.change_language')}
 				aria-haspopup="listbox"
 				aria-expanded={open}
 			>
-				<Icon icon="mdi:web" width={15} className="text-[var(--theme-text-muted)]" />
-				<span className="font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em]">{current}</span>
-				<Icon icon="mdi:chevron-down" width={14} className={`text-[var(--theme-text-muted)] transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+				<Icon icon="mdi:web" width={13} />
+				<span className="hidden uppercase sm:inline">{current}</span>
+				<Icon icon="mdi:chevron-down" width={11} className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
 			</button>
 			{open && (
 				<div
 					role="listbox"
-					className="absolute right-0 top-[calc(100%+6px)] z-[60] min-w-[180px] animate-v2-fade-in rounded-2xl border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] p-1.5 shadow-[0_12px_32px_rgba(20,19,18,0.18)]"
+					className="absolute right-0 top-[calc(100%+8px)] z-[60] min-w-[180px] animate-v2-fade-in rounded-2xl border border-[var(--line)] bg-white p-1.5 shadow-[var(--shadow-float)]"
 				>
 					{locales.map((l) => {
 						const active = l === current;
@@ -124,13 +130,13 @@ function LanguageSwitcher() {
 								aria-selected={active}
 								onClick={() => change(l)}
 								className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-colors ${
-									active ? 'bg-[var(--theme-bg)]' : 'hover:bg-[var(--theme-bg)]'
+									active ? 'bg-[var(--bg-2)]' : 'hover:bg-[var(--bg-2)]'
 								}`}
 							>
 								<span className="text-[1rem] leading-none">{meta.flag}</span>
-								<span className="flex-1 font-[family-name:var(--font-body)] text-[0.8125rem] font-[600] text-[var(--theme-text)]">{meta.name}</span>
-								<span className={`font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] ${active ? 'text-[var(--brand-accent)]' : 'text-[var(--theme-text-muted)]'}`}>{l}</span>
-								{active && <Icon icon="mdi:check" width={14} className="text-[var(--brand-accent)]" />}
+								<span className="flex-1 text-[0.8125rem] font-[600] tracking-[-0.005em] text-[var(--ink)]">{meta.name}</span>
+								<span className={`text-[0.625rem] uppercase tracking-[0.1em] ${active ? 'text-[var(--ink)]' : 'text-[var(--ink-4)]'}`}>{l}</span>
+								{active && <Icon icon="mdi:check" width={14} className="text-[var(--ink)]" />}
 							</button>
 						);
 					})}

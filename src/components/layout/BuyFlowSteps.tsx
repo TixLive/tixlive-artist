@@ -19,7 +19,7 @@ export default function BuyFlowSteps({ currentStep }: BuyFlowStepsProps) {
 		{ n: 3, label: t('buy_flow.your_ticket') },
 	] as const;
 	return (
-		<div className="sticky top-16 z-30 border-b border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/95 backdrop-blur-md">
+		<div className="sticky top-[72px] z-30 border-b border-[var(--line)] bg-[var(--bg)]/85 backdrop-blur-md">
 			<div className="mx-auto flex max-w-[1440px] items-center justify-center px-4 py-3 sm:px-6">
 				<ol className="flex items-center gap-2 sm:gap-3">
 					{STEPS.map((step, i) => {

@@ -42,7 +42,8 @@
 		"low_stock": "{{count}} left",
 		"events_count_one": "{{count}} event",
 		"events_count_other": "{{count}} events",
-		"show_more": "Show More"
+		"show_more": "Show More",
+		"hero_doors": "Doors · {{time}}"
 	},
 	"event": {
 		"buy_ticket": "Buy Ticket",
@@ -192,7 +193,10 @@
 		"viewing_now_one": "<b>{{count}}</b> person viewing now",
 		"viewing_now_other": "<b>{{count}}</b> people viewing now",
 		"sold_recently_one": "<b>{{count}}</b> ticket sold recently",
-		"sold_recently_other": "<b>{{count}}</b> tickets sold recently"
+		"sold_recently_other": "<b>{{count}}</b> tickets sold recently",
+		"viewing_now_value": "<b>{{count}}</b>",
+		"viewing_now_label": "viewing now",
+		"sold_recently_label": "sold in last hour"
 	},
 	"countdown": {
 		"event_starts_in": "Event starts in",
@@ -239,7 +243,16 @@
 		"travel": "Travel & Stay",
 		"special_message": "A Special Message",
 		"aftermovie": "Aftermovie",
-		"event_video": "Event video"
+		"event_video": "Event video",
+		"lineup_sub": "{{count}} artists in the lineup",
+		"scroll_prev": "Previous",
+		"scroll_next": "Next",
+		"item_one": "ITEM",
+		"item_other": "ITEMS",
+		"program_sub": "From doors open until close",
+		"rules_sub": "What's allowed and what's not",
+		"travel_sub": "Accommodation, dining, and transport for out-of-town attendees",
+		"sponsors_sub": "Thanks to those who make the event possible"
 	},
 	"camping": {
 		"checkin": "Check-in",

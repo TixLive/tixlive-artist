@@ -11,7 +11,7 @@ interface AppFooterProps {
 	pages?: IOrganizer['pages'];
 }
 
-/** The four fixed legal pages, in display order, mapped to their i18n label key. */
+/** Fixed legal pages, in display order, mapped to their i18n label key. */
 const LEGAL_PAGES: Array<{ pageType: string; labelKey: string }> = [
 	{ pageType: 'terms', labelKey: 'footer.terms' },
 	{ pageType: 'cookies', labelKey: 'footer.cookies' },
@@ -25,37 +25,32 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 	const publishedTypes = new Set((pages ?? []).map((p) => p.page_type));
 	const legalLinks = LEGAL_PAGES.filter((p) => publishedTypes.has(p.pageType));
 
-	const heading = 'mb-4 font-[family-name:var(--font-mono)] text-[0.625rem] font-[500] uppercase tracking-[0.15em] text-[color-mix(in_srgb,var(--theme-bg)_55%,transparent)]';
-	const link = 'text-[color-mix(in_srgb,var(--theme-bg)_72%,transparent)] transition-colors duration-200 hover:text-[var(--theme-bg)]';
+	const heading = 'mb-3.5 text-[11px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]';
+	const link = 'text-[14px] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:text-[var(--ink-3)]';
 
 	return (
-		<footer className="mt-auto bg-[var(--brand-primary)] text-[var(--theme-bg)]">
-			<div className="mx-auto max-w-[1120px] px-4 py-14 sm:px-6 md:py-20">
-				<div className="grid grid-cols-2 gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
+		<footer className="mt-20 border-t border-[var(--line)] bg-[var(--bg)]">
+			<div className="mx-auto max-w-[1200px] px-4 pb-7 pt-14 sm:px-5 md:px-8">
+				<div className="grid grid-cols-1 gap-8 pb-12 md:grid-cols-[1.6fr_1fr_1fr] md:gap-14">
 					{/* Organizer info */}
-					<div className="col-span-2 md:col-span-1 md:pr-6">
-						<div className="flex items-center gap-3">
-							{logoUrl && (
-								<span className="inline-flex h-9 items-center justify-center rounded-lg bg-[var(--theme-bg)] px-1.5">
-									<Image src={logoUrl} alt={organizerName ?? ''} width={120} height={84} className="h-7 w-auto object-contain" />
-								</span>
-							)}
-							<span className="truncate font-[family-name:var(--font-display)] text-[1.0625rem] font-[700] tracking-[-0.01em] text-[var(--theme-bg)]">
-								{organizerName}
-							</span>
-						</div>
+					<div className="flex flex-col items-start gap-4">
+						{logoUrl ? (
+							<Image src={logoUrl} alt={organizerName ?? ''} width={160} height={40} className="block h-10 w-auto object-contain object-left" />
+						) : (
+							<span className="text-[20px] font-[800] tracking-[-0.022em] text-[var(--ink)]">{organizerName}</span>
+						)}
 						{organizerBio && (
-							<p className="mt-3 max-w-xs text-[0.8125rem] leading-relaxed text-[color-mix(in_srgb,var(--theme-bg)_65%,transparent)]">
+							<p className="m-0 max-w-[340px] text-[14px] leading-[1.55] text-[var(--ink-3)]">
 								{organizerBio}
 							</p>
 						)}
 					</div>
 
-					{/* Legal — only pages the organizer has actually published */}
+					{/* Legal */}
 					{legalLinks.length > 0 && (
 						<div>
 							<h3 className={heading}>{t('footer.legal')}</h3>
-							<ul className="space-y-3 text-[0.8125rem]">
+							<ul className="flex flex-col gap-2.5">
 								{legalLinks.map((page) => (
 									<li key={page.pageType}>
 										<Link href={`/${page.pageType}`} className={link}>
@@ -70,32 +65,30 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 					{/* Contact */}
 					<div>
 						<h3 className={heading}>{t('footer.contact')}</h3>
-						<ul className="space-y-3 text-[0.8125rem]">
+						<ul className="flex flex-col gap-2.5">
 							<li>
 								<a href="mailto:support@tix.live" className={link}>support@tix.live</a>
 							</li>
 						</ul>
 					</div>
 				</div>
-			</div>
 
-			{/* Bottom bar */}
-			<div className="border-t border-[color-mix(in_srgb,var(--theme-bg)_14%,transparent)]">
-				<div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-2 px-4 py-5 sm:px-6">
-					<p className="text-[0.75rem] text-[color-mix(in_srgb,var(--theme-bg)_55%,transparent)]">
+				{/* Bottom bar */}
+				<div className="flex flex-col items-start justify-between gap-3 border-t border-[var(--line)] pt-6 sm:flex-row sm:items-center">
+					<span className="text-[12px] text-[var(--ink-3)]">
 						© {new Date().getFullYear()} {organizerName}
-					</p>
-					<p className="font-[family-name:var(--font-mono)] text-[0.6875rem] uppercase tracking-[0.1em] text-[color-mix(in_srgb,var(--theme-bg)_55%,transparent)]">
+					</span>
+					<span className="inline-flex items-center gap-1.5 text-[12px] uppercase tracking-[0.12em] text-[var(--ink-3)]">
 						Powered by{' '}
 						<a
 							href="https://tix.live"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="font-[family-name:var(--font-display)] font-[700] normal-case tracking-normal text-[var(--theme-bg)] transition-colors duration-200 hover:text-[var(--brand-accent)]"
+							className="font-[700] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:text-[var(--ink-3)]"
 						>
-							TIX LIVE
+							TIX.LIVE
 						</a>
-					</p>
+					</span>
 				</div>
 			</div>
 		</footer>

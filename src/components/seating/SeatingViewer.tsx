@@ -32,8 +32,8 @@ const MINIMAP_PAD = 12;
 const SEAT_TAP_MIN_R_MOUSE = 7;
 const SEAT_TAP_MIN_R_TOUCH = 12;
 // Target seat screen radius (px) the next progressive zoom step aims for.
-const SEAT_TAP_TARGET_R_MOUSE = 13;
-const SEAT_TAP_TARGET_R_TOUCH = 20;
+const SEAT_TAP_TARGET_R_MOUSE = 10;
+const SEAT_TAP_TARGET_R_TOUCH = 15;
 
 interface Palette {
 	canvas: string;
@@ -871,7 +871,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 							y: h / 2 - centerY * sectionFitScale,
 						});
 					} else {
-						const stepScale = Math.min(MAX_SCALE, Math.max(scale.current * 1.8, targetScale));
+						const stepScale = Math.min(MAX_SCALE, Math.max(scale.current * 1.35, targetScale));
 						startAnimation(stepScale, {
 							x: w / 2 - cx * stepScale,
 							y: h / 2 - cy * stepScale,

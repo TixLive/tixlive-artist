@@ -69,11 +69,16 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
 
 	const featured = openEvents[0];
 	const date = new Date(featured.date_start);
-	const dowShort = date.toLocaleDateString('ro-RO', { weekday: 'short' }).replace('.', '');
+	const dowShort = date
+		.toLocaleDateString('ro-RO', { weekday: 'short' })
+		.replace('.', '');
 	const day = date.getDate();
 	const mon = date.toLocaleDateString('ro-RO', { month: 'long' });
 	const year = date.getFullYear();
-	const time = date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+	const time = date.toLocaleTimeString('ro-RO', {
+		hour: '2-digit',
+		minute: '2-digit',
+	});
 
 	const parts: HeroParts = {
 		href: `/events/${featured.slug}`,
@@ -90,12 +95,27 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
 
 	return (
 		<section className="mx-auto max-w-[1200px] px-4 pt-4 sm:px-5 sm:pt-6 md:px-8">
-			{featured.poster_portrait_url ? <SplitHero {...parts} /> : <BannerHero {...parts} />}
+			{featured.poster_portrait_url ? (
+				<SplitHero {...parts} />
+			) : (
+				<BannerHero {...parts} />
+			)}
 		</section>
 	);
 }
 
-function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time, venueLine }: HeroParts) {
+function SplitHero({
+	href,
+	prefetch,
+	t,
+	featured,
+	dowShort,
+	day,
+	mon,
+	year,
+	time,
+	venueLine,
+}: HeroParts) {
 	// poster_portrait_url is guaranteed by the caller's branch check.
 	const portraitUrl = featured.poster_portrait_url!;
 	// Detect the poster's actual aspect so the slot can hug it edge-to-edge.
@@ -122,7 +142,7 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 				   so the hero doesn't tower on 4K monitors. Lives here (not
 				   inline) so the mobile media query below can override it. */
 				.hero-split {
-					height: min(calc(100svh - 5.5rem), 820px);
+					height: min(calc(100svh - 5.5rem), 580px);
 					min-height: 480px;
 				}
 				.hero-text-card, .hero-poster-card { min-height: 0; }
@@ -178,12 +198,16 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 					aria-hidden="true"
 					className="pointer-events-none absolute inset-0"
 					style={{
-						background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.25) 100%)',
+						background:
+							'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.25) 100%)',
 						zIndex: 0,
 					}}
 				/>
 
-				<HeroText {...{ t, featured, dowShort, day, mon, year, time, venueLine }} variant="split" />
+				<HeroText
+					{...{ t, featured, dowShort, day, mon, year, time, venueLine }}
+					variant="split"
+				/>
 			</div>
 
 			{/* RIGHT — poster slot sized to the artwork's own aspect-ratio so the
@@ -213,7 +237,18 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 	);
 }
 
-function BannerHero({ href, prefetch, t, featured, dowShort, day, mon, year, time, venueLine }: HeroParts) {
+function BannerHero({
+	href,
+	prefetch,
+	t,
+	featured,
+	dowShort,
+	day,
+	mon,
+	year,
+	time,
+	venueLine,
+}: HeroParts) {
 	const coverUrl = featured.poster_url;
 
 	return (
@@ -313,11 +348,15 @@ function HeroText({
 			)}
 			<div className="flex items-baseline gap-3.5">
 				<div className="flex flex-col leading-none">
-					<span className="text-[11px] font-[700] uppercase tracking-[0.16em] text-white/55">{dowShort}</span>
+					<span className="text-[11px] font-[700] uppercase tracking-[0.16em] text-white/55">
+						{dowShort}
+					</span>
 					<span
 						className="mt-0.5 text-white"
 						style={{
-							fontSize: isSplit ? 'clamp(40px, 4.8vw, 64px)' : 'clamp(28px, 3.4vw, 44px)',
+							fontSize: isSplit
+								? 'clamp(40px, 4.8vw, 64px)'
+								: 'clamp(28px, 3.4vw, 44px)',
 							fontWeight: 800,
 							letterSpacing: '-0.04em',
 						}}
@@ -329,7 +368,9 @@ function HeroText({
 					<span className="text-[14px] font-[700] capitalize tracking-[-0.005em] text-white">
 						{mon} {year}
 					</span>
-					<span className="text-[12.5px] font-[500] text-white/70">{t('events.hero_doors', { time })}</span>
+					<span className="text-[12.5px] font-[500] text-white/70">
+						{t('events.hero_doors', { time })}
+					</span>
 				</div>
 			</div>
 		</div>
@@ -339,7 +380,9 @@ function HeroText({
 		<h2
 			className="relative z-[2] m-0 text-white"
 			style={{
-				fontSize: isSplit ? 'clamp(28px, 3.4vw, 44px)' : 'clamp(24px, 2.8vw, 36px)',
+				fontSize: isSplit
+					? 'clamp(28px, 3.4vw, 44px)'
+					: 'clamp(24px, 2.8vw, 36px)',
 				fontWeight: 800,
 				letterSpacing: '-0.035em',
 				lineHeight: 1.06,
@@ -351,7 +394,9 @@ function HeroText({
 	);
 
 	const venueAndCta = (
-		<div className={`relative z-[2] flex ${isSplit ? 'flex-col gap-4' : 'flex-wrap items-end justify-between gap-4'}`}>
+		<div
+			className={`relative z-[2] flex ${isSplit ? 'flex-col gap-4' : 'flex-wrap items-end justify-between gap-4'}`}
+		>
 			{venueLine && (
 				<div className="flex items-center gap-2 text-[13.5px] font-[500] text-white/85">
 					<Icon icon="mdi:map-marker-outline" width={13} />
@@ -366,7 +411,10 @@ function HeroText({
 				{t('events.get_tickets')}
 				{featured.price_from != null && featured.price_from > 0 && (
 					<span className="rounded-full bg-[var(--ink)] px-3 py-1.5 text-[10.5px] font-[700] uppercase tracking-[0.04em] text-white">
-						{t('events.price_from', { price: featured.price_from, currency: featured.currency ?? '' })}
+						{t('events.price_from', {
+							price: featured.price_from,
+							currency: featured.currency ?? '',
+						})}
 					</span>
 				)}
 			</span>

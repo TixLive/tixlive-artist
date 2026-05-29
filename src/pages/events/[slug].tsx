@@ -333,13 +333,11 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                     )}
                   </div>
                   {event.google_place_id && (
-                    <div className="mt-4 overflow-hidden rounded-[16px] border border-[var(--line)]" style={{ height: 280 }}>
-                      <AddressMap
-                        googlePlaceId={event.google_place_id}
-                        address={[event.venue_name, event.venue_address].filter(Boolean).join(', ')}
-                        height={280}
-                      />
-                    </div>
+                    <AddressMap
+                      googlePlaceId={event.google_place_id}
+                      address={[event.venue_name, event.venue_address].filter(Boolean).join(', ')}
+                      height={280}
+                    />
                   )}
                 </section>
               )}

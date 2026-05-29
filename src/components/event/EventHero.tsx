@@ -1,7 +1,30 @@
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { IEventDetail } from '@/types';
+
+function useImageAspect(src: string | null | undefined): number | null {
+	const [aspect, setAspect] = useState<number | null>(null);
+	useEffect(() => {
+		if (!src) {
+			setAspect(null);
+			return;
+		}
+		let cancelled = false;
+		const img = new window.Image();
+		img.onload = () => {
+			if (!cancelled && img.naturalHeight > 0) {
+				setAspect(img.naturalWidth / img.naturalHeight);
+			}
+		};
+		img.src = src;
+		return () => {
+			cancelled = true;
+		};
+	}, [src]);
+	return aspect;
+}
 
 interface EventHeroProps {
 	event: IEventDetail;
@@ -12,8 +35,9 @@ interface EventHeroProps {
 }
 
 /**
- * Premium stacked hero — full-width 16:9 poster on top, blurred title zone
- * below with date display, title, venue, and an inline "buy" CTA pill. The
+ * Premium stacked hero — full-width 3:1 banner on ≥640px; on mobile the
+ * container matches the portrait poster's natural aspect ratio (detected at
+ * runtime) so object-cover fills cleanly without crop or letterbox bars. The
  * bottom zone uses a blurred color-spill of the same poster as its background.
  */
 export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel }: EventHeroProps) {
@@ -25,8 +49,11 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 	const year = date.getFullYear();
 	const time = date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-	const heroImage = event.poster_url ?? event.poster_portrait_url ?? null;
+	const landscapeUrl = event.poster_url ?? event.poster_portrait_url ?? null;
+	const portraitUrl = event.poster_portrait_url ?? event.poster_url ?? null;
+	const spillUrl = landscapeUrl ?? portraitUrl;
 	const venueLine = event.venue_name;
+	const portraitAspect = useImageAspect(portraitUrl);
 
 	return (
 		<section className="mx-auto max-w-[1200px] px-4 pt-8 sm:px-5 md:px-8">
@@ -35,6 +62,10 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 				style={{ gridTemplateRows: '1fr auto' }}
 			>
 				<style>{`
+					.hero-stack-poster { aspect-ratio: var(--hero-portrait-ar, 1); }
+					@media (min-width: 640px) {
+						.hero-stack-poster { aspect-ratio: 3 / 1; }
+					}
 					@media (max-width: 760px) {
 						.hero-stack-title { padding: 12px 16px 14px !important; gap: 6px !important; }
 						.hero-stack-title h1 { font-size: clamp(18px, 5vw, 24px) !important; }
@@ -44,14 +75,27 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 					}
 				`}</style>
 
-				{/* Top: 16:9 poster */}
-				<div className="hero-stack-poster relative overflow-hidden bg-[var(--ink)]" style={{ aspectRatio: '16 / 9' }}>
-					{heroImage && (
+				{/* Top: poster — uses portrait image's natural aspect on mobile, 3:1 banner on ≥640px */}
+				<div
+					className="hero-stack-poster relative overflow-hidden bg-[var(--ink)]"
+					style={{ ['--hero-portrait-ar' as string]: portraitAspect ?? 1 }}
+				>
+					{portraitUrl && (
 						<Image
-							src={heroImage}
+							src={portraitUrl}
 							alt={event.title}
 							fill
-							className="object-cover"
+							className="object-cover sm:hidden"
+							sizes="100vw"
+							priority
+						/>
+					)}
+					{landscapeUrl && (
+						<Image
+							src={landscapeUrl}
+							alt={event.title}
+							fill
+							className="hidden object-cover sm:block"
 							sizes="(max-width: 1200px) 100vw, 1200px"
 							priority
 						/>
@@ -59,7 +103,7 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 
 					{event.event_type && (
 						<span
-							className="absolute left-[22px] top-[22px] z-[2] rounded-full border border-white/20 px-3 py-1.5 text-[10.5px] font-[700] uppercase tracking-[0.14em] text-white"
+							className="absolute left-[14px] top-[14px] z-[2] rounded-full border border-white/20 px-2.5 py-1 text-[10px] font-[700] uppercase tracking-[0.14em] text-white sm:left-[22px] sm:top-[22px] sm:px-3 sm:py-1.5 sm:text-[10.5px]"
 							style={{
 								background: 'rgba(0,0,0,0.55)',
 								backdropFilter: 'blur(14px)',
@@ -74,9 +118,9 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 				{/* Bottom: blurred title zone */}
 				<div className="relative isolate">
 					{/* Blurred color spill */}
-					{heroImage && (
+					{spillUrl && (
 						<Image
-							src={heroImage}
+							src={spillUrl}
 							alt=""
 							aria-hidden="true"
 							fill

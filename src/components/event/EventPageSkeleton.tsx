@@ -1,16 +1,16 @@
 export default function EventPageSkeleton() {
 	return (
 		<div className="bg-[var(--bg)]">
-			{/* Hero stack — 16:9 poster + title zone */}
+			{/* Hero stack — square poster on mobile, 3:1 banner on ≥640px + title zone */}
 			<div className="mx-auto max-w-[1200px] px-4 pt-8 sm:px-5 md:px-8">
 				<div className="overflow-hidden rounded-[22px] sm:rounded-[28px]">
-					<div className="skeleton aspect-[16/9] w-full" />
-					<div className="skeleton h-[120px] w-full" />
+					<div className="skeleton aspect-square w-full sm:aspect-[3/1]" />
+					<div className="skeleton h-[96px] w-full sm:h-[120px]" />
 				</div>
 			</div>
 
 			<div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pb-10 pt-10 sm:px-5 md:gap-[56px] md:px-8">
-				<section className="grid gap-7 md:gap-14" style={{ gridTemplateColumns: 'minmax(0, 1fr) 380px' }}>
+				<section className="grid grid-cols-1 gap-7 md:gap-14 lg:grid-cols-[minmax(0,1fr)_380px]">
 					{/* Left */}
 					<div className="flex flex-col gap-12">
 						<div>

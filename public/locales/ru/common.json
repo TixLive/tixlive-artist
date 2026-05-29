@@ -213,7 +213,19 @@
 		"sold_recently_other": "<b>{{count}}</b> билетов продано недавно",
 		"viewing_now_value": "<b>{{count}}</b>",
 		"viewing_now_label": "смотрят сейчас",
-		"sold_recently_label": "продано за последний час"
+		"sold_recently_label": "продано за последний час",
+		"available_label": "доступно",
+		"until_event": "до начала",
+		"unit_month_one": "мес",
+		"unit_month_other": "мес",
+		"unit_day_one": "дн",
+		"unit_day_other": "дн",
+		"unit_hour_one": "ч",
+		"unit_hour_other": "ч",
+		"unit_minute_one": "мин",
+		"unit_minute_other": "мин",
+		"unit_second_one": "сек",
+		"unit_second_other": "сек"
 	},
 	"countdown": {
 		"event_starts_in": "До начала события",

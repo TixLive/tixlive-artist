@@ -203,7 +203,19 @@
 		"sold_recently_other": "<b>{{count}}</b> bilete vândute recent",
 		"viewing_now_value": "<b>{{count}}</b>",
 		"viewing_now_label": "văd acum",
-		"sold_recently_label": "vândute / ultima oră"
+		"sold_recently_label": "vândute / ultima oră",
+		"available_label": "disponibile",
+		"until_event": "până la eveniment",
+		"unit_month_one": "lună",
+		"unit_month_other": "luni",
+		"unit_day_one": "zi",
+		"unit_day_other": "zile",
+		"unit_hour_one": "oră",
+		"unit_hour_other": "ore",
+		"unit_minute_one": "min",
+		"unit_minute_other": "min",
+		"unit_second_one": "sec",
+		"unit_second_other": "sec"
 	},
 	"countdown": {
 		"event_starts_in": "Evenimentul începe în",

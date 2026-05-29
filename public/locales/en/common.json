@@ -203,7 +203,19 @@
 		"sold_recently_other": "<b>{{count}}</b> tickets sold recently",
 		"viewing_now_value": "<b>{{count}}</b>",
 		"viewing_now_label": "viewing now",
-		"sold_recently_label": "sold in last hour"
+		"sold_recently_label": "sold in last hour",
+		"available_label": "available",
+		"until_event": "until event",
+		"unit_month_one": "mo",
+		"unit_month_other": "mo",
+		"unit_day_one": "d",
+		"unit_day_other": "d",
+		"unit_hour_one": "h",
+		"unit_hour_other": "h",
+		"unit_minute_one": "min",
+		"unit_minute_other": "min",
+		"unit_second_one": "sec",
+		"unit_second_other": "sec"
 	},
 	"countdown": {
 		"event_starts_in": "Event starts in",

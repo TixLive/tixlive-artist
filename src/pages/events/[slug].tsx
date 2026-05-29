@@ -17,7 +17,6 @@ import StickyCTABar from '@/components/event/StickyCTABar';
 import PoliciesBlock from '@/components/event/PoliciesBlock';
 import KeyFactsStrip from '@/components/event/KeyFactsStrip';
 import SectionShell from '@/components/event/sections/SectionShell';
-import EventCountdown from '@/components/event/EventCountdown';
 import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
 import AddonRow from '@/components/event/AddonRow';
@@ -142,8 +141,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     [addons, addonQuantities]
   );
 
-  const showSocial = !!(event?.fomo_enabled && (event?.fomo_live_viewers || event?.fomo_recent_sales));
-  const showCountdown = !!(event?.fomo_enabled && event?.fomo_countdown);
+  const showFomoBar = !!(event?.fomo_enabled && (event?.fomo_live_viewers || event?.fomo_recent_sales || event?.fomo_low_stock || event?.fomo_countdown));
 
   const onShare = useCallback(async () => {
     const url = window.location.href;
@@ -284,11 +282,8 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
         <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pb-10 pt-10 sm:px-5 md:gap-[56px] md:px-8 md:pb-16">
           {/* Live status row */}
-          {(showSocial || showCountdown) && (
-            <div className="flex flex-wrap items-center gap-3">
-              {showSocial && <KeyFactsStrip event={event} />}
-              {showCountdown && <EventCountdown target={event.sessions?.[0]?.date ?? event.date_start} />}
-            </div>
+          {showFomoBar && (
+            <KeyFactsStrip event={event} target={event.sessions?.[0]?.date ?? event.date_start} />
           )}
 
           {/* Two-column body */}

@@ -22,12 +22,18 @@ import { useTranslation } from 'next-i18next';
 
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 5;
-const HOVER_MIN_SCALE = 0.5; // don't seat-hover below this zoom
-const SECTION_CLICK_SCALE = 0.85; // below this, clicking a section zooms in
 const LERP = 0.18;
 const MINIMAP_W = 150;
 const MINIMAP_H = 100;
 const MINIMAP_PAD = 12;
+// Progressive tap-to-zoom (Yandex Afisha style). Below this seat screen radius
+// (px), a tap zooms in instead of selecting, and hover shows section-level
+// highlight instead of single-seat hover.
+const SEAT_TAP_MIN_R_MOUSE = 7;
+const SEAT_TAP_MIN_R_TOUCH = 12;
+// Target seat screen radius (px) the next progressive zoom step aims for.
+const SEAT_TAP_TARGET_R_MOUSE = 13;
+const SEAT_TAP_TARGET_R_TOUCH = 20;
 
 interface Palette {
 	canvas: string;
@@ -332,8 +338,10 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			ctx.fillText(s.label, s.x + s.width / 2, s.y + s.height / 2);
 		}
 
-		// Section hover glow (zoomed out)
-		if (hovSec && sc < SECTION_CLICK_SCALE + 0.3) {
+		// Section hover glow — the hover handler only sets hoveredSection when
+		// that section's seats are too small to seat-hover, so no scale guard is
+		// needed here.
+		if (hovSec) {
 			const bb = sectionBoundsMap.get(hovSec);
 			if (bb) {
 				const pad = 10 / sc;
@@ -702,45 +710,46 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			const cx = (e.clientX - rect.left - pos.current.x) / scale.current;
 			const cy = (e.clientY - rect.top - pos.current.y) / scale.current;
 
-			// Zoomed-out: section-level hover
-			if (scale.current < SECTION_CLICK_SCALE + 0.3) {
-				let foundSec: string | null = null;
-				for (const [key, bb] of sectionBoundsMap) {
-					const pad = 5;
-					if (cx >= bb.minX - pad && cx <= bb.maxX + pad && cy >= bb.minY - pad && cy <= bb.maxY + pad) {
-						foundSec = key;
-						break;
-					}
+			// Section under pointer — same lookup we use for click. Hover mode is
+			// chosen from this section's seat screen radius so it matches the
+			// progressive-zoom click threshold (no "hovers like a seat, clicks like
+			// a zoom" mismatch).
+			let underSection: string | null = null;
+			for (const [key, bb] of sectionBoundsMap) {
+				const pad = 5;
+				if (cx >= bb.minX - pad && cx <= bb.maxX + pad && cy >= bb.minY - pad && cy <= bb.maxY + pad) {
+					underSection = key;
+					break;
 				}
-				if (foundSec !== hoveredSection.current) {
-					hoveredSection.current = foundSec;
+			}
+			const sectionSeatScreenR = underSection ? getSeatR(sections, underSection) * scale.current : 0;
+			const seatsTappable = sectionSeatScreenR >= SEAT_TAP_MIN_R_MOUSE;
+
+			if (!seatsTappable) {
+				if (underSection !== hoveredSection.current) {
+					hoveredSection.current = underSection;
 					hovered.current = null;
 					scheduleRedraw();
-					setCursorPointer(!!foundSec);
-					if (foundSec) {
+					setCursorPointer(!!underSection);
+					if (underSection) {
 						setTooltip({
 							x: e.clientX - rect.left + 16,
 							y: e.clientY - rect.top - 44,
-							title: sectionLabelByKey.get(foundSec) ?? '',
+							title: sectionLabelByKey.get(underSection) ?? '',
 							sub: '',
 						});
 					} else setTooltip(null);
-				} else if (foundSec) {
+				} else if (underSection) {
 					setTooltip((prev) => (prev ? { ...prev, x: e.clientX - rect.left + 16, y: e.clientY - rect.top - 44 } : prev));
 				}
 				return;
 			}
 
-			setCursorPointer(false);
-			if (scale.current < HOVER_MIN_SCALE) {
-				if (hovered.current !== null || hoveredSection.current !== null) {
-					hovered.current = null;
-					hoveredSection.current = null;
-					setTooltip(null);
-					scheduleRedraw();
-				}
-				return;
+			if (hoveredSection.current !== null) {
+				hoveredSection.current = null;
+				scheduleRedraw();
 			}
+			setCursorPointer(false);
 
 			let found: string | null = null;
 			let foundSeat: Seat | null = null;
@@ -819,50 +828,71 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			const rect = containerRef.current!.getBoundingClientRect();
 			const cx = (e.clientX - rect.left - pos.current.x) / scale.current;
 			const cy = (e.clientY - rect.top - pos.current.y) / scale.current;
+			const { w, h } = sizeRef.current;
+			const isTouch = lastPointerType.current === 'touch';
 
-			// Zoomed out: tap/click section → zoom in
-			// On touch, hoveredSection is never set (no mousemove), so we resolve from coords
-			if (scale.current <= SECTION_CLICK_SCALE + 0.3) {
-				let tappedSection = hoveredSection.current;
-				if (!tappedSection) {
-					for (const [key, bb] of sectionBoundsMap) {
-						const pad = 12 / scale.current;
-						if (cx >= bb.minX - pad && cx <= bb.maxX + pad && cy >= bb.minY - pad && cy <= bb.maxY + pad) {
-							tappedSection = key;
-							break;
-						}
-					}
-				}
-				if (tappedSection) {
-					const bb = sectionBoundsMap.get(tappedSection);
-					if (bb) {
-						const { w, h } = sizeRef.current;
-						const padding = 60;
-						const sW = bb.maxX - bb.minX + padding * 2;
-						const sH = bb.maxY - bb.minY + padding * 2;
-						const newScale = Math.min(MAX_SCALE, Math.min(w / sW, h / sH) * 0.9);
-						const centerX = (bb.minX + bb.maxX) / 2;
-						const centerY = (bb.minY + bb.maxY) / 2;
-						startAnimation(newScale, { x: w / 2 - centerX * newScale, y: h / 2 - centerY * newScale });
-						setTooltip(null);
-						return;
+			// Resolve the section under the tap point. hoveredSection is only set
+			// on mouse — touch has to find it from the coords each time.
+			let tappedSection: string | null = hoveredSection.current;
+			if (!tappedSection) {
+				for (const [key, bb] of sectionBoundsMap) {
+					const pad = 12 / scale.current;
+					if (cx >= bb.minX - pad && cx <= bb.maxX + pad && cy >= bb.minY - pad && cy <= bb.maxY + pad) {
+						tappedSection = key;
+						break;
 					}
 				}
 			}
 
-			if (scale.current < HOVER_MIN_SCALE || !onSeatToggle) return;
+			// Progressive zoom: if seats in the tapped section are too small to be
+			// reliably tappable at the current scale, the click zooms in further
+			// instead of selecting. Step 1 fits the whole section to the viewport;
+			// step 2+ zooms toward the tap point until seats are large enough.
+			if (tappedSection && scale.current < MAX_SCALE * 0.95) {
+				const minTapR = isTouch ? SEAT_TAP_MIN_R_TOUCH : SEAT_TAP_MIN_R_MOUSE;
+				const seatR = getSeatR(sections, tappedSection);
+				const seatScreenR = seatR * scale.current;
 
-			// Touch-friendly hit radius: minimum 44px touch target (22px radius in screen px → canvas units)
-			const isTouch = lastPointerType.current === 'touch';
-			const MIN_TOUCH_R = 22 / scale.current;
+				if (seatScreenR < minTapR) {
+					const bb = sectionBoundsMap.get(tappedSection)!;
+					const padding = 60;
+					const sW = bb.maxX - bb.minX + padding * 2;
+					const sH = bb.maxY - bb.minY + padding * 2;
+					const sectionFitScale = Math.min(MAX_SCALE, Math.min(w / sW, h / sH) * 0.9);
+					const targetR = isTouch ? SEAT_TAP_TARGET_R_TOUCH : SEAT_TAP_TARGET_R_MOUSE;
+					const targetScale = Math.min(MAX_SCALE, targetR / seatR);
 
-			// Find the CLOSEST seat within hit radius (not just the first)
+					const atSectionLevel = scale.current >= sectionFitScale * 0.85;
+					if (!atSectionLevel) {
+						const centerX = (bb.minX + bb.maxX) / 2;
+						const centerY = (bb.minY + bb.maxY) / 2;
+						startAnimation(sectionFitScale, {
+							x: w / 2 - centerX * sectionFitScale,
+							y: h / 2 - centerY * sectionFitScale,
+						});
+					} else {
+						const stepScale = Math.min(MAX_SCALE, Math.max(scale.current * 1.8, targetScale));
+						startAnimation(stepScale, {
+							x: w / 2 - cx * stepScale,
+							y: h / 2 - cy * stepScale,
+						});
+					}
+					setTooltip(null);
+					return;
+				}
+			}
+
+			if (!onSeatToggle) return;
+
+			// Touch-friendly hit radius: 44px touch target on touch devices.
+			const MIN_TOUCH_R = isTouch ? 22 / scale.current : 0;
+
 			let bestSeat: Seat | null = null;
 			let bestDist = Infinity;
 			for (const seat of allSeats) {
 				if (!isSelectable(seat.id)) continue;
 				const r = getSeatR(sections, seat.sectionKey);
-				const hitR = isTouch ? Math.max(r, MIN_TOUCH_R) : r;
+				const hitR = Math.max(r, MIN_TOUCH_R);
 				const dx = seat.x - cx, dy = seat.y - cy;
 				const d2 = dx * dx + dy * dy;
 				if (d2 <= hitR * hitR && d2 < bestDist) {

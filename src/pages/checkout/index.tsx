@@ -232,6 +232,10 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
           setSubmitError(t('checkout.error_too_many_tickets'));
         } else if (code.includes('PAYMENT_METHOD')) {
           setSubmitError(t('checkout.error_payment_method'));
+        } else if (code.includes('PROMOCODE_LIMIT_OVERFLOW')) {
+          setSubmitError(t('checkout.error_promo_exhausted'));
+        } else if (code.includes('PROMO_CODE_NOT_FOUND')) {
+          setSubmitError(t('checkout.error_promo_invalid'));
         } else if (status === 400) {
           setSubmitError(t('checkout.error_invalid_order'));
         } else if (status >= 500) {

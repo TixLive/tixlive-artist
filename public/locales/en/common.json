@@ -143,6 +143,8 @@
 		"error_generic": "Something went wrong. Please try again.",
 		"error_seat_taken": "One of your seats was just taken. Please choose another.",
 		"error_too_many_tickets": "That's more than the maximum tickets per order for this event. Please reduce your selection.",
+		"error_promo_invalid": "Your promo code is no longer valid. Please remove it and try again.",
+		"error_promo_exhausted": "This promo code has reached its usage limit. Please remove it and try again.",
 		"choose_different_seats": "Choose different seats",
 		"welcome_back": "Welcome back, {{name}}",
 		"account_email": "Account email",

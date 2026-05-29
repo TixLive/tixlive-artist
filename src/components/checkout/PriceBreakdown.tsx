@@ -38,7 +38,7 @@ export default function PriceBreakdown({
 	const subtotal = ticketSubtotal + addonSubtotal;
 
 	let discountAmount = 0;
-	if (discount?.percent) discountAmount = ticketSubtotal * (discount.percent / 100);
+	if (discount?.percent) discountAmount = subtotal * (discount.percent / 100);
 	else if (discount?.amount) discountAmount = discount.amount;
 
 	const afterDiscount = Math.max(0, subtotal - discountAmount);

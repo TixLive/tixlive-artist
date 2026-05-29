@@ -143,6 +143,8 @@
 		"error_generic": "Ceva nu a mers bine. Te rugam sa incerci din nou.",
 		"error_seat_taken": "Unul dintre locurile tale tocmai a fost ocupat. Te rugam sa alegi altul.",
 		"error_too_many_tickets": "Ai depasit numarul maxim de bilete per comanda pentru acest eveniment. Te rugam sa reduci selectia.",
+		"error_promo_invalid": "Codul promo nu mai este valid. Te rugam sa il stergi si sa incerci din nou.",
+		"error_promo_exhausted": "Codul promo si-a atins limita de utilizare. Te rugam sa il stergi si sa incerci din nou.",
 		"choose_different_seats": "Alege alte locuri",
 		"welcome_back": "Bine ai revenit, {{name}}",
 		"account_email": "Email cont",

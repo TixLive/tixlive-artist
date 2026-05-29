@@ -36,9 +36,11 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 			>
 				<style>{`
 					@media (max-width: 760px) {
-						.hero-stack-title { padding: 14px 18px 18px !important; }
-						.hero-stack-title h1 { font-size: clamp(20px, 5.5vw, 28px) !important; }
-						.hero-stack-cta { width: 100%; justify-content: center; }
+						.hero-stack-title { padding: 12px 16px 14px !important; gap: 6px !important; }
+						.hero-stack-title h1 { font-size: clamp(18px, 5vw, 24px) !important; }
+						.hero-stack-cta { display: none !important; }
+						.hero-stack-meta-time { display: none !important; }
+						.hero-stack-text { gap: 6px !important; flex-basis: auto !important; }
 					}
 				`}</style>
 
@@ -100,7 +102,7 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 						style={{ padding: '18px 28px 22px' }}
 					>
 						<div className="flex flex-wrap items-end justify-between gap-4">
-							<div className="flex min-w-0 flex-1 flex-col gap-2" style={{ flexBasis: 320 }}>
+							<div className="hero-stack-text flex min-w-0 flex-1 flex-col gap-2" style={{ flexBasis: 320 }}>
 								<div className="flex items-baseline gap-2.5">
 									<span className="text-[10px] font-[700] uppercase tracking-[0.16em] text-white/55">
 										{dowShort}
@@ -111,7 +113,7 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 									<span className="text-[13px] font-[600] capitalize text-white/85">
 										{mon} {year}
 									</span>
-									<span className="text-[12px] text-white/55">· {time}</span>
+									<span className="hero-stack-meta-time text-[12px] text-white/55">· {time}</span>
 								</div>
 								<h1
 									className="m-0 text-white"

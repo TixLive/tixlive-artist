@@ -13,7 +13,8 @@ import { useHeaderCart } from '@/contexts/LayoutContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import EventHero from '@/components/event/EventHero';
-import StickyBuyBar from '@/components/event/StickyBuyBar';
+import StickyCTABar from '@/components/event/StickyCTABar';
+import PoliciesBlock from '@/components/event/PoliciesBlock';
 import KeyFactsStrip from '@/components/event/KeyFactsStrip';
 import SectionShell from '@/components/event/sections/SectionShell';
 import EventCountdown from '@/components/event/EventCountdown';
@@ -313,6 +314,9 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                     >
                       {descriptionExpanded ? t('event.show_less') : t('event.show_more')}
                     </button>
+                  )}
+                  {event.page_content?.policies && event.page_content.policies.length > 0 && (
+                    <PoliciesBlock policies={event.page_content.policies} />
                   )}
                 </section>
               )}
@@ -660,42 +664,35 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
           )}
         </div>
 
-        {/* Desktop floating CTA — seated events (persistent buy entry, no inline selector) */}
-        {isSeated && salesOpen && (
-          <div className="pointer-events-none sticky bottom-7 z-40 -mt-24 hidden justify-center md:flex">
-            <button
-              onClick={handleBuy}
-              className="pointer-events-auto flex items-center gap-5 rounded-full bg-[var(--ink)] py-2 pl-6 pr-2 text-white"
-              style={{ boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
-            >
-              <span className="text-left leading-tight">
-                <span className="block text-[10.5px] font-[700] uppercase tracking-[0.12em] text-white/55">
-                  {t('event.tickets')}
-                </span>
-                <span className="block text-[16px] font-[700] tracking-[-0.012em]">
-                  {priceFrom > 0 ? `${t('event.from_price')} ${priceFrom} ${currency}` : t('seating.select_seats')}
-                </span>
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[14px] font-[600] tracking-[-0.005em] text-[var(--ink)]">
-                {t('seating.select_seats')}
-                <Icon icon="mdi:arrow-right" width={13} />
-              </span>
-            </button>
-          </div>
-        )}
-
-        {/* Mobile sticky buy bar */}
-        <StickyBuyBar
-          cartItems={cartItems}
-          currency={currency}
-          onBuy={handleBuy}
-          ctaLabel={isSeated ? t('seating.select_seats') : undefined}
-          isSeated={isSeated}
-          salesOpen={salesOpen}
+        {/* Global sticky CTA — always visible on event pages, all viewports */}
+        <StickyCTABar
+          eyebrow={event.event_type || event.title}
+          title={event.title}
+          priceLabel={
+            priceFrom > 0
+              ? `${t('event.from_price')} ${priceFrom} ${currency}`
+              : t('event.free')
+          }
+          ctaLabel={
+            !salesOpen
+              ? event.status === 'soon'
+                ? t('event.coming_soon')
+                : t('event.sales_ended')
+              : isSeated
+                ? t('seating.select_seats')
+                : totalQuantity > 0
+                  ? `${t('event.checkout')} · ${totalPrice} ${currency}`
+                  : t('event.buy_ticket')
+          }
+          onCta={
+            !salesOpen
+              ? () => undefined
+              : isSeated || totalQuantity > 0
+                ? handleBuy
+                : scrollToTickets
+          }
+          disabled={!salesOpen}
         />
-
-        {/* Bottom padding for mobile sticky bar */}
-        {(cartItems.length > 0 || (isSeated && salesOpen)) && <div className="h-24 md:hidden" />}
       </>
     </>
   );

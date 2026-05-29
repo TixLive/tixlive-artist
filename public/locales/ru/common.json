@@ -92,7 +92,8 @@
 		"ticket_types_count_few": "типа билетов",
 		"ticket_types_count_many": "типов билетов",
 		"ticket_types_count_other": "типов билетов",
-		"see_all": "Смотреть все"
+		"see_all": "Смотреть все",
+		"access_terms": "Условия доступа и скидки"
 	},
 	"map": {
 		"unavailable": "Карта недоступна",

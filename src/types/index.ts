@@ -153,6 +153,13 @@ export interface ITicketAddon {
 	sort_order: number;
 }
 
+export interface IEventPolicy {
+	id: number;
+	title: string;
+	body: string;
+	sort_order: number;
+}
+
 export interface IPageContent {
 	lineup?: IArtist[];
 	speakers?: ISpeaker[];
@@ -160,6 +167,7 @@ export interface IPageContent {
 	teams?: ITeam[];
 	sponsors?: ISponsor[];
 	rules?: IRule[];
+	policies?: IEventPolicy[];
 	faq?: IFaq[];
 	travel?: ITravelRec[];
 	packing?: IPackingItem[];

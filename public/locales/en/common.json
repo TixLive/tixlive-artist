@@ -86,7 +86,8 @@
 		"free": "Free",
 		"ticket_types_count_one": "ticket type",
 		"ticket_types_count_other": "ticket types",
-		"see_all": "See all"
+		"see_all": "See all",
+		"access_terms": "Access terms & discounts"
 	},
 	"map": {
 		"unavailable": "Map unavailable",

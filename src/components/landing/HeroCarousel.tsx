@@ -126,7 +126,9 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 					min-height: 480px;
 				}
 				.hero-text-card, .hero-poster-card { min-height: 0; }
-				@media (max-width: 820px) {
+				/* Stack early — under 1000px the portrait column eats too much
+				   horizontal space and word-breaks the title into single letters. */
+				@media (max-width: 999px) {
 					.hero-split {
 						display: flex;
 						flex-direction: column;
@@ -203,7 +205,7 @@ function SplitHero({ href, prefetch, t, featured, dowShort, day, mon, year, time
 					alt={`${featured.title} poster`}
 					fill
 					className="object-cover"
-					sizes="(max-width: 820px) 100vw, 600px"
+					sizes="(max-width: 999px) 100vw, 600px"
 					priority
 				/>
 			</div>

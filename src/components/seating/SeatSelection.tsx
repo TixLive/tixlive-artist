@@ -455,11 +455,11 @@ export default function SeatSelection({
 									<button
 										type="button"
 										onClick={() => handleRemove(item.seatId)}
-										className="absolute -right-1.5 -top-1.5 z-10 hidden h-5 w-5 items-center justify-center rounded-full bg-white text-[var(--ink)] group-hover:flex"
+										className="absolute -right-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[var(--ink)]"
 										style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}
 										aria-label={t('seating.remove_seat')}
 									>
-										<Icon icon="mdi:close" width={11} />
+										<Icon icon="mdi:close" width={13} />
 									</button>
 								</div>
 							);

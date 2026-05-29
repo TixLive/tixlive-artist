@@ -411,7 +411,16 @@
 		"confirm_pay": "Confirm & Pay",
 		"zoom_in": "Zoom in",
 		"zoom_out": "Zoom out",
-		"reset_view": "Reset view"
+		"reset_view": "Reset view",
+		"all_categories": "All categories",
+		"available_label": "Available",
+		"selected_label": "Selected",
+		"sold_label": "Sold",
+		"your_order": "Your order",
+		"ticket_one": "ticket",
+		"ticket_other": "tickets",
+		"per_seat": "seat",
+		"nav_hint_title": "How to navigate"
 	},
 	"profile": {
 		"subtitle": "Update the name and phone we use on your tickets.",

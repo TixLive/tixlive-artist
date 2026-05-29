@@ -413,7 +413,16 @@
 		"confirm_pay": "Confirmă & Plătește",
 		"zoom_in": "Mărește",
 		"zoom_out": "Micșorează",
-		"reset_view": "Resetează vederea"
+		"reset_view": "Resetează vederea",
+		"all_categories": "Toate categoriile",
+		"available_label": "Disponibil",
+		"selected_label": "Selectat",
+		"sold_label": "Vândut",
+		"your_order": "Comanda ta",
+		"ticket_one": "bilet",
+		"ticket_other": "bilete",
+		"per_seat": "loc",
+		"nav_hint_title": "Cum navighezi"
 	},
 	"profile": {
 		"subtitle": "Actualizeaza numele si telefonul folosite pe bilete.",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -29,16 +29,15 @@ import {
 } from '@/lib/seatSelection';
 import { buildTierColorById, buildTierColorBySeatId } from '@/lib/tierColors';
 import { suggestSeats } from '@/queries/seating/useSuggestSeats';
-import SelectedSeatsList, { SelectedSeatItem } from '@/components/seating/SelectedSeatsList';
 import type { IAddonCartItem, ISeatingResponse } from '@/types';
 
 function SeatingViewerLoading() {
 	const { t } = useTranslation('common');
 	return (
-		<div className="flex h-full w-full items-center justify-center bg-[var(--theme-surface)]">
-			<div className="flex flex-col items-center gap-3 text-[var(--theme-text-muted)]">
+		<div className="flex h-full w-full items-center justify-center bg-[var(--bg)]">
+			<div className="flex flex-col items-center gap-3 text-[var(--ink-3)]">
 				<Icon icon="mdi:seat-outline" width={36} className="animate-pulse" />
-				<span className="font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-[0.1em]">{t('seating.loading_map')}</span>
+				<span className="text-[11px] font-[700] uppercase tracking-[0.1em]">{t('seating.loading_map')}</span>
 			</div>
 		</div>
 	);
@@ -83,11 +82,8 @@ function useReducedMotion(): boolean {
 export default function SeatSelection({
 	slug,
 	sessionId,
-	sessionDate,
-	sessionStart,
 	eventTitle,
 	venueName,
-	venueAddress,
 	maxPerOrder,
 	seedCart,
 	addonCart,
@@ -150,22 +146,31 @@ export default function SeatSelection({
 	const { isOpen: autopickOpen, onClose: closeAutopick, onOpen: openAutopick } = useDisclosure({
 		defaultOpen: !versionMismatch && initialSelectedSeatIds.length > 0,
 	});
-	const { isOpen: checkoutOpen, onOpen: openCheckout, onClose: closeCheckout } = useDisclosure();
 
 	// ── Derived selection ─────────────────────────────────────────────────────
 	const total = useMemo(() => selectionTotal(selected, seatTier, tiers), [selected, seatTier, tiers]);
 	const complete = isSelectionValid(selected.size);
 
+	type SelectedSeatItem = {
+		seatId: string;
+		tierId: number;
+		tierName: string;
+		label: string;
+		color: string;
+		price: number;
+	};
+
 	const selectedItems: SelectedSeatItem[] = useMemo(() => {
 		const withIdx = [...selected].map((seatId) => {
-			const tierId = seatTier.get(seatId);
-			const meta = tierId != null ? tierMeta.get(tierId) : undefined;
+			const tierId = seatTier.get(seatId) ?? -1;
+			const meta = tierMeta.get(tierId);
 			const seat = seatById.get(seatId);
 			const item: SelectedSeatItem = {
 				seatId,
+				tierId,
 				tierName: meta?.name ?? '',
 				label: seat ? formatSeatLabel(seat) : seatId,
-				color: tierColorBySeatId.get(seatId) ?? 'var(--theme-text-muted)',
+				color: tierColorBySeatId.get(seatId) ?? 'var(--ink-3)',
 				price: priceBySeatId.get(seatId) ?? 0,
 			};
 			return { item, idx: meta?.index ?? 99 };
@@ -174,15 +179,39 @@ export default function SeatSelection({
 		return withIdx.map((x) => x.item);
 	}, [selected, seatTier, tierMeta, seatById, tierColorBySeatId, priceBySeatId]);
 
-	// One pill per unique price value (multiple tiers can share a price)
-	const uniquePrices = useMemo(() => {
-		const seen = new Map<number, { color: string }>();
-		for (const tier of tiers) {
-			if (!seen.has(tier.price)) {
-				seen.set(tier.price, { color: colorByTierId.get(tier.ticket_package_id) ?? '#888' });
+	// Group selected seats by tier — one summary row per tier with seat chips below.
+	const groupedByTier = useMemo(() => {
+		const groups = new Map<number, { tierName: string; color: string; price: number; items: SelectedSeatItem[]; index: number }>();
+		for (const it of selectedItems) {
+			const meta = tierMeta.get(it.tierId);
+			const existing = groups.get(it.tierId);
+			if (existing) {
+				existing.items.push(it);
+			} else {
+				groups.set(it.tierId, {
+					tierName: it.tierName,
+					color: it.color,
+					price: it.price,
+					items: [it],
+					index: meta?.index ?? 99,
+				});
 			}
 		}
-		return [...seen.entries()].map(([price, { color }]) => ({ price, color }));
+		return [...groups.values()].sort((a, b) => a.index - b.index);
+	}, [selectedItems, tierMeta]);
+
+	// One pill per unique price value (multiple tiers can share a price)
+	const uniquePrices = useMemo(() => {
+		const seen = new Map<number, { color: string; tierName: string }>();
+		for (const tier of tiers) {
+			if (!seen.has(tier.price)) {
+				seen.set(tier.price, {
+					color: colorByTierId.get(tier.ticket_package_id) ?? '#888',
+					tierName: tier.name.split(' — ')[0].split(' (')[0].trim(),
+				});
+			}
+		}
+		return [...seen.entries()].map(([price, { color, tierName }]) => ({ price, color, tierName }));
 	}, [tiers, colorByTierId]);
 
 	// Dim seats whose price doesn't match the highlighted price
@@ -221,8 +250,6 @@ export default function SeatSelection({
 		});
 	}, []);
 
-	const handleClearAll = useCallback(() => setSelected(new Set()), []);
-
 	const handleRepick = useCallback(async () => {
 		if (seedCart.length === 0) return;
 		setRepicking(true);
@@ -230,14 +257,13 @@ export default function SeatSelection({
 			const res = await suggestSeats(slug, sessionId, seedCart);
 			setSelected(new Set(sanitizeSeats(res.items.flatMap((i) => i.seat_ids), seatTier, bookedSet, maxPerOrder)));
 			setShortfall(res.shortfall);
-			closeCheckout();
 			openAutopick();
 		} catch {
 			addToast({ title: t('seating.repick_error'), color: 'danger' });
 		} finally {
 			setRepicking(false);
 		}
-	}, [seedCart, slug, sessionId, seatTier, bookedSet, maxPerOrder, openAutopick, closeCheckout, t]);
+	}, [seedCart, slug, sessionId, seatTier, bookedSet, maxPerOrder, openAutopick, t]);
 
 	const handleContinue = useCallback(() => {
 		if (!complete || continuing) return;
@@ -257,44 +283,29 @@ export default function SeatSelection({
 		router.push('/checkout');
 	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart, router]);
 
-	const fmtDate = (d: string) => {
-		const date = new Date(d);
-		if (isNaN(date.getTime())) return sessionDate;
-		return date.toLocaleDateString('ro-RO', { weekday: 'short', day: 'numeric', month: 'long' });
-	};
-	const fmtTime = (d: string) => {
-		const date = new Date(d);
-		if (isNaN(date.getTime())) return '';
-		return date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', hour12: false });
-	};
-
 	// Reset continuing when page is restored from bfcache (browser back button)
 	useEffect(() => {
 		const onPageShow = (e: PageTransitionEvent) => {
-			if (e.persisted) {
-				setContinuing(false);
-				closeCheckout();
-			}
+			if (e.persisted) setContinuing(false);
 		};
 		window.addEventListener('pageshow', onPageShow);
 		return () => window.removeEventListener('pageshow', onPageShow);
-	}, [closeCheckout]);
+	}, []);
 
 	// ── Version mismatch guard ────────────────────────────────────────────────
 	if (versionMismatch) {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-[var(--theme-bg)] px-4">
+			<div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4">
 				<div className="max-w-md text-center">
-					<Icon icon="mdi:update" width={40} className="mx-auto mb-4 text-[var(--theme-text-muted)]" />
-					<h2 className="mb-2 font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+					<Icon icon="mdi:update" width={40} className="mx-auto mb-4 text-[var(--ink-3)]" />
+					<h2 className="mb-2 text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--ink)]">
 						{t('seating.version_mismatch_title')}
 					</h2>
-					<p className="mb-6 text-[0.875rem] text-[var(--theme-text-muted)]">{t('seating.version_mismatch_body')}</p>
+					<p className="mb-6 text-[0.875rem] text-[var(--ink-3)]">{t('seating.version_mismatch_body')}</p>
 					<div className="flex justify-center gap-3">
 						<Button
 							onPress={() => window.location.reload()}
-							className="rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
-							style={{ backgroundColor: 'var(--brand-primary)' }}
+							className="rounded-full bg-[var(--ink)] font-[700] text-white"
 						>
 							{t('seating.refresh')}
 						</Button>
@@ -302,7 +313,7 @@ export default function SeatSelection({
 							as={Link}
 							href={`/events/${slug}`}
 							variant="bordered"
-							className="rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
+							className="rounded-full border-[var(--line)] font-[600] text-[var(--ink)]"
 						>
 							{t('seating.back_to_event')}
 						</Button>
@@ -312,218 +323,261 @@ export default function SeatSelection({
 		);
 	}
 
-	const dateStr = sessionStart ? `${fmtDate(sessionStart)}${fmtTime(sessionStart) ? ` · ${fmtTime(sessionStart)}` : ''}` : sessionDate;
+	const eyebrow = venueName ? `${t('seating.map_title')} · ${venueName}` : t('seating.map_title');
+	const eventHref = `/events/${slug}`;
 
 	// ── Render ────────────────────────────────────────────────────────────────
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden bg-[var(--bg)]">
+			{/* ─── Header ─────────────────────────────────────────────────────── */}
+			<header className="flex-shrink-0 border-b border-[var(--line)] bg-[var(--surface)]">
+				{/* Row 1: back · centered title · close */}
+				<div className="flex min-h-[56px] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-[22px]">
+					<Link
+						href={eventHref}
+						className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-2)] px-3.5 text-[13px] font-[700] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)]"
+						aria-label={t('seating.back_to_event')}
+					>
+						<Icon icon="mdi:chevron-left" width={12} />
+						<span>{t('seating.back')}</span>
+					</Link>
 
-			{/* ── Top bar ───────────────────────────────────────────────────── */}
-			<header className="flex h-[56px] flex-shrink-0 items-center gap-3 border-b border-[var(--line)] bg-[var(--bg)]/85 px-4 backdrop-blur-md">
-				<Link
-					href={`/events/${slug}`}
-					className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[var(--bg-2)] pl-3 pr-3.5 text-[13px] font-[600] tracking-[-0.005em] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)]"
-					aria-label={t('seating.back_to_event')}
-				>
-					<Icon icon="mdi:chevron-left" width={13} />
-					<span className="hidden sm:inline">{t('seating.back')}</span>
-				</Link>
+					<div className="min-w-0 flex-1 text-center">
+						<p className="m-0 truncate text-[9.5px] font-[800] uppercase tracking-[0.16em] text-[var(--ink-3)]">
+							{eyebrow}
+						</p>
+						<p className="m-0 mt-0.5 truncate text-[15px] font-[800] leading-tight tracking-[-0.018em] text-[var(--ink)]">
+							{eventTitle}
+						</p>
+					</div>
 
-				<div className="min-w-0 flex-1 text-center">
-					<p className="m-0 truncate text-[10px] font-[700] uppercase tracking-[0.14em] text-[var(--ink-3)]">
-						{t('seating.map_title')}
-					</p>
-					<p className="m-0 mt-0.5 truncate text-[14px] font-[800] leading-tight tracking-[-0.018em] text-[var(--ink)]">
-						{eventTitle}
-					</p>
+					<Link
+						href={eventHref}
+						className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] border border-[var(--line)] bg-[var(--bg-2)] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)] sm:h-[38px] sm:w-[38px]"
+						aria-label={t('seating.back_to_event')}
+						title={t('seating.back_to_event')}
+					>
+						<Icon icon="mdi:close" width={14} />
+					</Link>
 				</div>
 
-				<div className="hidden shrink-0 items-center gap-1.5 text-[11.5px] text-[var(--ink-3)] sm:flex">
-					{dateStr && <span>{dateStr}</span>}
-					{dateStr && venueName && <span aria-hidden>·</span>}
-					{venueName && <span>{venueName}</span>}
+				{/* Row 2: tier filters + legend */}
+				<div className="flex items-center justify-between gap-3 border-t border-[var(--line)] px-4 pb-3 pt-2.5 sm:px-[22px] sm:pb-3.5">
+					<TierTabsScroller>
+						<TierTab
+							active={highlightedPrice === null}
+							onClick={() => setHighlightedPrice(null)}
+							label={t('seating.all_categories')}
+						/>
+						{uniquePrices.map(({ price, color, tierName }) => {
+							const isActive = highlightedPrice === price;
+							return (
+								<TierTab
+									key={price}
+									active={isActive}
+									onClick={() => setHighlightedPrice(isActive ? null : price)}
+									label={`${price} ${currency}`}
+									sub={tierName}
+									color={color}
+								/>
+							);
+						})}
+					</TierTabsScroller>
+
+					<div className="hidden shrink-0 items-center gap-4 text-[11.5px] font-[600] text-[var(--ink-3)] md:flex">
+						<LegendDot color="var(--ink-3)" label={t('seating.available_label')} fill />
+						<LegendDot color="var(--ink)" label={t('seating.selected_label')} fill />
+						<LegendDot color="rgba(0,0,0,0.25)" label={t('seating.sold_label')} fill={false} />
+					</div>
 				</div>
 			</header>
 
-			{/* ── Price tags ────────────────────────────────────────────────── */}
-			<div className="flex h-[52px] flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-[var(--line)] bg-[var(--bg)] px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-				{uniquePrices.map(({ price, color }) => {
-					const isActive = highlightedPrice === price;
-					return (
-						<button
-							key={price}
-							type="button"
-							onClick={() => setHighlightedPrice(isActive ? null : price)}
-							className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-[12.5px] font-[700] tracking-[-0.005em] tabular-nums transition-colors duration-150 ${
-								isActive
-									? 'bg-[var(--ink)] text-white'
-									: 'bg-[var(--bg-2)] text-[var(--ink)] hover:bg-[var(--bg-3)]'
-							}`}
+			{/* ─── Body: canvas + sidebar (desktop) ────────────────────────────── */}
+			<div className="flex min-h-0 flex-1 flex-col overflow-hidden md:grid md:grid-cols-[minmax(0,1fr)_380px] md:grid-rows-1">
+				{/* Canvas */}
+				<div className="relative min-h-0 flex-1 overflow-hidden md:flex-none">
+					<SeatingViewer
+						sections={seating.sections}
+						canvasW={seating.canvas_w}
+						canvasH={seating.canvas_h}
+						bookedSeatIds={bookedSet}
+						selectedSeatIds={selected}
+						tierColorBySeatId={displayColorBySeatId}
+						priceBySeatId={priceBySeatId}
+						currency={currency}
+						onSeatToggle={handleSeatToggle}
+						reducedMotion={reducedMotion}
+					/>
+
+					{/* Stat chips: available count + selected count */}
+					<div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2">
+						<span
+							className="inline-flex items-center rounded-full border border-[var(--line)] bg-white/95 px-3.5 py-2 text-[11.5px] font-[800] uppercase tracking-[0.08em] tabular-nums text-[var(--ink-2)] backdrop-blur-md"
+							style={{ boxShadow: '0 2px 8px -2px rgba(0,0,0,0.06)' }}
 						>
+							{availableCount.toLocaleString()} {t('seating.seats_available')}
+						</span>
+						{selected.size > 0 && (
 							<span
-								className="h-2 w-2 shrink-0 rounded-full"
-								style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.7)' : color }}
-								aria-hidden="true"
-							/>
-							<span>
-								{price} {currency}
+								className="inline-flex items-center gap-1.5 rounded-full bg-[var(--ink)] px-3.5 py-2 text-[11.5px] font-[800] uppercase tracking-[0.04em] tabular-nums text-white"
+								style={{ boxShadow: '0 4px 14px -4px rgba(0,0,0,0.25)' }}
+							>
+								<span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true" />
+								{selected.size === 1
+									? t('seating.seats_selected_one', { count: selected.size })
+									: t('seating.seats_selected_other', { count: selected.size })}
 							</span>
-						</button>
-					);
-				})}
-				{highlightedPrice !== null && (
-					<button
-						type="button"
-						onClick={() => setHighlightedPrice(null)}
-						className="shrink-0 text-[11px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)] transition-colors hover:text-[var(--ink)]"
-					>
-						× {t('seating.clear_filter')}
-					</button>
-				)}
+						)}
+					</div>
+				</div>
+
+				{/* Desktop sidebar (md+) */}
+				<aside
+					className="hidden flex-col gap-3.5 overflow-auto border-l border-[var(--line)] bg-[var(--surface)] px-[22px] py-[22px] md:flex"
+					aria-label={t('seating.your_seats')}
+				>
+					<OrderSummaryCard
+						groupedByTier={groupedByTier}
+						selectedCount={selected.size}
+						total={total}
+						currency={currency}
+						complete={complete}
+						continuing={continuing}
+						onContinue={handleContinue}
+						onRemove={handleRemove}
+						t={t}
+					/>
+
+					<NavHint t={t} />
+				</aside>
 			</div>
 
-			{/* ── Canvas ────────────────────────────────────────────────────── */}
-			<div className="relative min-h-0 flex-1">
-				<SeatingViewer
-					sections={seating.sections}
-					canvasW={seating.canvas_w}
-					canvasH={seating.canvas_h}
-					bookedSeatIds={bookedSet}
-					selectedSeatIds={selected}
-					tierColorBySeatId={displayColorBySeatId}
-					priceBySeatId={priceBySeatId}
-					currency={currency}
-					onSeatToggle={handleSeatToggle}
-					reducedMotion={reducedMotion}
-				/>
+			{/* ─── Mobile bottom bar (< md) ───────────────────────────────────── */}
+			<div className="flex-shrink-0 md:hidden">
+				{selected.size === 0 ? (
+					<div
+						className="border-t border-[var(--line)] bg-[var(--bg)]"
+						style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+					>
+						<div className="flex h-[44px] items-center justify-center px-4">
+							<span className="truncate text-[11px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
+								{t('seating.canvas_hint')}
+							</span>
+						</div>
+					</div>
+				) : (
+					<div className="bg-[var(--ink)] text-white" style={{ boxShadow: '0 -8px 28px -8px rgba(0,0,0,0.25)' }}>
+						{/* Horizontal seat chips */}
+						<div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+							{selectedItems.map((item) => {
+								const hyphen = item.label.indexOf('-');
+								const rowStr = hyphen >= 0 ? item.label.slice(0, hyphen) : item.label;
+								const locStr = hyphen >= 0 ? item.label.slice(hyphen + 1) : '';
+								return (
+									<div key={item.seatId} className="relative shrink-0">
+										<div className="flex min-w-[120px] flex-col gap-1 rounded-[14px] bg-white/[0.12] px-3.5 py-2.5 backdrop-blur-md">
+											<div className="flex items-center gap-1.5">
+												<span
+													className="h-1.5 w-1.5 shrink-0 rounded-full"
+													style={{ backgroundColor: item.color }}
+													aria-hidden="true"
+												/>
+												<span className="truncate text-[10px] font-[700] uppercase tracking-[0.08em] text-white/70">
+													{item.tierName}
+												</span>
+											</div>
+											<p className="m-0 text-[13px] font-[700] leading-tight tracking-[-0.005em] tabular-nums text-white">
+												{locStr ? <>{t('seating.row')} {rowStr} · {t('seating.seat')} {locStr}</> : rowStr}
+											</p>
+											<p className="m-0 text-[11px] font-[600] tabular-nums text-white/55">
+												{item.price} {currency}
+											</p>
+										</div>
+										<button
+											type="button"
+											onClick={() => handleRemove(item.seatId)}
+											className="absolute -right-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[var(--ink)]"
+											style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}
+											aria-label={t('seating.remove_seat')}
+										>
+											<Icon icon="mdi:close" width={13} />
+										</button>
+									</div>
+								);
+							})}
+						</div>
 
-				{/* Available count overlay */}
-				<div className="pointer-events-none absolute left-3 top-3">
-					<span className="rounded-full bg-white/80 px-3 py-1.5 text-[10.5px] font-[700] uppercase tracking-[0.1em] tabular-nums text-[var(--ink-2)] backdrop-blur-md" style={{ boxShadow: 'var(--shadow-1)' }}>
-						{availableCount} {t('seating.seats_available')}
-					</span>
-				</div>
+						{/* Total + CTA */}
+						<div
+							className="flex items-center gap-4 px-4 pt-3"
+							style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 14px)' }}
+						>
+							<div className="min-w-0 flex-1 leading-tight">
+								<span className="block text-[10px] font-[700] uppercase tracking-[0.12em] text-white/55">
+									{t('seating.total')}
+								</span>
+								<span className="block text-[22px] font-[800] tracking-[-0.022em] tabular-nums text-white">
+									{total.toLocaleString()}{' '}
+									<span className="text-[13px] font-[700] text-white/65">{currency}</span>
+								</span>
+							</div>
+							<button
+								type="button"
+								onClick={handleContinue}
+								disabled={!complete || continuing}
+								className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-6 py-3.5 text-[14px] font-[700] tracking-[-0.005em] text-[var(--ink)] transition-transform duration-150 hover:scale-[1.03] disabled:opacity-50"
+							>
+								{continuing ? (
+									<Icon icon="mdi:loading" width={14} className="animate-spin" />
+								) : (
+									<>
+										{t('seating.continue')}
+										<Icon icon="mdi:arrow-right" width={13} />
+									</>
+								)}
+							</button>
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* Live region */}
 			<div aria-live="polite" className="sr-only">{liveMessage}</div>
-
-			{/* ── Bottom ───────────────────────────────────────────────────── */}
-			{selected.size === 0 ? (
-				<div
-					className="flex-shrink-0 border-t border-[var(--line)] bg-[var(--bg)]"
-					style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-				>
-					<div className="flex h-[40px] items-center justify-between px-4">
-						<span className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
-							{t('seating.no_seats_yet')}
-						</span>
-						<span className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-4)]">
-							TIX.LIVE
-						</span>
-					</div>
-				</div>
-			) : (
-				<div className="flex-shrink-0 bg-[var(--ink)] text-white" style={{ boxShadow: '0 -8px 28px -8px rgba(0,0,0,0.25)' }}>
-					{/* Seat cards — scrollable, one card per seat */}
-					<div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-						{selectedItems.map((item) => {
-							const hyphen = item.label.indexOf('-');
-							const rowStr = hyphen >= 0 ? item.label.slice(0, hyphen) : item.label;
-							const locStr = hyphen >= 0 ? item.label.slice(hyphen + 1) : '';
-							return (
-								<div key={item.seatId} className="group relative shrink-0">
-									<div className="flex min-w-[120px] flex-col gap-1 rounded-[14px] bg-white/12 px-3.5 py-2.5 backdrop-blur-md">
-										<div className="flex items-center gap-1.5">
-											<span
-												className="h-1.5 w-1.5 shrink-0 rounded-full"
-												style={{ backgroundColor: item.color }}
-												aria-hidden="true"
-											/>
-											<span className="truncate text-[10px] font-[700] uppercase tracking-[0.08em] text-white/70">
-												{item.tierName}
-											</span>
-										</div>
-										<p className="text-[13px] font-[700] leading-tight tracking-[-0.005em] tabular-nums text-white">
-											{locStr ? <>{t('seating.row')} {rowStr} · {t('seating.seat')} {locStr}</> : rowStr}
-										</p>
-										<p className="text-[11px] font-[600] tabular-nums text-white/55">
-											{item.price} {currency}
-										</p>
-									</div>
-									<button
-										type="button"
-										onClick={() => handleRemove(item.seatId)}
-										className="absolute -right-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[var(--ink)]"
-										style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}
-										aria-label={t('seating.remove_seat')}
-									>
-										<Icon icon="mdi:close" width={13} />
-									</button>
-								</div>
-							);
-						})}
-					</div>
-
-					{/* Total + CTA */}
-					<div
-						className="flex items-center gap-4 px-4 pt-3"
-						style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 14px)' }}
-					>
-						<button type="button" onClick={openCheckout} className="min-w-0 flex-1 text-left leading-tight">
-							<span className="block text-[10px] font-[700] uppercase tracking-[0.12em] text-white/55">
-								{t('seating.total')}
-							</span>
-							<span className="block text-[22px] font-[800] tracking-[-0.022em] tabular-nums text-white">
-								{total} <span className="text-[13px] font-[700] text-white/65">{currency}</span>
-							</span>
-						</button>
-						<button
-							type="button"
-							onClick={openCheckout}
-							className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-6 py-3.5 text-[14px] font-[600] tracking-[-0.005em] text-[var(--ink)] transition-transform duration-150 hover:scale-[1.03]"
-						>
-							{t('seating.continue')}
-							<Icon icon="mdi:arrow-right" width={13} />
-						</button>
-					</div>
-				</div>
-			)}
 
 			{/* ── Auto-pick arrival modal ───────────────────────────────────── */}
 			<Modal isOpen={autopickOpen} onClose={closeAutopick} placement="center" backdrop="opaque" size="sm">
 				<ModalContent>
 					{() => (
 						<>
-							<ModalHeader className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+							<ModalHeader className="text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--ink)]">
 								{shortfall ? t('seating.autopick_partial_title') : t('seating.autopick_title')}
 							</ModalHeader>
 							<ModalBody>
-								<p className="text-[0.875rem] text-[var(--theme-text-muted)]">
+								<p className="text-[0.875rem] text-[var(--ink-3)]">
 									{shortfall
 										? t('seating.autopick_partial_body')
 										: t('seating.autopick_body', { count: selected.size })}
 								</p>
 								<ul className="mt-2 space-y-1.5">
 									{tiers.map((tier) => {
-										const seatsForTier = selectedItems.filter((it) => seatTier.get(it.seatId) === tier.ticket_package_id);
+										const seatsForTier = selectedItems.filter((it) => it.tierId === tier.ticket_package_id);
 										if (seatsForTier.length === 0) return null;
 										return (
 											<li key={tier.ticket_package_id} className="flex items-center gap-2 text-[0.8125rem]">
 												<span
 													className="h-2.5 w-2.5 shrink-0 rounded-full"
-													style={{ backgroundColor: colorByTierId.get(tier.ticket_package_id) ?? 'var(--theme-text-muted)' }}
+													style={{ backgroundColor: colorByTierId.get(tier.ticket_package_id) ?? 'var(--ink-3)' }}
 													aria-hidden="true"
 												/>
-												<span className="font-medium text-[var(--theme-text)]">{tier.name.split(' — ')[0].split(' (')[0].trim()}</span>
-												<span className="font-[family-name:var(--font-data)] tabular-nums text-[var(--theme-text-muted)]">
+												<span className="font-medium text-[var(--ink)]">{tier.name.split(' — ')[0].split(' (')[0].trim()}</span>
+												<span className="tabular-nums text-[var(--ink-3)]">
 													{seatsForTier.map((s) => s.label).join(', ')}
 												</span>
 											</li>
 										);
 									})}
 								</ul>
-								<p className="mt-2 text-[0.75rem] text-[var(--theme-text-muted)]">{t('seating.autopick_tap_hint')}</p>
+								<p className="mt-2 text-[0.75rem] text-[var(--ink-3)]">{t('seating.autopick_tap_hint')}</p>
 							</ModalBody>
 							<ModalFooter>
 								{seedCart.length > 0 && (
@@ -531,15 +585,14 @@ export default function SeatSelection({
 										variant="bordered"
 										onPress={handleRepick}
 										isLoading={repicking}
-										className="rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
+										className="rounded-full border-[var(--line)] font-[600] text-[var(--ink)]"
 									>
 										{t('seating.pick_best')}
 									</Button>
 								)}
 								<Button
 									onPress={closeAutopick}
-									className="rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
-									style={{ backgroundColor: 'var(--brand-primary)' }}
+									className="rounded-full bg-[var(--ink)] font-[700] text-white"
 								>
 									{t('seating.looks_good')}
 								</Button>
@@ -548,111 +601,313 @@ export default function SeatSelection({
 					)}
 				</ModalContent>
 			</Modal>
+		</div>
+	);
+}
 
-			{/* ── Checkout confirmation modal ───────────────────────────────── */}
-			<Modal isOpen={checkoutOpen} onClose={closeCheckout} placement="center" backdrop="opaque" size="sm" scrollBehavior="inside">
-				<ModalContent>
-					{() => (
-						<>
-							<ModalHeader className="flex items-start justify-between gap-3">
-								<div>
-									<h2 className="font-[family-name:var(--font-display)] text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-										{t('seating.your_seats')}
-									</h2>
-									<p className="mt-0.5 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
-										{t('seating.seats_selected', { count: selected.size })}
-									</p>
-								</div>
-								<button
-									type="button"
-									onClick={handleClearAll}
-									className="shrink-0 font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.12em] text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
-								>
-									{t('seating.clear_all')}
-								</button>
-							</ModalHeader>
+// ─── Tier tabs horizontal scroller (with arrows + wheel-to-horizontal) ─────
+function TierTabsScroller({ children }: { children: React.ReactNode }) {
+	const scrollRef = useRef<HTMLDivElement>(null);
+	const [canLeft, setCanLeft] = useState(false);
+	const [canRight, setCanRight] = useState(false);
 
-							<ModalBody className="pb-1">
-								<div className="space-y-3">
-									{selectedItems.map((item) => (
-										<div key={item.seatId} className="flex items-center gap-3">
-											<span
-												className="h-2.5 w-2.5 shrink-0 rounded-full"
-												style={{ backgroundColor: item.color }}
-												aria-hidden="true"
-											/>
-											<div className="min-w-0 flex-1">
-												<p className="font-[family-name:var(--font-display)] text-[0.875rem] font-[700] text-[var(--theme-text)]">
-													{item.tierName}
-												</p>
-												<p className="font-[family-name:var(--font-mono)] text-[0.6875rem] text-[var(--theme-text-muted)]">
-													{item.label}
-												</p>
-											</div>
-											<div className="flex shrink-0 items-center gap-2">
-												<span className="font-[family-name:var(--font-data)] text-[0.875rem] tabular-nums text-[var(--theme-text)]">
-													{item.price} {currency}
-												</span>
-												<button
-													type="button"
-													onClick={() => handleRemove(item.seatId)}
-													className="text-[var(--theme-text-muted)] transition-colors hover:text-[var(--theme-text)]"
-													aria-label={t('seating.remove_seat')}
-												>
-													<Icon icon="mdi:close" width={14} />
-												</button>
-											</div>
-										</div>
-									))}
-								</div>
-							</ModalBody>
+	const updateState = useCallback(() => {
+		const el = scrollRef.current;
+		if (!el) return;
+		setCanLeft(el.scrollLeft > 2);
+		setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+	}, []);
 
-							<ModalFooter className="flex-col gap-3">
-								{/* Total */}
-								<div className="flex w-full items-baseline justify-between border-t border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] pt-3">
-									<span className="font-[family-name:var(--font-mono)] text-[0.625rem] uppercase tracking-[0.15em] text-[var(--theme-text-muted)]">
-										{t('common.total')}
-									</span>
-									<span className="font-[family-name:var(--font-display)] text-[1.5rem] font-[800] leading-none tracking-[-0.02em] tabular-nums text-[var(--theme-text)]">
-										{total} <span className="text-[0.9375rem] font-[700] opacity-50">{currency}</span>
-									</span>
-								</div>
+	useEffect(() => {
+		const el = scrollRef.current;
+		if (!el) return;
+		updateState();
+		const ro = new ResizeObserver(updateState);
+		ro.observe(el);
+		el.addEventListener('scroll', updateState, { passive: true });
+		// Translate vertical wheel to horizontal scroll (mouse wheel users)
+		const onWheel = (e: WheelEvent) => {
+			if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+			el.scrollLeft += e.deltaY;
+			e.preventDefault();
+		};
+		el.addEventListener('wheel', onWheel, { passive: false });
+		return () => {
+			ro.disconnect();
+			el.removeEventListener('scroll', updateState);
+			el.removeEventListener('wheel', onWheel);
+		};
+	}, [updateState]);
 
-								{/* Repick option */}
-								{seedCart.length > 0 && (
-									<Button
-										variant="bordered"
-										onPress={handleRepick}
-										isLoading={repicking}
-										className="w-full rounded-full border-[color-mix(in_srgb,var(--theme-text)_12%,transparent)] font-[family-name:var(--font-body)] font-[600] text-[var(--theme-text)]"
-									>
-										<Icon icon="mdi:auto-fix" width={16} className="mr-1" />
-										{t('seating.pick_best')}
-									</Button>
-								)}
+	const scrollBy = (dir: -1 | 1) => {
+		const el = scrollRef.current;
+		if (!el) return;
+		el.scrollBy({ left: dir * Math.max(120, el.clientWidth * 0.7), behavior: 'smooth' });
+	};
 
-								{/* Confirm CTA */}
-								<Button
-									size="lg"
-									isDisabled={!complete || continuing}
-									isLoading={continuing}
-									onPress={handleContinue}
-									className="w-full rounded-full font-[family-name:var(--font-body)] font-[700] text-[var(--theme-bg)]"
-									style={{ backgroundColor: 'var(--brand-primary)' }}
-								>
-									{t('seating.confirm_pay')}
-									<Icon icon="mdi:arrow-right" className="ml-1" width={20} />
-								</Button>
+	return (
+		<div className="relative flex min-w-0 flex-1 items-center">
+			{/* Left chevron + fade */}
+			<div
+				className={`pointer-events-none absolute left-0 top-0 z-10 flex h-full items-center pr-6 transition-opacity duration-150 ${
+					canLeft ? 'opacity-100' : 'opacity-0'
+				}`}
+				style={{ background: 'linear-gradient(90deg, var(--surface) 30%, transparent 100%)' }}
+			>
+				<button
+					type="button"
+					onClick={() => scrollBy(-1)}
+					tabIndex={canLeft ? 0 : -1}
+					aria-hidden={!canLeft}
+					className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-2)]"
+					style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
+					aria-label="Scroll left"
+				>
+					<Icon icon="mdi:chevron-left" width={14} />
+				</button>
+			</div>
 
-								<p className="flex items-center justify-center gap-1.5 font-[family-name:var(--font-mono)] text-[0.5625rem] uppercase tracking-[0.1em] text-[var(--theme-text-muted)]">
-									<Icon icon="mdi:lock-outline" width={11} />
-									{t('checkout.secure_payment_note')}
-								</p>
-							</ModalFooter>
-						</>
-					)}
-				</ModalContent>
-			</Modal>
+			{/* Scroll track */}
+			<div
+				ref={scrollRef}
+				className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+			>
+				{children}
+			</div>
+
+			{/* Right chevron + fade */}
+			<div
+				className={`pointer-events-none absolute right-0 top-0 z-10 flex h-full items-center justify-end pl-6 transition-opacity duration-150 ${
+					canRight ? 'opacity-100' : 'opacity-0'
+				}`}
+				style={{ background: 'linear-gradient(270deg, var(--surface) 30%, transparent 100%)' }}
+			>
+				<button
+					type="button"
+					onClick={() => scrollBy(1)}
+					tabIndex={canRight ? 0 : -1}
+					aria-hidden={!canRight}
+					className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-2)]"
+					style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
+					aria-label="Scroll right"
+				>
+					<Icon icon="mdi:chevron-right" width={14} />
+				</button>
+			</div>
+		</div>
+	);
+}
+
+// ─── Tier filter tab ────────────────────────────────────────────────────────
+function TierTab({
+	active,
+	onClick,
+	label,
+	sub,
+	color,
+}: {
+	active: boolean;
+	onClick: () => void;
+	label: string;
+	sub?: string;
+	color?: string;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-[600] tracking-[-0.005em] transition-colors duration-150 ${
+				active
+					? 'bg-[var(--ink)] text-white'
+					: 'border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] hover:bg-[var(--bg-2)]'
+			}`}
+		>
+			{color && (
+				<span
+					className="h-2.5 w-2.5 shrink-0 rounded-full"
+					style={{ backgroundColor: active ? 'rgba(255,255,255,0.7)' : color }}
+					aria-hidden="true"
+				/>
+			)}
+			<span className="tabular-nums">{label}</span>
+			{sub && <span className="text-[11px] font-[500] opacity-55">· {sub}</span>}
+		</button>
+	);
+}
+
+// ─── Legend dot ─────────────────────────────────────────────────────────────
+function LegendDot({ color, label, fill }: { color: string; label: string; fill: boolean }) {
+	return (
+		<span className="inline-flex items-center gap-1.5">
+			<span
+				className="h-2 w-2 shrink-0 rounded-full"
+				style={fill ? { backgroundColor: color } : { border: `1.5px solid ${color}` }}
+				aria-hidden="true"
+			/>
+			{label}
+		</span>
+	);
+}
+
+// ─── Order summary card ────────────────────────────────────────────────────
+type TFn = (key: string, options?: Record<string, unknown>) => string;
+
+interface SelectedSeatGroup {
+	tierName: string;
+	color: string;
+	price: number;
+	items: Array<{ seatId: string; label: string }>;
+	index: number;
+}
+
+function OrderSummaryCard({
+	groupedByTier,
+	selectedCount,
+	total,
+	currency,
+	complete,
+	continuing,
+	onContinue,
+	onRemove,
+	t,
+}: {
+	groupedByTier: SelectedSeatGroup[];
+	selectedCount: number;
+	total: number;
+	currency: string;
+	complete: boolean;
+	continuing: boolean;
+	onContinue: () => void;
+	onRemove: (seatId: string) => void;
+	t: TFn;
+}) {
+	if (selectedCount === 0) {
+		return (
+			<div className="rounded-[14px] bg-[var(--bg-2)] px-4 py-5 text-center">
+				<p className="m-0 text-[12.5px] font-[600] leading-[1.5] text-[var(--ink-3)]">
+					{t('seating.no_seats_yet')}
+				</p>
+				<p className="m-0 mt-1 text-[11.5px] leading-[1.5] text-[var(--ink-4)]">
+					{t('seating.canvas_hint')}
+				</p>
+			</div>
+		);
+	}
+
+	const ticketsLabel = selectedCount === 1 ? t('seating.ticket_one') : t('seating.ticket_other');
+
+	return (
+		<div className="rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5" style={{ boxShadow: 'var(--shadow-1)' }}>
+			<div className="flex items-center justify-between">
+				<span className="text-[11px] font-[700] uppercase tracking-[0.08em] text-[var(--ink-3)]">
+					{t('seating.your_order')}
+				</span>
+				<span className="inline-flex items-center rounded-full bg-[var(--bg-2)] px-2.5 py-[3px] text-[11px] font-[700] tabular-nums text-[var(--ink-2)]">
+					{selectedCount} {ticketsLabel}
+				</span>
+			</div>
+
+			<div className="mt-3.5 flex flex-col gap-3">
+				{groupedByTier.map((group) => (
+					<SumLine key={group.tierName} group={group} currency={currency} onRemove={onRemove} t={t} />
+				))}
+			</div>
+
+			<div className="my-3.5 h-px bg-[var(--line)]" />
+
+			<div className="flex items-baseline justify-between">
+				<span className="text-[15px] font-[700] tracking-[-0.012em] text-[var(--ink)]">{t('seating.total')}</span>
+				<span className="text-[20px] font-[800] leading-none tracking-[-0.018em] tabular-nums text-[var(--ink)]">
+					{total.toLocaleString()}{' '}
+					<span className="text-[12px] font-[600] text-[var(--ink-3)]">{currency}</span>
+				</span>
+			</div>
+
+			<button
+				type="button"
+				onClick={onContinue}
+				disabled={!complete || continuing}
+				className="mt-3.5 inline-flex h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[var(--ink)] text-[14px] font-[700] tracking-[-0.005em] text-white transition-transform duration-150 hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+			>
+				{continuing ? (
+					<Icon icon="mdi:loading" width={16} className="animate-spin" />
+				) : (
+					<>
+						{t('seating.continue')}
+						<Icon icon="mdi:arrow-right" width={13} />
+					</>
+				)}
+			</button>
+		</div>
+	);
+}
+
+function SumLine({
+	group,
+	currency,
+	onRemove,
+	t,
+}: {
+	group: SelectedSeatGroup;
+	currency: string;
+	onRemove: (seatId: string) => void;
+	t: TFn;
+}) {
+	const qty = group.items.length;
+	const lineTotal = qty * group.price;
+	return (
+		<div className="text-[13px]">
+			<div className="flex items-start justify-between gap-3">
+				<div className="flex min-w-0 items-center gap-2">
+					<span
+						className="h-[7px] w-[7px] shrink-0 rounded-full"
+						style={{ backgroundColor: group.color }}
+						aria-hidden="true"
+					/>
+					<div className="flex min-w-0 flex-col leading-[1.3]">
+						<span className="truncate text-[13px] font-[700] tracking-[-0.005em] text-[var(--ink)]">
+							{qty}× {group.tierName}
+						</span>
+						<span className="text-[10.5px] tabular-nums text-[var(--ink-3)]">
+							{group.price.toLocaleString()} {currency} / {t('seating.per_seat')}
+						</span>
+					</div>
+				</div>
+				<span className="shrink-0 text-[13px] font-[700] tabular-nums tracking-[-0.005em] text-[var(--ink)]">
+					{lineTotal.toLocaleString()} {currency}
+				</span>
+			</div>
+			<div className="ml-[15px] mt-1.5 flex flex-wrap gap-1.5">
+				{group.items.map((it) => (
+					<span
+						key={it.seatId}
+						className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-2)] py-[3px] pl-2.5 pr-1 text-[10.5px] font-[700] tracking-[-0.005em] tabular-nums text-[var(--ink-2)]"
+					>
+						{it.label}
+						<button
+							type="button"
+							onClick={() => onRemove(it.seatId)}
+							className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full bg-[var(--bg-3)] text-[var(--ink-2)] transition-colors hover:bg-[var(--ink)] hover:text-white"
+							aria-label={t('seating.remove_seat')}
+						>
+							<Icon icon="mdi:close" width={8} />
+						</button>
+					</span>
+				))}
+			</div>
+		</div>
+	);
+}
+
+// ─── Navigation hint ───────────────────────────────────────────────────────
+function NavHint({ t }: { t: TFn }) {
+	return (
+		<div className="hidden flex-col gap-1 rounded-[12px] bg-[var(--bg-2)] px-3.5 py-3 md:flex">
+			<div className="flex items-center gap-2">
+				<Icon icon="mdi:gesture-tap" width={14} className="text-[var(--ink-2)]" />
+				<span className="text-[12px] font-[700] text-[var(--ink)]">{t('seating.nav_hint_title')}</span>
+			</div>
+			<p className="m-0 text-[11.5px] leading-[1.5] text-[var(--ink-2)]">{t('seating.canvas_hint')}</p>
 		</div>
 	);
 }

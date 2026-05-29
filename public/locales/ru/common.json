@@ -429,7 +429,16 @@
 		"confirm_pay": "Подтвердить и оплатить",
 		"zoom_in": "Приблизить",
 		"zoom_out": "Отдалить",
-		"reset_view": "Сбросить вид"
+		"reset_view": "Сбросить вид",
+		"all_categories": "Все категории",
+		"available_label": "Доступно",
+		"selected_label": "Выбрано",
+		"sold_label": "Продано",
+		"your_order": "Ваш заказ",
+		"ticket_one": "билет",
+		"ticket_other": "билетов",
+		"per_seat": "место",
+		"nav_hint_title": "Как перемещаться"
 	},
 	"profile": {
 		"subtitle": "Обновите имя и телефон, которые используются на билетах.",

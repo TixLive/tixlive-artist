@@ -156,7 +156,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	const targetPos = useRef({ x: 0, y: 0 });
 	const animRafId = useRef<number | null>(null);
 
-	const [displayScale, setDisplayScale] = useState(1);
+	const [, setDisplayScale] = useState(1);
 	const [size, setSize] = useState({ w: 0, h: 0 });
 	const sizeRef = useRef({ w: 0, h: 0 });
 	const [tooltip, setTooltip] = useState<{ x: number; y: number; title: string; sub: string } | null>(null);
@@ -930,7 +930,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	return (
 		<div
 			ref={containerRef}
-			className="relative h-full w-full select-none overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)]"
+			className="relative h-full w-full select-none overflow-hidden bg-[var(--theme-surface)]"
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={endPan}
@@ -996,10 +996,6 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 				</button>
 			</div>
 
-			{/* Zoom % */}
-			<div className="absolute left-3 top-3 z-10 rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/90 px-2.5 py-1 font-[family-name:var(--font-mono)] text-[0.625rem] tabular-nums tracking-[0.05em] text-[var(--theme-text-muted)] backdrop-blur">
-				{Math.round(displayScale * 100)}%
-			</div>
 		</div>
 	);
 };

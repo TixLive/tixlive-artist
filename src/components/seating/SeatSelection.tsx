@@ -385,8 +385,8 @@ export default function SeatSelection({
 					</TierTabsScroller>
 
 					<div className="hidden shrink-0 items-center gap-4 text-[11.5px] font-[600] text-[var(--ink-3)] md:flex">
-						<LegendDot color="var(--ink-3)" label={t('seating.available_label')} fill />
-						<LegendDot color="var(--ink)" label={t('seating.selected_label')} fill />
+						<LegendDot colors={uniquePrices.map((p) => p.color)} label={t('seating.available_label')} />
+						<LegendDot color="var(--brand-accent)" label={t('seating.selected_label')} fill />
 						<LegendDot color="rgba(0,0,0,0.25)" label={t('seating.sold_label')} fill={false} />
 					</div>
 				</div>
@@ -736,14 +736,32 @@ function TierTab({
 }
 
 // ─── Legend dot ─────────────────────────────────────────────────────────────
-function LegendDot({ color, label, fill }: { color: string; label: string; fill: boolean }) {
+function LegendDot({
+	color,
+	colors,
+	label,
+	fill = true,
+}: {
+	color?: string;
+	colors?: string[];
+	label: string;
+	fill?: boolean;
+}) {
+	let dotStyle: React.CSSProperties;
+	if (colors && colors.length > 1) {
+		// Multi-color pie via conic-gradient — matches the actual tier colors
+		const stops = colors
+			.map((c, i) => `${c} ${(i / colors.length) * 360}deg ${((i + 1) / colors.length) * 360}deg`)
+			.join(', ');
+		dotStyle = { background: `conic-gradient(${stops})` };
+	} else if (fill) {
+		dotStyle = { backgroundColor: color };
+	} else {
+		dotStyle = { border: `1.5px solid ${color}` };
+	}
 	return (
 		<span className="inline-flex items-center gap-1.5">
-			<span
-				className="h-2 w-2 shrink-0 rounded-full"
-				style={fill ? { backgroundColor: color } : { border: `1.5px solid ${color}` }}
-				aria-hidden="true"
-			/>
+			<span className="h-2.5 w-2.5 shrink-0 rounded-full" style={dotStyle} aria-hidden="true" />
 			{label}
 		</span>
 	);
@@ -878,22 +896,27 @@ function SumLine({
 				</span>
 			</div>
 			<div className="ml-[15px] mt-1.5 flex flex-wrap gap-1.5">
-				{group.items.map((it) => (
-					<span
-						key={it.seatId}
-						className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-2)] py-[3px] pl-2.5 pr-1 text-[10.5px] font-[700] tracking-[-0.005em] tabular-nums text-[var(--ink-2)]"
-					>
-						{it.label}
-						<button
-							type="button"
-							onClick={() => onRemove(it.seatId)}
-							className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full bg-[var(--bg-3)] text-[var(--ink-2)] transition-colors hover:bg-[var(--ink)] hover:text-white"
-							aria-label={t('seating.remove_seat')}
+				{group.items.map((it) => {
+					const hyphen = it.label.indexOf('-');
+					const rowStr = hyphen >= 0 ? it.label.slice(0, hyphen) : it.label;
+					const locStr = hyphen >= 0 ? it.label.slice(hyphen + 1) : '';
+					return (
+						<span
+							key={it.seatId}
+							className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-2)] py-[3px] pl-2.5 pr-1 text-[10.5px] font-[700] tracking-[-0.005em] tabular-nums text-[var(--ink-2)]"
 						>
-							<Icon icon="mdi:close" width={8} />
-						</button>
-					</span>
-				))}
+							{locStr ? <>{t('seating.row')} {rowStr} · {t('seating.seat')} {locStr}</> : rowStr}
+							<button
+								type="button"
+								onClick={() => onRemove(it.seatId)}
+								className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full bg-[var(--bg-3)] text-[var(--ink-2)] transition-colors hover:bg-[var(--ink)] hover:text-white"
+								aria-label={t('seating.remove_seat')}
+							>
+								<Icon icon="mdi:close" width={8} />
+							</button>
+						</span>
+					);
+				})}
 			</div>
 		</div>
 	);
@@ -904,7 +927,7 @@ function NavHint({ t }: { t: TFn }) {
 	return (
 		<div className="hidden flex-col gap-1 rounded-[12px] bg-[var(--bg-2)] px-3.5 py-3 md:flex">
 			<div className="flex items-center gap-2">
-				<Icon icon="mdi:gesture-tap" width={14} className="text-[var(--ink-2)]" />
+				<span className="text-[14px] leading-none" aria-hidden="true">✋</span>
 				<span className="text-[12px] font-[700] text-[var(--ink)]">{t('seating.nav_hint_title')}</span>
 			</div>
 			<p className="m-0 text-[11.5px] leading-[1.5] text-[var(--ink-2)]">{t('seating.canvas_hint')}</p>

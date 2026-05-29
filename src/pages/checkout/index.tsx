@@ -22,6 +22,7 @@ import RecaptchaDisclaimer from '@/components/common/RecaptchaDisclaimer';
 import ProfileForm from '@/components/account/ProfileForm';
 import PhoneNumberInput from '@/components/forms/PhoneNumberInput';
 import ApiService, { ApiError, getAccessToken, getRefreshToken } from '@/services/Api.Service';
+import { normalizeLocale } from '@/lib/staticI18n';
 import { fetchEvent } from '@/queries/events/useGetEvent';
 import { useCreateOrder } from '@/queries/orders/useCreateOrder';
 import { useOrganizer } from '@/contexts/OrganizerContext';
@@ -37,7 +38,7 @@ type CheckoutFormValues = {
 };
 
 const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const router = useRouter();
   const { organizer } = useOrganizer();
   useBuyFlowStep(2);
@@ -195,7 +196,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
         }),
         ...(selectedSeats.length > 0 && { selected_seats: selectedSeats }),
         promo_code: promoCode || undefined,
-        locale: router.locale ?? 'en',
+        locale: normalizeLocale(i18n.language),
         idempotency_key: idempotencyKeyRef.current,
       };
 

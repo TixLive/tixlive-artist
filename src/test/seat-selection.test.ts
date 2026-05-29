@@ -15,16 +15,16 @@ const VIP: ISeatingTier = { ticket_package_id: 1, name: 'VIP', price: 500, color
 const STD: ISeatingTier = { ticket_package_id: 2, name: 'Standard', price: 200, color: '#b', seat_ids: ['balcon-B-1', 'balcon-B-2', 'balcon-B-3'] };
 const tiers = [VIP, STD];
 const seatTier = buildSeatTierMap(tiers);
-const MAX = 4; // max_tickets_per_user, per category
+const MAX = 4; // max_tickets_per_user, total per order
 
-describe('seatSelection (seat-first, per-category cap)', () => {
+describe('seatSelection (seat-first, per-order cap)', () => {
 	it('maps every priced seat to its tier and leaves unpriced seats unmapped', () => {
 		expect(seatTier.get('parter-A-1')).toBe(1);
 		expect(seatTier.get('balcon-B-2')).toBe(2);
 		expect(seatTier.get('ga-x-1')).toBeUndefined();
 	});
 
-	it('adds a free seat when the tier is under the per-category cap', () => {
+	it('adds a free seat when the order is under the cap', () => {
 		const r = toggleSeat('parter-A-1', new Set(), seatTier, MAX);
 		expect(r.status).toBe('added');
 		expect([...r.next]).toEqual(['parter-A-1']);
@@ -36,19 +36,25 @@ describe('seatSelection (seat-first, per-category cap)', () => {
 		expect(r.next.size).toBe(0);
 	});
 
-	it('rejects adding past the per-category cap (tier_max)', () => {
-		const sel = new Set(['parter-A-1', 'parter-A-2', 'parter-A-3', 'parter-A-4']); // VIP at cap=4
+	it('rejects adding past the per-order cap (order_max)', () => {
+		const sel = new Set(['parter-A-1', 'parter-A-2', 'parter-A-3', 'parter-A-4']); // 4 total = cap
 		const r = toggleSeat('parter-A-5', sel, seatTier, MAX);
-		expect(r.status).toBe('tier_max');
-		expect(r.tierId).toBe(1);
+		expect(r.status).toBe('order_max');
 		expect(r.next.size).toBe(4); // unchanged
 	});
 
-	it('allows a different tier even when one tier is at cap (per-category, not per-order)', () => {
-		const sel = new Set(['parter-A-1', 'parter-A-2', 'parter-A-3', 'parter-A-4']); // VIP full
+	it('rejects a different tier too once the order total hits the cap (per-order, not per-category)', () => {
+		const sel = new Set(['parter-A-1', 'parter-A-2', 'parter-A-3', 'parter-A-4']); // 4 total = cap
 		const r = toggleSeat('balcon-B-1', sel, seatTier, MAX);
-		expect(r.status).toBe('added'); // Standard is its own category
-		expect(r.next.size).toBe(5);
+		expect(r.status).toBe('order_max'); // total cap applies across tiers
+		expect(r.next.size).toBe(4);
+	});
+
+	it('allows mixing tiers while the order total is under the cap', () => {
+		const sel = new Set(['parter-A-1', 'parter-A-2']); // 2 total, under cap=4
+		const r = toggleSeat('balcon-B-1', sel, seatTier, MAX);
+		expect(r.status).toBe('added');
+		expect(r.next.size).toBe(3);
 	});
 
 	it('ignores taps on unpriced seats', () => {
@@ -86,11 +92,11 @@ describe('seatSelection (seat-first, per-category cap)', () => {
 	});
 
 	describe('sanitizeSeats (no cart-membership filter under seat-first)', () => {
-		it('keeps priced, unbooked seats from ANY tier, capped per category', () => {
+		it('keeps priced, unbooked seats from ANY tier, capped at the per-order total', () => {
 			const ids = ['parter-A-1', 'parter-A-2', 'parter-A-3', 'parter-A-4', 'parter-A-5', 'balcon-B-1'];
 			const out = sanitizeSeats(ids, seatTier, new Set(), MAX);
-			// VIP capped at 4 (A-5 dropped); Standard kept
-			expect(out).toEqual(['parter-A-1', 'parter-A-2', 'parter-A-3', 'parter-A-4', 'balcon-B-1']);
+			// Total capped at 4 across all tiers — only the first 4 kept
+			expect(out).toEqual(['parter-A-1', 'parter-A-2', 'parter-A-3', 'parter-A-4']);
 		});
 
 		it('drops booked seats', () => {

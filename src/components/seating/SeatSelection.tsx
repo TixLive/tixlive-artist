@@ -57,7 +57,7 @@ interface SeatSelectionProps {
 	eventTitle: string;
 	venueName: string;
 	venueAddress: string;
-	maxPerCategory: number;
+	maxPerOrder: number;
 	seedCart: Array<{ ticket_package_id: number; quantity: number }>;
 	addonCart: IAddonCartItem[];
 	seating: ISeatingResponse;
@@ -88,7 +88,7 @@ export default function SeatSelection({
 	eventTitle,
 	venueName,
 	venueAddress,
-	maxPerCategory,
+	maxPerOrder,
 	seedCart,
 	addonCart,
 	seating,
@@ -140,7 +140,7 @@ export default function SeatSelection({
 
 	// ── State ─────────────────────────────────────────────────────────────────
 	const [selected, setSelected] = useState<Set<string>>(
-		() => new Set(sanitizeSeats(initialSelectedSeatIds, seatTier, bookedSet, maxPerCategory))
+		() => new Set(sanitizeSeats(initialSelectedSeatIds, seatTier, bookedSet, maxPerOrder))
 	);
 	const [shortfall, setShortfall] = useState(initialShortfall);
 	const [repicking, setRepicking] = useState(false);
@@ -203,15 +203,14 @@ export default function SeatSelection({
 	// ── Handlers ─────────────────────────────────────────────────────────────
 	const handleSeatToggle = useCallback(
 		(seat: Seat) => {
-			const r = toggleSeat(seat.id, selected, seatTier, maxPerCategory);
-			if (r.status === 'tier_max') {
-				const meta = r.tierId != null ? tierMeta.get(r.tierId) : undefined;
-				addToast({ title: t('seating.cap_reached', { max: maxPerCategory, tier: meta?.name ?? '' }), color: 'warning' });
+			const r = toggleSeat(seat.id, selected, seatTier, maxPerOrder);
+			if (r.status === 'order_max') {
+				addToast({ title: t('seating.cap_reached', { max: maxPerOrder }), color: 'warning' });
 				return;
 			}
 			if (r.status === 'added' || r.status === 'removed') setSelected(r.next);
 		},
-		[selected, seatTier, maxPerCategory, tierMeta, t]
+		[selected, seatTier, maxPerOrder, t]
 	);
 
 	const handleRemove = useCallback((seatId: string) => {
@@ -229,7 +228,7 @@ export default function SeatSelection({
 		setRepicking(true);
 		try {
 			const res = await suggestSeats(slug, sessionId, seedCart);
-			setSelected(new Set(sanitizeSeats(res.items.flatMap((i) => i.seat_ids), seatTier, bookedSet, maxPerCategory)));
+			setSelected(new Set(sanitizeSeats(res.items.flatMap((i) => i.seat_ids), seatTier, bookedSet, maxPerOrder)));
 			setShortfall(res.shortfall);
 			closeCheckout();
 			openAutopick();
@@ -238,7 +237,7 @@ export default function SeatSelection({
 		} finally {
 			setRepicking(false);
 		}
-	}, [seedCart, slug, sessionId, seatTier, bookedSet, maxPerCategory, openAutopick, closeCheckout, t]);
+	}, [seedCart, slug, sessionId, seatTier, bookedSet, maxPerOrder, openAutopick, closeCheckout, t]);
 
 	const handleContinue = useCallback(() => {
 		if (!complete || continuing) return;

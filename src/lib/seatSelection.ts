@@ -2,9 +2,9 @@
 //
 // No DOM, no React — so the cap/validation logic is unit-tested cheaply and the
 // SeatSelection orchestrator stays a thin view layer. The buyer picks seats freely
-// on the map across ANY sector; each price tier is capped at `maxPerCategory`
-// (= event.max_tickets_per_user, an event-level scalar applied per category — see
-// besttix PublicEvent.Service.ts:319). The order CART is DERIVED from the chosen
+// on the map across ANY sector; the TOTAL selection is capped at `maxPerOrder`
+// (= event.max_tickets_per_user, an event-level scalar applied per order — see
+// besttix PublicEvent.Service.ts). The order CART is DERIVED from the chosen
 // seats (group by tier → quantity), so it always agrees with `selected_seats`
 // (besttix validates selected_seats.length === Σ cart quantity).
 
@@ -31,7 +31,7 @@ export function selectionCounts(selected: Iterable<string>, seatTier: Map<string
 	return counts;
 }
 
-export type ToggleStatus = 'added' | 'removed' | 'tier_max' | 'unknown';
+export type ToggleStatus = 'added' | 'removed' | 'order_max' | 'unknown';
 
 export interface ToggleResult {
 	next: Set<string>;
@@ -41,16 +41,16 @@ export interface ToggleResult {
 
 /**
  * Tapping a seat:
- *  • already selected        → remove it
- *  • free + tier under cap   → add it
- *  • free + tier at the cap  → reject ('tier_max'; UI shows "Max N per category")
- *  • not a priced seat       → 'unknown' (no-op)
+ *  • already selected         → remove it
+ *  • free + order under cap   → add it
+ *  • free + order at the cap  → reject ('order_max'; UI shows "Max N per order")
+ *  • not a priced seat        → 'unknown' (no-op)
  */
 export function toggleSeat(
 	seatId: string,
 	selected: Set<string>,
 	seatTier: Map<string, number>,
-	maxPerCategory: number
+	maxPerOrder: number
 ): ToggleResult {
 	const tierId = seatTier.get(seatId);
 	if (tierId == null) return { next: selected, status: 'unknown', tierId: null };
@@ -61,15 +61,14 @@ export function toggleSeat(
 		return { next, status: 'removed', tierId };
 	}
 
-	const current = selectionCounts(selected, seatTier).get(tierId) ?? 0;
-	if (current >= maxPerCategory) return { next: selected, status: 'tier_max', tierId };
+	if (selected.size >= maxPerOrder) return { next: selected, status: 'order_max', tierId };
 
 	const next = new Set(selected);
 	next.add(seatId);
 	return { next, status: 'added', tierId };
 }
 
-/** Valid to continue: at least one seat chosen. (Per-tier cap is enforced at toggle time.) */
+/** Valid to continue: at least one seat chosen. (Per-order cap is enforced at toggle time.) */
 export function isSelectionValid(count: number): boolean {
 	return count >= 1;
 }
@@ -115,7 +114,7 @@ export function selectionTotal(
 
 /**
  * Sanitize a raw id list (besttix /suggest output or a forwarded initial seed):
- * keep priced seats, drop booked, cap each tier at `maxPerCategory`. Order is
+ * keep priced seats, drop booked, cap the TOTAL kept at `maxPerOrder`. Order is
  * preserved. NOTE: there is deliberately NO cart-tier-membership filter — under
  * seat-first every priced tier is selectable, so a seed (or suggestion) may span
  * any tier. This is defense-in-depth so the on-screen selection always matches
@@ -126,17 +125,14 @@ export function sanitizeSeats(
 	ids: Iterable<string>,
 	seatTier: Map<string, number>,
 	booked: Set<string>,
-	maxPerCategory: number
+	maxPerOrder: number
 ): string[] {
-	const perTier = new Map<number, number>();
 	const out: string[] = [];
 	for (const id of ids) {
+		if (out.length >= maxPerOrder) break;
 		if (booked.has(id)) continue;
 		const tierId = seatTier.get(id);
 		if (tierId == null) continue;
-		const used = perTier.get(tierId) ?? 0;
-		if (used >= maxPerCategory) continue;
-		perTier.set(tierId, used + 1);
 		out.push(id);
 	}
 	return out;

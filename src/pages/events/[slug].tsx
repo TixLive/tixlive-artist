@@ -101,6 +101,13 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
     [cartItems]
   );
+
+  // Per-order cap: TOTAL tickets across all categories ≤ event.max_tickets_per_user
+  // (default 10). `orderRemaining` is the headroom left for the whole order; each
+  // stepper can only grow until the order total hits the cap. Mirrors the seat
+  // page's total-selection limit and the besttix validateMaxPerUser check.
+  const maxPerOrder = ticketTypes[0]?.max_tickets_per_user ?? 10;
+  const orderRemaining = Math.max(0, maxPerOrder - totalQuantity);
   const addonTotal = useMemo(() => {
     return addons.reduce((sum, addon) => {
       const qty = addonQuantities[addon.id] ?? 0;
@@ -484,6 +491,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                           index={i + 1}
                           ticket={ticket}
                           quantity={quantities[ticket.id] ?? 0}
+                          orderRemaining={orderRemaining}
                           onQuantityChange={handleQuantityChange}
                           showLowStockUrgency={!!(event.fomo_enabled && event.fomo_low_stock)}
                         />

@@ -6,6 +6,8 @@ import CapacityBadge from '@/components/event/CapacityBadge';
 interface TicketTypeRowProps {
 	ticket: ITicketType;
 	quantity: number;
+	/** Headroom left for the WHOLE order (maxPerOrder − total selected across all tiers). */
+	orderRemaining: number;
 	onQuantityChange: (ticketTypeId: number, quantity: number) => void;
 	showLowStockUrgency?: boolean;
 	index?: number;
@@ -19,15 +21,18 @@ interface TicketTypeRowProps {
 export default function TicketTypeRow({
 	ticket,
 	quantity,
+	orderRemaining,
 	onQuantityChange,
 	showLowStockUrgency,
 	index,
 }: TicketTypeRowProps) {
 	const { t } = useTranslation('common');
 	const isSoldOut = ticket.remaining_capacity === 0;
+	// Capped by this tier's stock AND the order-wide headroom: this row can grow to
+	// its current quantity plus whatever is left before the order hits maxPerOrder.
 	const maxQty = Math.min(
 		ticket.remaining_capacity ?? Infinity,
-		ticket.max_tickets_per_user ?? 10
+		quantity + orderRemaining
 	);
 	const isSelected = quantity > 0;
 

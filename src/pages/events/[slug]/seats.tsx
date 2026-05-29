@@ -17,7 +17,7 @@ interface SeatsState {
 	sessionId: number;
 	sessionDate: string;
 	sessionStart: string;
-	maxPerCategory: number;
+	maxPerOrder: number;
 	seedCart: Array<{ ticket_package_id: number; quantity: number }>;
 	addonCart: IAddonCartItem[];
 	seating: ISeatingResponse;
@@ -108,7 +108,7 @@ export default function SeatsPage() {
 				}
 
 				const currency = seedCurrency ?? event.currency ?? 'MDL';
-				const maxPerCategory = event.ticket_types?.[0]?.max_tickets_per_user ?? 10;
+				const maxPerOrder = event.ticket_types?.[0]?.max_tickets_per_user ?? 10;
 
 				setState({
 					slug,
@@ -118,7 +118,7 @@ export default function SeatsPage() {
 					sessionId: session.id,
 					sessionDate: session.label ?? '',
 					sessionStart: session.date ?? event.date_start ?? '',
-					maxPerCategory,
+					maxPerOrder,
 					seedCart,
 					addonCart,
 					seating,
@@ -150,7 +150,7 @@ export default function SeatsPage() {
 				eventTitle={state.eventTitle}
 				venueName={state.venueName}
 				venueAddress={state.venueAddress}
-				maxPerCategory={state.maxPerCategory}
+				maxPerOrder={state.maxPerOrder}
 				seedCart={state.seedCart}
 				addonCart={state.addonCart}
 				seating={state.seating}

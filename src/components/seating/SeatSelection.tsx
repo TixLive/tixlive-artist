@@ -269,7 +269,14 @@ export default function SeatSelection({
 		if (!complete || continuing) return;
 		setContinuing(true);
 		const derivedCart = deriveCart(selected, seatTier, tiers, currency);
-		const seatLabels = selectedItems.map((it) => `${it.tierName} · ${it.label}`);
+		const seatLabels = selectedItems.map((it) => {
+			const hyphen = it.label.indexOf('-');
+			const seatPart =
+				hyphen >= 0
+					? `${t('seating.row')} ${it.label.slice(0, hyphen)}, ${t('seating.seat')} ${it.label.slice(hyphen + 1)}`
+					: it.label;
+			return `${it.tierName} · ${seatPart}`;
+		});
 
 		const data: Record<string, string> = {
 			event: slug,
@@ -281,7 +288,7 @@ export default function SeatSelection({
 		};
 		sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
 		router.push('/checkout');
-	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart, router]);
+	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart, router, t]);
 
 	// Reset continuing when page is restored from bfcache (browser back button)
 	useEffect(() => {

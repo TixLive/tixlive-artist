@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button, Checkbox, Drawer, DrawerBody, DrawerContent, DrawerHeader, Input, useDisclosure } from '@heroui/react';
+import { Drawer, DrawerBody, DrawerContent, DrawerHeader, Input, useDisclosure } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation, Trans } from 'next-i18next';
 import { isValidPhoneNumber } from 'react-phone-number-input';
@@ -13,6 +13,8 @@ import { isValidPhoneNumber } from 'react-phone-number-input';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import OrderSummary from '@/components/checkout/OrderSummary';
+import CheckoutSkeleton from '@/components/checkout/CheckoutSkeleton';
+import ConsentCheckbox from '@/components/checkout/ConsentCheckbox';
 import PromoCodeInput from '@/components/checkout/PromoCodeInput';
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 import PaymentDetailsSlot from '@/components/checkout/PaymentDetailsSlot';
@@ -34,6 +36,7 @@ type CheckoutFormValues = {
   last_name: string;
   email: string;
   phone: string;
+  confirm_email: boolean;
   accept_terms: boolean;
 };
 
@@ -271,6 +274,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
           .string()
           .min(1, t('checkout.phone_required'))
           .refine((v) => isValidPhoneNumber(v ?? ''), { message: t('checkout.phone_invalid') }),
+        confirm_email: z.boolean().refine((v) => v === true, { message: t('checkout.confirm_email_required') }),
         accept_terms: z.boolean().refine((v) => v === true, { message: t('checkout.terms_required') }),
       }),
     [t],
@@ -278,7 +282,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
 
   const methods = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { first_name: '', last_name: '', email: '', phone: '', accept_terms: false },
+    defaultValues: { first_name: '', last_name: '', email: '', phone: '', confirm_email: false, accept_terms: false },
   });
 
   const { register, handleSubmit, control, formState: { errors } } = methods;
@@ -293,7 +297,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     submitOrder();
   };
 
-  if (!ready || !event) return null;
+  if (!ready || !event) return <CheckoutSkeleton />;
 
   const isAuthed = me !== null;
   const paymentMethods: IAvailablePaymentMethod[] = event.available_payment_methods ?? [];
@@ -489,43 +493,50 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                     />
                   </div>
 
-                  {/* Terms & Conditions */}
-                  <div className="space-y-1.5">
+                  {/* Confirmations: email (guests) + terms */}
+                  <div className="space-y-2">
+                    {!isAuthed && (
+                      <Controller
+                        control={control}
+                        name="confirm_email"
+                        render={({ field }) => (
+                          <ConsentCheckbox
+                            checked={!!field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            error={errors.confirm_email?.message as string | undefined}
+                          >
+                            {t('checkout.confirm_email_agree')}
+                          </ConsentCheckbox>
+                        )}
+                      />
+                    )}
                     <Controller
                       control={control}
                       name="accept_terms"
                       render={({ field }) => (
-                        <label className="flex items-start gap-2.5 rounded-[12px] bg-[var(--bg-2)] px-3 py-2.5 text-[12.5px] leading-[1.45] text-[var(--ink-2)]">
-                          <input
-                            type="checkbox"
-                            checked={!!field.value}
-                            onChange={(e) => field.onChange(e.target.checked)}
-                            onBlur={field.onBlur}
-                            className="mt-0.5 shrink-0 accent-[var(--ink)]"
+                        <ConsentCheckbox
+                          checked={!!field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          error={errors.accept_terms?.message as string | undefined}
+                        >
+                          <Trans
+                            i18nKey="checkout.terms_agree"
+                            ns="common"
+                            components={{
+                              a: (
+                                <Link
+                                  href="/terms"
+                                  target="_blank"
+                                  className="font-[600] text-[var(--ink)] underline-offset-2 hover:underline"
+                                />
+                              ),
+                            }}
                           />
-                          <span className="flex-1">
-                            <Trans
-                              i18nKey="checkout.terms_agree"
-                              ns="common"
-                              components={{
-                                a: (
-                                  <Link
-                                    href="/terms"
-                                    target="_blank"
-                                    className="font-[600] text-[var(--ink)] underline-offset-2 hover:underline"
-                                  />
-                                ),
-                              }}
-                            />
-                          </span>
-                        </label>
+                        </ConsentCheckbox>
                       )}
                     />
-                    {errors.accept_terms && (
-                      <p className="px-2 text-[12px] text-[#DC2626]">
-                        {errors.accept_terms.message as string}
-                      </p>
-                    )}
                   </div>
 
                   {/* Submit CTA */}

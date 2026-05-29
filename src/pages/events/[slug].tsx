@@ -60,7 +60,6 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   }, [event]);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [addonQuantities, setAddonQuantities] = useState<Record<number, number>>({});
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   // Derived state — safe with null event (empty arrays/false until loaded)
   const ticketTypes = event?.ticket_types ?? [];
@@ -302,21 +301,9 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                   <h2 className="m-0 text-[24px] font-[700] tracking-[-0.018em] text-[var(--ink)]">
                     {t('event.about')}
                   </h2>
-                  <p
-                    className={`mt-4 max-w-[620px] whitespace-pre-line text-[15px] leading-[1.6] text-[var(--ink-2)] ${
-                      descriptionExpanded ? '' : 'line-clamp-6'
-                    }`}
-                  >
+                  <p className="mt-4 max-w-[620px] whitespace-pre-line text-[15px] leading-[1.6] text-[var(--ink-2)]">
                     {event.description}
                   </p>
-                  {event.description.length > 200 && (
-                    <button
-                      className="mt-3 text-[15px] font-[600] text-[var(--ink)] transition-colors duration-150 hover:text-[var(--ink-3)]"
-                      onClick={() => setDescriptionExpanded((o) => !o)}
-                    >
-                      {descriptionExpanded ? t('event.show_less') : t('event.show_more')}
-                    </button>
-                  )}
                   {event.page_content?.policies && event.page_content.policies.length > 0 && (
                     <PoliciesBlock policies={event.page_content.policies} />
                   )}

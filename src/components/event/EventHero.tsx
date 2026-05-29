@@ -58,7 +58,7 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 	return (
 		<section className="mx-auto max-w-[1200px] px-4 pt-8 sm:px-5 md:px-8">
 			<div
-				className="hero-stack relative isolate grid overflow-hidden rounded-[22px] bg-[var(--ink)] shadow-[var(--shadow-cinema)] sm:rounded-[28px]"
+				className="hero-stack relative isolate grid overflow-hidden rounded-[22px] bg-[var(--ink)] sm:rounded-[28px]"
 				style={{ gridTemplateRows: '1fr auto' }}
 			>
 				<style>{`
@@ -115,8 +115,9 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 					)}
 				</div>
 
-				{/* Bottom: blurred title zone */}
-				<div className="relative isolate">
+				{/* Bottom: blurred title zone — overflow-hidden clips the scaled+translated
+				    spill so it doesn't bleed up over the poster and darken its edge. */}
+				<div className="relative isolate overflow-hidden">
 					{/* Blurred color spill */}
 					{spillUrl && (
 						<Image

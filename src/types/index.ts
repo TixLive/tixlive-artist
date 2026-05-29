@@ -5,8 +5,6 @@ export interface IOrganizer {
 	name: string;
 	slug: string;
 	logo_url: string | null;
-	brand_primary_color: string | null;
-	brand_accent_color: string | null;
 	bio: string | null;
 	social_links: Record<string, string>;
 	/** Legal/info pages with published content + the locales they exist in. */

@@ -51,7 +51,6 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 
 	const landscapeUrl = event.poster_url ?? event.poster_portrait_url ?? null;
 	const portraitUrl = event.poster_portrait_url ?? event.poster_url ?? null;
-	const spillUrl = landscapeUrl ?? portraitUrl;
 	const venueLine = event.venue_name;
 	const portraitAspect = useImageAspect(portraitUrl);
 
@@ -118,15 +117,28 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 				{/* Bottom: blurred title zone — overflow-hidden clips the scaled+translated
 				    spill so it doesn't bleed up over the poster and darken its edge. */}
 				<div className="relative isolate overflow-hidden">
-					{/* Blurred color spill */}
-					{spillUrl && (
-						<Image
-							src={spillUrl}
-							alt=""
+					{/* Blurred color spill — CSS background-image (not a second <Image>)
+					    so it paints synchronously with the visible poster from cache.
+					    Each viewport's spill div uses the same URL its visible poster
+					    uses, gated by responsive display so the other isn't fetched. */}
+					{portraitUrl && (
+						<div
 							aria-hidden="true"
-							fill
-							className="object-cover"
+							className="absolute inset-0 bg-cover bg-center sm:hidden"
 							style={{
+								backgroundImage: `url("${portraitUrl}")`,
+								filter: 'blur(80px) saturate(1.5) brightness(0.6)',
+								transform: 'scale(1.4) translateY(-30%)',
+								zIndex: 0,
+							}}
+						/>
+					)}
+					{landscapeUrl && (
+						<div
+							aria-hidden="true"
+							className="absolute inset-0 hidden bg-cover bg-center sm:block"
+							style={{
+								backgroundImage: `url("${landscapeUrl}")`,
 								filter: 'blur(80px) saturate(1.5) brightness(0.6)',
 								transform: 'scale(1.4) translateY(-30%)',
 								zIndex: 0,

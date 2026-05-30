@@ -19,6 +19,18 @@ const LEGAL_PAGES: Array<{ pageType: string; labelKey: string }> = [
 	{ pageType: 'payment-regulations', labelKey: 'footer.paymentRegulations' },
 ];
 
+/**
+ * Payment-provider marks required in the footer per MAIB regulations.
+ * Widths derive from each asset's native aspect ratio at a uniform 18px height,
+ * so nothing is stretched.
+ */
+const PAYMENTS: Array<{ src: string; alt: string; width: number; height: number }> = [
+	{ src: '/images/visa.png', alt: 'Visa', width: 55, height: 18 },
+	{ src: '/images/mastercard.png', alt: 'Mastercard', width: 29, height: 18 },
+	{ src: '/images/maib.png', alt: 'MAIB', width: 64, height: 18 },
+	{ src: '/images/mia.svg', alt: 'MIA', width: 45, height: 18 },
+];
+
 export default function AppFooter({ organizerName, organizerBio, logoUrl, pages }: AppFooterProps) {
 	const { t } = useTranslation('common');
 
@@ -74,10 +86,26 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 				</div>
 
 				{/* Bottom bar */}
-				<div className="flex flex-col items-start justify-between gap-3 border-t border-[var(--line)] pt-6 sm:flex-row sm:items-center">
+				<div className="flex flex-col items-start gap-5 border-t border-[var(--line)] pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
 					<span className="text-[12px] text-[var(--ink-3)]">
 						© {new Date().getFullYear()} {organizerName}
 					</span>
+
+					{/* Accepted payment methods (required in footer per MAIB rules) */}
+					<ul className="flex flex-wrap items-center gap-x-5 gap-y-3 sm:justify-center">
+						{PAYMENTS.map((p) => (
+							<li key={p.src} className="flex items-center">
+								<Image
+									src={p.src}
+									alt={p.alt}
+									width={p.width}
+									height={p.height}
+									className="h-[18px] w-auto object-contain"
+								/>
+							</li>
+						))}
+					</ul>
+
 					<span className="inline-flex items-center gap-1.5 text-[12px] uppercase tracking-[0.12em] text-[var(--ink-3)]">
 						Powered by{' '}
 						<a

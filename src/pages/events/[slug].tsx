@@ -9,6 +9,8 @@ import { Icon } from '@iconify/react';
 import { ICartItem } from '@/types';
 import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import { useConsent } from '@/contexts/ConsentContext';
+import { initPixel, track } from '@/lib/fbpixel';
 import { useHeaderCart } from '@/contexts/LayoutContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -53,6 +55,16 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
   const { data: event, isFetching } = useGetEvent({ slug });
   const notFound = !!slug && !isFetching && event === null;
+
+  // Browser-side ViewContent on the event's pixel (event override ?? company), consent-gated.
+  const { granted: marketingConsent } = useConsent();
+  const viewContentFiredRef = useRef(false);
+  useEffect(() => {
+    if (viewContentFiredRef.current || !marketingConsent || !event?.facebook_pixel_id) return;
+    initPixel(event.facebook_pixel_id);
+    track('ViewContent', { content_ids: [String(event.id)], content_name: event.title, content_type: 'product' });
+    viewContentFiredRef.current = true;
+  }, [marketingConsent, event]);
 
   const [activeSessionId, setActiveSessionId] = useState(0);
   useEffect(() => {

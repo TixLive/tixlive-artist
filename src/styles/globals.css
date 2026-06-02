@@ -290,3 +290,63 @@ body {
 		scroll-behavior: auto !important;
 	}
 }
+
+/* ── Cookie consent (vanilla-cookieconsent / orestbida) ──────────────────────────
+   Map the plugin's --cc-* tokens onto the app's design tokens so the banner and
+   preferences modal inherit each organizer's brand automatically. Imported after the
+   plugin's stylesheet in _app.tsx, so these :root overrides win. */
+:root {
+	--cc-font-family: var(--font-body);
+	--cc-modal-border-radius: var(--r-card);
+	--cc-btn-border-radius: var(--r-btn);
+	--cc-pm-toggle-border-radius: var(--r-pill);
+	--cc-modal-transition-duration: 0.25s;
+	--cc-z-index: 9999;
+
+	--cc-bg: var(--surface);
+	--cc-primary-color: var(--ink);
+	--cc-secondary-color: var(--ink-3);
+	--cc-link-color: var(--ink);
+
+	--cc-btn-primary-bg: var(--accent);
+	--cc-btn-primary-color: var(--accent-fg);
+	--cc-btn-primary-border-color: var(--accent);
+	--cc-btn-primary-hover-bg: var(--accent-hover);
+	--cc-btn-primary-hover-color: var(--accent-fg);
+	--cc-btn-primary-hover-border-color: var(--accent-hover);
+
+	--cc-btn-secondary-bg: var(--bg-2);
+	--cc-btn-secondary-color: var(--ink);
+	--cc-btn-secondary-border-color: var(--bg-2);
+	--cc-btn-secondary-hover-bg: var(--bg-3);
+	--cc-btn-secondary-hover-color: var(--ink);
+	--cc-btn-secondary-hover-border-color: var(--bg-3);
+
+	--cc-separator-border-color: var(--line);
+	--cc-section-category-border: var(--line);
+
+	--cc-cookie-category-block-bg: var(--bg-2);
+	--cc-cookie-category-block-border: var(--line);
+	--cc-cookie-category-block-hover-bg: var(--bg-3);
+	--cc-cookie-category-block-hover-border: var(--line);
+	--cc-cookie-category-expanded-block-bg: var(--bg-3);
+	--cc-cookie-category-expanded-block-hover-bg: var(--bg-3);
+
+	--cc-toggle-on-bg: var(--accent);
+	--cc-toggle-off-bg: var(--ink-5);
+	--cc-toggle-on-knob-bg: var(--accent-fg);
+	--cc-toggle-off-knob-bg: #ffffff;
+	--cc-toggle-enabled-icon-color: var(--accent-fg);
+	--cc-toggle-disabled-icon-color: var(--ink-5);
+	--cc-toggle-readonly-bg: var(--bg-3);
+	--cc-toggle-readonly-knob-bg: var(--surface);
+	--cc-toggle-readonly-knob-icon-color: var(--ink-3);
+
+	--cc-footer-bg: var(--bg-2);
+	--cc-footer-color: var(--ink-3);
+	--cc-footer-border-color: var(--line);
+
+	--cc-overlay-bg: rgba(10, 10, 10, 0.5);
+	--cc-webkit-scrollbar-bg: var(--ink-5);
+	--cc-webkit-scrollbar-hover-bg: var(--ink-4);
+}

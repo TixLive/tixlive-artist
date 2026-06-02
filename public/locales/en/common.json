@@ -1,4 +1,29 @@
 {
+	"cookieConsent": {
+		"aria": "Cookie consent",
+		"consentModal": {
+			"title": "We value your privacy",
+			"description": "We want to give you the best experience while you search for and buy tickets to the events you love. We use cookies and similar technologies for: the correct functioning of the site, analysing traffic and performance, and showing you relevant ads. By pressing “Accept all”, you agree that your data (such as your activity on the site and device information) may be used by us and our partners for the purposes above. If you choose “Reject non-essential”, we will only use cookies that are strictly necessary for the site to work, and we will not personalise content or ads. You can change your preferences anytime by pressing “Manage preferences”.",
+			"acceptAll": "Accept all",
+			"acceptNecessary": "Reject non-essential",
+			"managePreferences": "Manage preferences"
+		},
+		"preferencesModal": {
+			"title": "Cookie preferences",
+			"introTitle": "How we use cookies",
+			"intro": "We want to give you the best experience while you search for and buy tickets to the events you love. We use cookies and similar technologies for: the correct functioning of the site, analysing traffic and performance, and showing you relevant ads. By pressing “Accept all”, you agree that your data (such as your activity on the site and device information) may be used by us and our partners for the purposes above. If you choose “Reject non-essential”, we will only use cookies that are strictly necessary for the site to work, and we will not personalise content or ads. You can change your preferences anytime from here.",
+			"acceptAll": "Accept all",
+			"acceptNecessary": "Reject non-essential",
+			"savePreferences": "Save my choices",
+			"close": "Close",
+			"necessaryTitle": "Strictly necessary",
+			"necessaryDescription": "Required for the site to work — sign-in and session, your language choice, and anti-spam protection (reCAPTCHA). Always on.",
+			"analyticsTitle": "Analytics",
+			"analyticsDescription": "Help us understand how visitors use the site so we can improve it. Off until you allow them.",
+			"marketingTitle": "Marketing",
+			"marketingDescription": "Let the organizer measure ad-campaign performance (e.g. Facebook Pixel). Off until you allow them."
+		}
+	},
 	"header": {
 		"my_tickets": "My Tickets",
 		"my_account": "My Account",
@@ -12,7 +37,8 @@
 		"terms": "Terms",
 		"cookies": "Privacy",
 		"publicRules": "Public offer",
-		"paymentRegulations": "Payment"
+		"paymentRegulations": "Payment",
+		"cookieSettings": "Cookie settings"
 	},
 	"pages": {
 		"terms": {

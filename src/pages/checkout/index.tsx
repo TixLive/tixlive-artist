@@ -28,6 +28,8 @@ import { normalizeLocale } from '@/lib/staticI18n';
 import { fetchEvent } from '@/queries/events/useGetEvent';
 import { useCreateOrder } from '@/queries/orders/useCreateOrder';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import { useConsent } from '@/contexts/ConsentContext';
+import { getFbCookies } from '@/lib/fbpixel';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
 import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
 
@@ -44,6 +46,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const { t, i18n } = useTranslation('common');
   const router = useRouter();
   const { organizer } = useOrganizer();
+  const { granted: marketingConsent } = useConsent();
   useBuyFlowStep(2);
 
   // Data loaded from sessionStorage + API
@@ -201,6 +204,10 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
         promo_code: promoCode || undefined,
         locale: normalizeLocale(i18n.language),
         idempotency_key: idempotencyKeyRef.current,
+        // Facebook Pixel: forward consent + click identifiers so besttix CAPI can fire a
+        // matched, deduped Purchase. Cookies only exist once the pixel loaded (consent given).
+        marketing_consent: marketingConsent,
+        ...(marketingConsent ? getFbCookies() : {}),
       };
 
       const body = isAuthed

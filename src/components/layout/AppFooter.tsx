@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from 'next-i18next';
+import { useConsent } from '@/contexts/ConsentContext';
 import type { IOrganizer } from '@/types';
 
 interface AppFooterProps {
@@ -33,6 +34,7 @@ const PAYMENTS: Array<{ src: string; alt: string; width: number; height: number 
 
 export default function AppFooter({ organizerName, organizerBio, logoUrl, pages }: AppFooterProps) {
 	const { t } = useTranslation('common');
+	const { showPreferences } = useConsent();
 
 	const publishedTypes = new Set((pages ?? []).map((p) => p.page_type));
 	const legalLinks = LEGAL_PAGES.filter((p) => publishedTypes.has(p.pageType));
@@ -58,21 +60,24 @@ export default function AppFooter({ organizerName, organizerBio, logoUrl, pages 
 						)}
 					</div>
 
-					{/* Legal */}
-					{legalLinks.length > 0 && (
-						<div>
-							<h3 className={heading}>{t('footer.legal')}</h3>
-							<ul className="flex flex-col gap-2.5">
-								{legalLinks.map((page) => (
-									<li key={page.pageType}>
-										<Link href={`/${page.pageType}`} className={link}>
-											{t(page.labelKey)}
-										</Link>
-									</li>
-								))}
-							</ul>
-						</div>
-					)}
+					{/* Legal — always rendered so the cookie-settings control stays reachable (GDPR). */}
+					<div>
+						<h3 className={heading}>{t('footer.legal')}</h3>
+						<ul className="flex flex-col gap-2.5">
+							{legalLinks.map((page) => (
+								<li key={page.pageType}>
+									<Link href={`/${page.pageType}`} className={link}>
+										{t(page.labelKey)}
+									</Link>
+								</li>
+							))}
+							<li>
+								<button type="button" onClick={showPreferences} className={`${link} cursor-pointer text-left`}>
+									{t('footer.cookieSettings')}
+								</button>
+							</li>
+						</ul>
+					</div>
 
 					{/* Contact */}
 					<div>

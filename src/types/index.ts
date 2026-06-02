@@ -9,6 +9,8 @@ export interface IOrganizer {
 	social_links: Record<string, string>;
 	/** Legal/info pages with published content + the locales they exist in. */
 	pages?: Array<{ page_type: string; locales: string[] }>;
+	/** Public Facebook Pixel id (company default). Browser pixel only — no token here. */
+	facebook_pixel_id?: string | null;
 }
 
 /** A single legal/info page (HTML content per locale). */
@@ -204,6 +206,8 @@ export interface IEventDetail extends IEventListItem {
 	fomo_recent_sales?: boolean;
 	fomo_countdown?: boolean;
 	fomo_low_stock?: boolean;
+	/** Resolved public Facebook Pixel id (event override ?? company default). Browser pixel. */
+	facebook_pixel_id?: string | null;
 }
 
 export interface ICartItem {
@@ -261,6 +265,9 @@ export interface IOrderDetail {
 	items: Array<{ name: string; quantity: number; price: number; seat_id?: string | null }>;
 	total: number;
 	currency: string;
+	/** Facebook-safe Purchase value/currency (besttix converts unsupported codes like MDL → USD). */
+	pixel_value?: number;
+	pixel_currency?: string;
 	pdf_url: string | null;
 	created_at?: string;
 }

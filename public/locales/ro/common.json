@@ -1,4 +1,29 @@
 {
+	"cookieConsent": {
+		"aria": "Consimțământ cookie-uri",
+		"consentModal": {
+			"title": "Îți respectăm confidențialitatea",
+			"description": "Vrem să îți oferim cea mai bună experiență atunci când cauți și cumperi bilete la evenimentele tale preferate. Folosim cookie-uri și tehnologii similare pentru: funcționarea corectă a site-ului, analiza traficului și a performanței și afișarea de reclame relevante pentru tine. Prin apăsarea butonului „Accept tot”, ești de acord ca datele tale (precum activitatea pe site și informațiile despre dispozitiv) să fie utilizate de noi și de partenerii noștri pentru scopurile de mai sus. Dacă alegi „Refuz neesențialele”, vom folosi doar cookie-uri strict necesare funcționării site-ului și nu vom personaliza conținutul sau reclamele. Poți modifica preferințele oricând apăsând pe „Gestionează preferințele”.",
+			"acceptAll": "Accept tot",
+			"acceptNecessary": "Refuz neesențialele",
+			"managePreferences": "Gestionează preferințele"
+		},
+		"preferencesModal": {
+			"title": "Preferințe cookie-uri",
+			"introTitle": "Cum folosim cookie-urile",
+			"intro": "Vrem să îți oferim cea mai bună experiență atunci când cauți și cumperi bilete la evenimentele tale preferate. Folosim cookie-uri și tehnologii similare pentru: funcționarea corectă a site-ului, analiza traficului și a performanței și afișarea de reclame relevante pentru tine. Prin apăsarea butonului „Accept tot”, ești de acord ca datele tale (precum activitatea pe site și informațiile despre dispozitiv) să fie utilizate de noi și de partenerii noștri pentru scopurile de mai sus. Dacă alegi „Refuz neesențialele”, vom folosi doar cookie-uri strict necesare funcționării site-ului și nu vom personaliza conținutul sau reclamele. Poți modifica preferințele oricând de aici.",
+			"acceptAll": "Accept tot",
+			"acceptNecessary": "Refuz neesențialele",
+			"savePreferences": "Salvează alegerile",
+			"close": "Închide",
+			"necessaryTitle": "Strict necesare",
+			"necessaryDescription": "Necesare pentru funcționarea site-ului — autentificare și sesiune, limba aleasă și protecția anti-spam (reCAPTCHA). Mereu active.",
+			"analyticsTitle": "Analiză",
+			"analyticsDescription": "Ne ajută să înțelegem cum este folosit site-ul, ca să-l îmbunătățim. Dezactivate până le permiți.",
+			"marketingTitle": "Marketing",
+			"marketingDescription": "Permit organizatorului să măsoare performanța campaniilor publicitare (ex. Facebook Pixel). Dezactivate până le permiți."
+		}
+	},
 	"header": {
 		"my_tickets": "Biletele Mele",
 		"my_account": "Contul meu",
@@ -12,7 +37,8 @@
 		"terms": "Regulament bilete",
 		"cookies": "Confidențialitate",
 		"publicRules": "Ofertă publică",
-		"paymentRegulations": "Achitare"
+		"paymentRegulations": "Achitare",
+		"cookieSettings": "Setări cookie-uri"
 	},
 	"pages": {
 		"terms": {

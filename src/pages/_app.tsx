@@ -1,4 +1,5 @@
 import 'react-phone-number-input/style.css';
+import 'vanilla-cookieconsent/dist/cookieconsent.css';
 import '@/styles/globals.css';
 import { HeroUIProvider, ToastProvider } from '@heroui/react';
 import type { AppProps } from 'next/app';
@@ -11,9 +12,11 @@ import { manrope, jetbrainsMono } from '@/styles/font';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { OrganizerProvider } from '@/contexts/OrganizerContext';
+import { ConsentProvider } from '@/contexts/ConsentContext';
 import { LayoutProvider } from '@/contexts/LayoutContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { RecaptchaProvider } from '@/contexts/RecaptchaContext';
+import { FacebookPixel } from '@/components/FacebookPixel';
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 	getLayout?: (page: ReactElement) => ReactNode;
@@ -47,17 +50,20 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
 				<OrganizerProvider>
-					<LayoutProvider>
-						<RecaptchaProvider>
-							<HeroUIProvider navigate={router.push}>
-								<ToastProvider placement="bottom-center" toastOffset={16} />
-								<LocaleHydrator />
-								<div className={`${manrope.variable} ${jetbrainsMono.variable} font-sans min-h-screen`}>
-									{getLayout(<Component {...pageProps} />)}
-								</div>
-							</HeroUIProvider>
-						</RecaptchaProvider>
-					</LayoutProvider>
+					<ConsentProvider>
+						<LayoutProvider>
+							<RecaptchaProvider>
+								<HeroUIProvider navigate={router.push}>
+									<ToastProvider placement="bottom-center" toastOffset={16} />
+									<LocaleHydrator />
+									<FacebookPixel />
+									<div className={`${manrope.variable} ${jetbrainsMono.variable} font-sans min-h-screen`}>
+										{getLayout(<Component {...pageProps} />)}
+									</div>
+								</HeroUIProvider>
+							</RecaptchaProvider>
+						</LayoutProvider>
+					</ConsentProvider>
 				</OrganizerProvider>
 			</AuthProvider>
 		</QueryClientProvider>

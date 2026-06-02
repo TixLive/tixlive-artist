@@ -499,7 +499,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
           </section>
 
           {/* Order tickets — GA events always; seated events only when multi-session (for the session picker) */}
-          {(!isSeated || (event.sessions ?? []).length > 1) && (
+          {(showCategorySelector || (event.sessions ?? []).length > 1) && (
             <SectionShell
               id="tickets"
               label={t('event.order_tickets')}

@@ -211,9 +211,13 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   const fmtTime = (d: string) =>
     new Date(d).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-  const buyCtaLabel = isSeated
+  // Only true interactive-seat events use the seat-picker CTA. Auto-allocate (category
+  // purchase) events behave like GA: the CTA scrolls to the category/bundle selector.
+  const usesSeatPicker = isSeated && !autoAllocate;
+  const hasSelection = totalQuantity > 0 || bundleSelections.length > 0;
+  const buyCtaLabel = usesSeatPicker
     ? t('seating.select_seats')
-    : totalQuantity > 0
+    : hasSelection
       ? `Checkout · ${totalPrice} ${currency}`
       : t('event.buy_ticket');
 
@@ -231,10 +235,9 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
   const handleBuy = useCallback(() => {
     if (!salesOpen || !event) return;
-    // Interactive-seat events proceed to the picker regardless; everywhere else needs
-    // at least one ticket or bundle selected.
-    const hasSelection = cartItems.length > 0 || bundleSelections.length > 0;
-    if (showCategorySelector && !hasSelection) return;
+    // Category/bundle purchase (GA + auto-allocate) needs at least one ticket or bundle
+    // selected; interactive-seat events proceed to the picker regardless.
+    if (showCategorySelector && cartItems.length === 0 && bundleSelections.length === 0) return;
 
     const addonItems = addons
       .filter((a) => (addonQuantities[a.id] ?? 0) > 0)
@@ -267,10 +270,10 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   }, [salesOpen, event, isSeated, showCategorySelector, cartItems, bundleSelections, activeSessionId, addons, addonQuantities, currency, router]);
 
   const headerCart = useMemo(
-    () => (totalQuantity > 0
-      ? { cartQuantity: totalQuantity, cartTotal: totalPrice, currency, onCartClick: handleBuy }
+    () => (totalQuantity > 0 || bundleSelections.length > 0
+      ? { cartQuantity: totalQuantity + bundleSelections.reduce((s, b) => s + b.quantity, 0), cartTotal: totalPrice, currency, onCartClick: handleBuy }
       : null),
-    [totalQuantity, totalPrice, currency, handleBuy]
+    [totalQuantity, bundleSelections, totalPrice, currency, handleBuy]
   );
   useHeaderCart(headerCart);
 
@@ -332,10 +335,10 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
       <>
         <EventHero
           event={event}
-          onBuy={salesOpen ? (isSeated || totalQuantity > 0 ? handleBuy : scrollToTickets) : undefined}
+          onBuy={salesOpen ? (usesSeatPicker || hasSelection ? handleBuy : scrollToTickets) : undefined}
           priceFrom={priceFrom}
           currency={currency}
-          ctaLabel={isSeated ? t('seating.select_seats') : t('events.get_tickets')}
+          ctaLabel={usesSeatPicker ? t('seating.select_seats') : t('events.get_tickets')}
         />
 
         <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pb-10 pt-10 sm:px-5 md:gap-[56px] md:px-8 md:pb-16">
@@ -447,7 +450,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                 </button>
               ) : (
                 <button
-                  onClick={isSeated || totalQuantity > 0 ? handleBuy : scrollToTickets}
+                  onClick={usesSeatPicker || hasSelection ? handleBuy : scrollToTickets}
                   className="urgency-cta inline-flex items-center justify-center gap-2.5 rounded-full bg-[var(--ink)] px-6 py-[17px] text-[15px] font-[600] tracking-[-0.012em] text-white transition-colors duration-150 hover:bg-[var(--ink-2)]"
                   style={{ boxShadow: '0 6px 20px -6px rgba(0,0,0,0.25)' }}
                 >
@@ -501,7 +504,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
               id="tickets"
               label={t('event.order_tickets')}
               rightSlot={
-                priceFrom > 0 && !isSeated ? (
+                priceFrom > 0 && showCategorySelector ? (
                   <span className="font-[family-name:var(--font-mono)] text-[0.75rem] tracking-[0.03em] text-[var(--theme-text-muted)]">
                     {priceFrom} – {maxPrice} {currency}
                   </span>
@@ -759,16 +762,16 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
               ? event.status === 'soon'
                 ? t('event.coming_soon')
                 : t('event.sales_ended')
-              : isSeated
+              : usesSeatPicker
                 ? t('seating.select_seats')
-                : totalQuantity > 0
+                : hasSelection
                   ? `${t('event.checkout')} · ${totalPrice} ${currency}`
                   : t('event.buy_ticket')
           }
           onCta={
             !salesOpen
               ? () => undefined
-              : isSeated || totalQuantity > 0
+              : usesSeatPicker || hasSelection
                 ? handleBuy
                 : scrollToTickets
           }

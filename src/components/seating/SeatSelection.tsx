@@ -29,7 +29,7 @@ import {
 } from '@/lib/seatSelection';
 import { buildTierColorById, buildTierColorBySeatId } from '@/lib/tierColors';
 import { suggestSeats } from '@/queries/seating/useSuggestSeats';
-import type { IAddonCartItem, ISeatingResponse } from '@/types';
+import type { IAddonCartItem, ICartItem, ISeatingResponse } from '@/types';
 
 function SeatingViewerLoading() {
 	const { t } = useTranslation('common');
@@ -63,6 +63,14 @@ interface SeatSelectionProps {
 	initialSelectedSeatIds: string[];
 	initialShortfall: boolean;
 	currency: string;
+	/** Auto-allocate events: render the suggested seats as a read-only PREVIEW — the
+	 *  buyer can't change them. Continue submits no selected_seats (server allocates). */
+	readOnly?: boolean;
+	/** Auto-allocate only: the buyer's original category cart + bundles. In read-only
+	 *  mode these (not the seat-derived cart) are carried to checkout, so bundle
+	 *  purchases survive the seat-preview hop. */
+	originalCart?: ICartItem[];
+	bundles?: Array<{ bundle_id: number; quantity: number; name: string; price: number }>;
 }
 
 function useReducedMotion(): boolean {
@@ -91,6 +99,9 @@ export default function SeatSelection({
 	initialSelectedSeatIds,
 	initialShortfall,
 	currency,
+	readOnly = false,
+	originalCart,
+	bundles,
 }: SeatSelectionProps) {
 	const { t } = useTranslation('common');
 	const router = useRouter();
@@ -232,6 +243,7 @@ export default function SeatSelection({
 	// ── Handlers ─────────────────────────────────────────────────────────────
 	const handleSeatToggle = useCallback(
 		(seat: Seat) => {
+			if (readOnly) return; // auto-allocate preview: seats are fixed
 			const r = toggleSeat(seat.id, selected, seatTier, maxPerOrder);
 			if (r.status === 'order_max') {
 				addToast({ title: t('seating.cap_reached', { max: maxPerOrder }), color: 'warning' });
@@ -239,7 +251,7 @@ export default function SeatSelection({
 			}
 			if (r.status === 'added' || r.status === 'removed') setSelected(r.next);
 		},
-		[selected, seatTier, maxPerOrder, t]
+		[readOnly, selected, seatTier, maxPerOrder, t]
 	);
 
 	const handleRemove = useCallback((seatId: string) => {
@@ -281,14 +293,21 @@ export default function SeatSelection({
 		const data: Record<string, string> = {
 			event: slug,
 			session: String(sessionId),
-			cart: JSON.stringify(derivedCart),
+			// Read-only (auto-allocate): the buyer's original category cart + bundles are
+			// authoritative — the seat-derived cart would wrongly fold in bundle tiers.
+			cart: JSON.stringify(readOnly && originalCart ? originalCart : derivedCart),
+			// Auto-allocate: seats shown are a preview; the server assigns the real ones.
+			// seat_labels stay for the checkout summary, but `auto_allocate` tells checkout
+			// to omit selected_seats from the buy.
 			selected_seats: JSON.stringify([...selected]),
 			seat_labels: JSON.stringify(seatLabels),
+			...(readOnly && { auto_allocate: '1' }),
+			...(readOnly && bundles && bundles.length > 0 && { bundles: JSON.stringify(bundles) }),
 			...(addonCart.length > 0 && { addons: JSON.stringify(addonCart) }),
 		};
 		sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
 		router.push('/checkout');
-	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart, router, t]);
+	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart, router, t, readOnly, originalCart, bundles]);
 
 	// Reset continuing when page is restored from bfcache (browser back button)
 	useEffect(() => {
@@ -452,6 +471,7 @@ export default function SeatSelection({
 						continuing={continuing}
 						onContinue={handleContinue}
 						onRemove={handleRemove}
+						readOnly={readOnly}
 						t={t}
 					/>
 
@@ -500,15 +520,17 @@ export default function SeatSelection({
 												{item.price} {currency}
 											</p>
 										</div>
-										<button
-											type="button"
-											onClick={() => handleRemove(item.seatId)}
-											className="absolute -right-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[var(--ink)]"
-											style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}
-											aria-label={t('seating.remove_seat')}
-										>
-											<Icon icon="mdi:close" width={13} />
-										</button>
+										{!readOnly && (
+											<button
+												type="button"
+												onClick={() => handleRemove(item.seatId)}
+												className="absolute -right-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[var(--ink)]"
+												style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}
+												aria-label={t('seating.remove_seat')}
+											>
+												<Icon icon="mdi:close" width={13} />
+											</button>
+										)}
 									</div>
 								);
 							})}
@@ -584,10 +606,12 @@ export default function SeatSelection({
 										);
 									})}
 								</ul>
-								<p className="mt-2 text-[0.75rem] text-[var(--ink-3)]">{t('seating.autopick_tap_hint')}</p>
+								<p className="mt-2 text-[0.75rem] text-[var(--ink-3)]">
+									{readOnly ? t('seating.autoalloc_preview_hint') : t('seating.autopick_tap_hint')}
+								</p>
 							</ModalBody>
 							<ModalFooter>
-								{seedCart.length > 0 && (
+								{!readOnly && seedCart.length > 0 && (
 									<Button
 										variant="bordered"
 										onPress={handleRepick}
@@ -794,6 +818,7 @@ function OrderSummaryCard({
 	continuing,
 	onContinue,
 	onRemove,
+	readOnly,
 	t,
 }: {
 	groupedByTier: SelectedSeatGroup[];
@@ -804,6 +829,7 @@ function OrderSummaryCard({
 	continuing: boolean;
 	onContinue: () => void;
 	onRemove: (seatId: string) => void;
+	readOnly?: boolean;
 	t: TFn;
 }) {
 	if (selectedCount === 0) {
@@ -834,7 +860,7 @@ function OrderSummaryCard({
 
 			<div className="mt-3.5 flex flex-col gap-3">
 				{groupedByTier.map((group) => (
-					<SumLine key={group.tierName} group={group} currency={currency} onRemove={onRemove} t={t} />
+					<SumLine key={group.tierName} group={group} currency={currency} onRemove={onRemove} readOnly={readOnly} t={t} />
 				))}
 			</div>
 
@@ -871,11 +897,13 @@ function SumLine({
 	group,
 	currency,
 	onRemove,
+	readOnly,
 	t,
 }: {
 	group: SelectedSeatGroup;
 	currency: string;
 	onRemove: (seatId: string) => void;
+	readOnly?: boolean;
 	t: TFn;
 }) {
 	const qty = group.items.length;
@@ -913,14 +941,16 @@ function SumLine({
 							className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-2)] py-[3px] pl-2.5 pr-1 text-[10.5px] font-[700] tracking-[-0.005em] tabular-nums text-[var(--ink-2)]"
 						>
 							{locStr ? <>{t('seating.row')} {rowStr} · {t('seating.seat')} {locStr}</> : rowStr}
-							<button
-								type="button"
-								onClick={() => onRemove(it.seatId)}
-								className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full bg-[var(--bg-3)] text-[var(--ink-2)] transition-colors hover:bg-[var(--ink)] hover:text-white"
-								aria-label={t('seating.remove_seat')}
-							>
-								<Icon icon="mdi:close" width={8} />
-							</button>
+							{!readOnly && (
+								<button
+									type="button"
+									onClick={() => onRemove(it.seatId)}
+									className="inline-flex h-[14px] w-[14px] items-center justify-center rounded-full bg-[var(--bg-3)] text-[var(--ink-2)] transition-colors hover:bg-[var(--ink)] hover:text-white"
+									aria-label={t('seating.remove_seat')}
+								>
+									<Icon icon="mdi:close" width={8} />
+								</button>
+							)}
 						</span>
 					);
 				})}

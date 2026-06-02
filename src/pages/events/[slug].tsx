@@ -22,6 +22,7 @@ import SectionShell from '@/components/event/sections/SectionShell';
 import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
 import AddonRow from '@/components/event/AddonRow';
+import BundleRow from '@/components/event/BundleRow';
 import AddressMap from '@/components/common/AddressMap';
 import TicketAvailabilityNotice, { TicketAvailabilityVariant } from '@/components/event/TicketAvailabilityNotice';
 import EventPageSkeleton from '@/components/event/EventPageSkeleton';
@@ -72,11 +73,17 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   }, [event]);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [addonQuantities, setAddonQuantities] = useState<Record<number, number>>({});
+  const [bundleQuantities, setBundleQuantities] = useState<Record<number, number>>({});
 
   // Derived state — safe with null event (empty arrays/false until loaded)
   const ticketTypes = event?.ticket_types ?? [];
   const addons = event?.ticket_addons ?? [];
+  const bundles = event?.bundles ?? [];
   const isSeated = !!event?.is_seated;
+  // Category-purchase seated events show the GA-style selector (category + bundles),
+  // not the interactive seat-picker — seats are auto-allocated + previewed read-only.
+  const autoAllocate = !!event?.auto_allocate_seats;
+  const showCategorySelector = !isSeated || autoAllocate;
   const salesOpen = event?.status === 'open';
 
   const isEventSoldOut = useMemo(() => {
@@ -127,9 +134,39 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     }, 0);
   }, [addons, addonQuantities, totalQuantity]);
 
+  // Resolve a bundle's included items to "2× PROMOTOR" labels via the event's
+  // ticket types + add-ons (whose ids the bundle items reference).
+  const itemNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    ticketTypes.forEach((tt) => m.set(`pkg:${tt.id}`, tt.name));
+    addons.forEach((a) => m.set(`addon:${a.id}`, a.name));
+    return m;
+  }, [ticketTypes, addons]);
+
+  const bundleItemLabels = useCallback(
+    (bundle: typeof bundles[number]) =>
+      bundle.items
+        .map((it) => {
+          const key = it.ticket_package_id != null ? `pkg:${it.ticket_package_id}` : it.addon_id != null ? `addon:${it.addon_id}` : null;
+          const name = key ? itemNameById.get(key) : undefined;
+          return name ? `${it.quantity}× ${name}` : null;
+        })
+        .filter((l): l is string => l !== null),
+    [itemNameById]
+  );
+
+  const bundleSelections = useMemo(
+    () => bundles.filter((b) => (bundleQuantities[b.id] ?? 0) > 0).map((b) => ({ bundle_id: b.id, quantity: bundleQuantities[b.id], name: b.name, price: b.price })),
+    [bundles, bundleQuantities]
+  );
+  const bundleTotal = useMemo(
+    () => bundleSelections.reduce((sum, b) => sum + b.price * b.quantity, 0),
+    [bundleSelections]
+  );
+
   const totalPrice = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) + addonTotal,
-    [cartItems, addonTotal]
+    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) + addonTotal + bundleTotal,
+    [cartItems, addonTotal, bundleTotal]
   );
   const priceFrom = useMemo(
     () => ticketTypes.length > 0 ? Math.min(...ticketTypes.map((tt) => tt.price)) : 0,
@@ -188,9 +225,16 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     setAddonQuantities((prev) => ({ ...prev, [addonId]: qty }));
   }, []);
 
+  const handleBundleQuantityChange = useCallback((bundleId: number, qty: number) => {
+    setBundleQuantities((prev) => ({ ...prev, [bundleId]: qty }));
+  }, []);
+
   const handleBuy = useCallback(() => {
     if (!salesOpen || !event) return;
-    if (!isSeated && cartItems.length === 0) return;
+    // Interactive-seat events proceed to the picker regardless; everywhere else needs
+    // at least one ticket or bundle selected.
+    const hasSelection = cartItems.length > 0 || bundleSelections.length > 0;
+    if (showCategorySelector && !hasSelection) return;
 
     const addonItems = addons
       .filter((a) => (addonQuantities[a.id] ?? 0) > 0)
@@ -208,8 +252,11 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
       session: String(activeSessionId),
       cart: JSON.stringify(cartItems),
       ...(addonItems.length > 0 && { addons: JSON.stringify(addonItems) }),
+      ...(bundleSelections.length > 0 && { bundles: JSON.stringify(bundleSelections) }),
     };
 
+    // Seated events (incl. auto-allocate) route through the seat page; for auto-allocate
+    // it renders a read-only preview of the auto-assigned seats.
     if (isSeated) {
       sessionStorage.setItem('tixlive:seats', JSON.stringify(data));
       router.push(`/events/${event.slug}/seats`);
@@ -217,7 +264,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
       sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
       router.push('/checkout');
     }
-  }, [salesOpen, event, isSeated, cartItems, activeSessionId, addons, addonQuantities, currency, router]);
+  }, [salesOpen, event, isSeated, showCategorySelector, cartItems, bundleSelections, activeSessionId, addons, addonQuantities, currency, router]);
 
   const headerCart = useMemo(
     () => (totalQuantity > 0
@@ -475,7 +522,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
                 {availabilityNotice !== null ? (
                   <TicketAvailabilityNotice variant={availabilityNotice} />
-                ) : !isSeated ? (
+                ) : showCategorySelector ? (
                   <>
                     {/* Price ladder */}
                     <div className="flex flex-col gap-3">
@@ -491,6 +538,31 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                         />
                       ))}
                     </div>
+
+                    {/* Pachete (bundles) */}
+                    {bundles.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Icon icon="solar:bag-smile-bold" width={18} className="text-[var(--brand-accent)]" />
+                          <h3 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
+                            {t('event.bundles_title')}
+                          </h3>
+                        </div>
+                        <div className="mt-3 flex flex-col gap-2.5">
+                          {bundles.map((bundle) => (
+                            <BundleRow
+                              key={bundle.id}
+                              bundle={bundle}
+                              quantity={bundleQuantities[bundle.id] ?? 0}
+                              max={bundle.remaining_capacity ?? 20}
+                              itemLabels={bundleItemLabels(bundle)}
+                              currency={currency}
+                              onQuantityChange={handleBundleQuantityChange}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Add-ons */}
                     {addons.length > 0 && totalQuantity > 0 && (
@@ -519,7 +591,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                     )}
 
                     {/* Cart summary */}
-                    {totalQuantity > 0 && (
+                    {(totalQuantity > 0 || bundleSelections.length > 0) && (
                       <div className="overflow-hidden rounded-[22px] bg-[var(--ink)] text-white" style={{ boxShadow: 'var(--shadow-2)' }}>
                         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
                           <span className="text-[10.5px] font-[700] uppercase tracking-[0.12em] text-white">
@@ -548,6 +620,15 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                               <span className="tabular-nums">
                                 +{l.price * l.qty * (l.per_ticket ? totalQuantity : 1)} {currency}
                               </span>
+                            </div>
+                          ))}
+                          {bundleSelections.map((b) => (
+                            <div key={b.bundle_id} className="flex items-center justify-between py-1.5 text-[14px]">
+                              <span>
+                                <b className="font-[700]">{b.quantity}×</b>
+                                <span className="ml-2">{b.name}</span>
+                              </span>
+                              <span className="tabular-nums">{b.price * b.quantity} {currency}</span>
                             </div>
                           ))}
                         </div>

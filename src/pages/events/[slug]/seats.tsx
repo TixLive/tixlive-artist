@@ -24,6 +24,9 @@ interface SeatsState {
 	initialSelectedSeatIds: string[];
 	initialShortfall: boolean;
 	currency: string;
+	autoAllocate: boolean;
+	originalCart: ICartItem[];
+	bundles: Array<{ bundle_id: number; quantity: number; name: string; price: number }>;
 }
 
 export default function SeatsPage() {
@@ -60,21 +63,25 @@ export default function SeatsPage() {
 
 		const sessionRaw = stored.session;
 		let seedCart: Array<{ ticket_package_id: number; quantity: number }> = [];
+		let originalCart: ICartItem[] = [];
 		let addonCart: IAddonCartItem[] = [];
+		let bundleSel: Array<{ bundle_id: number; quantity: number; name: string; price: number }> = [];
 		let seedCurrency: string | undefined;
 
 		try {
 			const parsed: ICartItem[] = stored.cart ? JSON.parse(stored.cart) : [];
-			seedCart = (Array.isArray(parsed) ? parsed : [])
-				.filter((c) => c && c.quantity > 0)
-				.map((c) => ({ ticket_package_id: c.ticket_type_id, quantity: c.quantity }));
-			seedCurrency = Array.isArray(parsed) ? parsed[0]?.currency : undefined;
+			originalCart = Array.isArray(parsed) ? parsed.filter((c) => c && c.quantity > 0) : [];
+			seedCart = originalCart.map((c) => ({ ticket_package_id: c.ticket_type_id, quantity: c.quantity }));
+			seedCurrency = originalCart[0]?.currency;
 		} catch {
 			seedCart = [];
 		}
 
 		if (stored.addons) {
 			try { addonCart = JSON.parse(stored.addons); } catch { addonCart = []; }
+		}
+		if (stored.bundles) {
+			try { const b = JSON.parse(stored.bundles); if (Array.isArray(b)) bundleSel = b; } catch { bundleSel = []; }
 		}
 
 		(async () => {
@@ -94,11 +101,33 @@ export default function SeatsPage() {
 
 				const seating = await fetchSeating(slug, session.id);
 
+				// For the seat PREVIEW, expand any selected bundles into their seated tiers
+				// and merge with the category cart — so the auto-allocate preview covers both.
+				// (The bundle is still purchased as a bundle at checkout.)
+				const previewCart = [...seedCart];
+				if (bundleSel.length > 0 && event.bundles?.length) {
+					const bundleById = new Map(event.bundles.map((b) => [b.id, b]));
+					const tierQty = new Map<number, number>();
+					for (const sel of bundleSel) {
+						const def = bundleById.get(sel.bundle_id);
+						if (!def) continue;
+						for (const it of def.items) {
+							if (it.ticket_package_id == null) continue;
+							tierQty.set(it.ticket_package_id, (tierQty.get(it.ticket_package_id) ?? 0) + it.quantity * sel.quantity);
+						}
+					}
+					for (const [ticket_package_id, quantity] of tierQty) {
+						const existing = previewCart.find((c) => c.ticket_package_id === ticket_package_id);
+						if (existing) existing.quantity += quantity;
+						else previewCart.push({ ticket_package_id, quantity });
+					}
+				}
+
 				let initialSelectedSeatIds: string[] = [];
 				let initialShortfall = false;
-				if (seedCart.length > 0) {
+				if (previewCart.length > 0) {
 					try {
-						const suggestion = await suggestSeats(slug, session.id, seedCart);
+						const suggestion = await suggestSeats(slug, session.id, previewCart);
 						initialSelectedSeatIds = suggestion.items.flatMap((i) => i.seat_ids);
 						initialShortfall = suggestion.shortfall;
 					} catch {
@@ -119,12 +148,15 @@ export default function SeatsPage() {
 					sessionDate: session.label ?? '',
 					sessionStart: session.date ?? event.date_start ?? '',
 					maxPerOrder,
-					seedCart,
+					seedCart: previewCart,
 					addonCart,
 					seating,
 					initialSelectedSeatIds,
 					initialShortfall,
 					currency,
+					autoAllocate: !!event.auto_allocate_seats,
+					originalCart,
+					bundles: bundleSel,
 				});
 			} catch {
 				setNotFound(true);
@@ -157,6 +189,9 @@ export default function SeatsPage() {
 				initialSelectedSeatIds={state.initialSelectedSeatIds}
 				initialShortfall={state.initialShortfall}
 				currency={state.currency}
+				readOnly={state.autoAllocate}
+				originalCart={state.originalCart}
+				bundles={state.bundles}
 			/>
 		</>
 	);

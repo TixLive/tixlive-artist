@@ -113,7 +113,8 @@
 		"ticket_types_count_one": "tip de bilet",
 		"ticket_types_count_other": "tipuri de bilete",
 		"see_all": "Vezi toate",
-		"access_terms": "Condiții de acces & reduceri"
+		"access_terms": "Condiții de acces & reduceri",
+		"bundles_title": "Pachete"
 	},
 	"map": {
 		"unavailable": "Hartă indisponibilă",
@@ -246,7 +247,8 @@
 		"addons": "Suplimente",
 		"discount": "Reducere",
 		"service_fee": "Comision serviciu",
-		"total": "Total"
+		"total": "Total",
+		"bundles": "Pachete"
 	},
 	"order_summary": {
 		"event": "Eveniment",
@@ -456,7 +458,6 @@
 		"categories": "Categorii",
 		"your_seats": "Locurile tale",
 		"no_seats_yet": "Niciun loc selectat inca.",
-		"total": "Total",
 		"continue": "Continua la plata",
 		"continue_hint": "Alege cel putin un loc.",
 		"seats_count": "{{count}} locuri",
@@ -497,7 +498,8 @@
 		"ticket_one": "bilet",
 		"ticket_other": "bilete",
 		"per_seat": "loc",
-		"nav_hint_title": "Cum navighezi"
+		"nav_hint_title": "Cum navighezi",
+		"autoalloc_preview_hint": "Locurile sunt alocate automat — vei primi cele mai bune locuri disponibile din categoria ta."
 	},
 	"profile": {
 		"subtitle": "Actualizeaza numele si telefonul folosite pe bilete.",
@@ -514,5 +516,13 @@
 		"last_name_required": "Numele este obligatoriu",
 		"phone_invalid": "Introdu un numar de telefon valid",
 		"too_long": "Prea lung"
+	},
+	"bundle": {
+		"remaining": "{{count}} rămase",
+		"sold_out": "Epuizat",
+		"seats_auto": "Locuri auto-alocate",
+		"qty_for": "Cantitate pentru {{name}}",
+		"decrease": "Scade {{name}}",
+		"increase": "Crește {{name}}"
 	}
 }

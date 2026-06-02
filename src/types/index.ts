@@ -55,6 +55,24 @@ export interface ITicketType {
 	total_seats?: number | null;
 }
 
+export interface IBundleItem {
+	ticket_package_id: number | null;
+	addon_id: number | null;
+	quantity: number;
+}
+
+/** A fixed-price Pachet: buys a predefined set of tickets (+ add-ons) for one price. */
+export interface IBundle {
+	id: number;
+	name: string;
+	description: string | null;
+	price: number;
+	currency: string;
+	/** Units left before sell-out; null when unlimited. */
+	remaining_capacity: number | null;
+	items: IBundleItem[];
+}
+
 export interface IAvailablePaymentMethod {
 	id: number;
 	name: string;
@@ -200,6 +218,11 @@ export interface IEventDetail extends IEventListItem {
 	platform_fee_fixed?: number;
 	/** True when the event sells assigned seats (has a seating chart). */
 	is_seated?: boolean;
+	/** Seated + category-purchase: the server auto-allocates seats, the buyer only
+	 *  previews them (no seat-picking). Show a read-only preview, submit no selected_seats. */
+	auto_allocate_seats?: boolean;
+	/** Fixed-price bundles (Pachete). Absent/empty when the event has none. */
+	bundles?: IBundle[];
 	/** FOMO/urgency display config — admin toggles on the event (besttix). */
 	fomo_enabled?: boolean;
 	fomo_live_viewers?: boolean;
@@ -237,6 +260,8 @@ export interface IOrderBuyBody {
 	phone?: string;
 	cart: Array<{ ticket_package_id: number; quantity: number }>;
 	addons?: Array<{ addon_id: number; quantity: number }>;
+	/** Fixed-price bundles (Pachete). Server expands + auto-allocates seats. */
+	bundles?: Array<{ bundle_id: number; quantity: number }>;
 	promo_code?: string;
 	locale: string;
 	idempotency_key?: string;

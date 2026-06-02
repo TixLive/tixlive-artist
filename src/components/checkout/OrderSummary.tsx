@@ -7,10 +7,11 @@ interface OrderSummaryProps {
 	sessionDate: string;
 	cart: ICartItem[];
 	addonCart?: IAddonCartItem[];
+	bundleCart?: Array<{ bundle_id: number; quantity: number; name: string; price: number }>;
 	seatLabels?: string[];
 }
 
-export default function OrderSummary({ event, sessionDate, cart, addonCart, seatLabels }: OrderSummaryProps) {
+export default function OrderSummary({ event, sessionDate, cart, addonCart, bundleCart, seatLabels }: OrderSummaryProps) {
 	const { t } = useTranslation('common');
 	const formatDate = (dateStr: string) => {
 		if (!dateStr) return '';
@@ -83,6 +84,18 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart, seat
 						))}
 					</>
 				)}
+
+				{bundleCart && bundleCart.length > 0 && bundleCart.map((b) => (
+					<div key={b.bundle_id} className="flex items-center justify-between gap-3 text-[13.5px]">
+						<span className="text-[var(--ink)]">
+							<b className="font-[700]">{b.quantity}×</b>
+							<span className="ml-2 text-[var(--ink-3)]">{b.name}</span>
+						</span>
+						<span className="font-[600] tabular-nums text-[var(--ink)]">
+							{(b.price * b.quantity).toFixed(2)} {cart[0]?.currency ?? event.currency}
+						</span>
+					</div>
+				))}
 
 				{seatLabels && seatLabels.length > 0 && (
 					<div className="mt-1 border-t border-[var(--line-2)] pt-3">

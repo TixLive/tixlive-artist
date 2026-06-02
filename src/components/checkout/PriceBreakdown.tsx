@@ -5,6 +5,7 @@ import { computeCheckoutFees } from '@/lib/orderFees';
 interface PriceBreakdownProps {
 	items: ICartItem[];
 	addonItems?: IAddonCartItem[];
+	bundleItems?: Array<{ quantity: number; price: number }>;
 	totalTicketQty?: number;
 	discount?: { percent?: number; amount?: number };
 	currency: string;
@@ -18,6 +19,7 @@ interface PriceBreakdownProps {
 export default function PriceBreakdown({
 	items,
 	addonItems,
+	bundleItems,
 	totalTicketQty = 0,
 	discount,
 	currency,
@@ -35,7 +37,9 @@ export default function PriceBreakdown({
 		return sum + addon.price * addon.quantity * multiplier;
 	}, 0);
 
-	const subtotal = ticketSubtotal + addonSubtotal;
+	const bundleSubtotal = (bundleItems ?? []).reduce((sum, b) => sum + b.price * b.quantity, 0);
+
+	const subtotal = ticketSubtotal + addonSubtotal + bundleSubtotal;
 
 	let discountAmount = 0;
 	if (discount?.percent) discountAmount = subtotal * (discount.percent / 100);
@@ -57,10 +61,19 @@ export default function PriceBreakdown({
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center justify-between text-[13px] text-[var(--ink-3)]">
-				<span>{t('price_breakdown.tickets')}</span>
-				<span className="tabular-nums">{fmt(ticketSubtotal)} {currency}</span>
-			</div>
+			{(ticketSubtotal > 0 || bundleSubtotal === 0) && (
+				<div className="flex items-center justify-between text-[13px] text-[var(--ink-3)]">
+					<span>{t('price_breakdown.tickets')}</span>
+					<span className="tabular-nums">{fmt(ticketSubtotal)} {currency}</span>
+				</div>
+			)}
+
+			{bundleSubtotal > 0 && (
+				<div className="flex items-center justify-between text-[13px] text-[var(--ink-3)]">
+					<span>{t('price_breakdown.bundles')}</span>
+					<span className="tabular-nums">{fmt(bundleSubtotal)} {currency}</span>
+				</div>
+			)}
 
 			{addonSubtotal > 0 && (
 				<div className="flex items-center justify-between text-[13px] text-[var(--ink-3)]">

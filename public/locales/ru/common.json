@@ -119,7 +119,8 @@
 		"ticket_types_count_many": "типов билетов",
 		"ticket_types_count_other": "типов билетов",
 		"see_all": "Смотреть все",
-		"access_terms": "Условия доступа и скидки"
+		"access_terms": "Условия доступа и скидки",
+		"bundles_title": "Пакеты"
 	},
 	"map": {
 		"unavailable": "Карта недоступна",
@@ -253,7 +254,8 @@
 		"addons": "Дополнения",
 		"discount": "Скидка",
 		"service_fee": "Комиссия",
-		"total": "Итого"
+		"total": "Итого",
+		"bundles": "Пакеты"
 	},
 	"order_summary": {
 		"event": "Событие",
@@ -471,7 +473,6 @@
 		"categories": "Категории",
 		"your_seats": "Ваши места",
 		"no_seats_yet": "Места ещё не выбраны.",
-		"total": "Итого",
 		"continue": "Перейти к оплате",
 		"continue_hint": "Выберите хотя бы одно место.",
 		"seats_count": "{{count}} мест",
@@ -514,7 +515,8 @@
 		"ticket_one": "билет",
 		"ticket_other": "билетов",
 		"per_seat": "место",
-		"nav_hint_title": "Как перемещаться"
+		"nav_hint_title": "Как перемещаться",
+		"autoalloc_preview_hint": "Места назначаются автоматически — вы получите лучшие доступные места в вашей категории."
 	},
 	"profile": {
 		"subtitle": "Обновите имя и телефон, которые используются на билетах.",
@@ -531,5 +533,13 @@
 		"last_name_required": "Фамилия обязательна",
 		"phone_invalid": "Введите корректный номер телефона",
 		"too_long": "Слишком длинно"
+	},
+	"bundle": {
+		"remaining": "осталось {{count}}",
+		"sold_out": "Распродано",
+		"seats_auto": "Места назначаются автоматически",
+		"qty_for": "Количество для {{name}}",
+		"decrease": "Уменьшить {{name}}",
+		"increase": "Увеличить {{name}}"
 	}
 }

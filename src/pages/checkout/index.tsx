@@ -56,6 +56,9 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const [addonCart, setAddonCart] = useState<IAddonCartItem[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [seatLabels, setSeatLabels] = useState<string[]>([]);
+  // Auto-allocate: seat_labels are a preview; selected_seats is NOT submitted (server assigns).
+  const [autoAllocate, setAutoAllocate] = useState(false);
+  const [bundleCart, setBundleCart] = useState<Array<{ bundle_id: number; quantity: number; name: string; price: number }>>([]);
   const [me, setMe] = useState<IMe | null>(null);
   const [meError, setMeError] = useState(false);
   const [ready, setReady] = useState(false);
@@ -94,21 +97,25 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
       return;
     }
 
-    const { event: eventSlug, session: sessionRaw, cart: cartJson, addons: addonsJson, selected_seats: seatsJson, seat_labels: labelsJson } = stored;
+    const { event: eventSlug, session: sessionRaw, cart: cartJson, addons: addonsJson, selected_seats: seatsJson, seat_labels: labelsJson, auto_allocate: autoAllocateRaw, bundles: bundlesJson } = stored;
 
-    if (!eventSlug || !cartJson) {
+    let parsedBundles: Array<{ bundle_id: number; quantity: number; name: string; price: number }> = [];
+    if (bundlesJson) { try { const p = JSON.parse(bundlesJson); if (Array.isArray(p)) parsedBundles = p; } catch { parsedBundles = []; } }
+
+    if (!eventSlug || (!cartJson && parsedBundles.length === 0)) {
       router.replace('/');
       return;
     }
 
     let parsedCart: ICartItem[] = [];
     try {
-      parsedCart = JSON.parse(cartJson);
-      if (!Array.isArray(parsedCart) || parsedCart.length === 0) {
-        router.replace('/');
-        return;
-      }
+      parsedCart = cartJson ? JSON.parse(cartJson) : [];
+      if (!Array.isArray(parsedCart)) parsedCart = [];
     } catch {
+      parsedCart = [];
+    }
+    // A purchase needs at least a ticket or a bundle.
+    if (parsedCart.length === 0 && parsedBundles.length === 0) {
       router.replace('/');
       return;
     }
@@ -125,6 +132,8 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     setCart(parsedCart);
     setAddonCart(parsedAddons);
     setSelectedSeats(parsedSeats);
+    setAutoAllocate(autoAllocateRaw === '1');
+    setBundleCart(parsedBundles);
     setSeatLabels(parsedLabels);
 
     // Fetch event and me in parallel.
@@ -140,7 +149,9 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     Promise.all([fetchEvent(eventSlug), mePromise]).then(([ev, meResult]) => {
       if (!ev) { router.replace('/'); return; }
 
-      if (ev.is_seated && parsedSeats.length === 0) {
+      // Auto-allocate events don't require a manual seat selection (server assigns),
+      // so only bounce non-auto seated events that arrived without seats.
+      if (ev.is_seated && !ev.auto_allocate_seats && parsedSeats.length === 0) {
         router.replace(`/events/${eventSlug}`);
         return;
       }
@@ -200,7 +211,11 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
         ...(addonCart.length > 0 && {
           addons: addonCart.map((a) => ({ addon_id: a.addon_id, quantity: a.quantity })),
         }),
-        ...(selectedSeats.length > 0 && { selected_seats: selectedSeats }),
+        ...(bundleCart.length > 0 && {
+          bundles: bundleCart.map((b) => ({ bundle_id: b.bundle_id, quantity: b.quantity })),
+        }),
+        // Auto-allocate: omit selected_seats so the server assigns them (preview is advisory).
+        ...(selectedSeats.length > 0 && !autoAllocate && { selected_seats: selectedSeats }),
         promo_code: promoCode || undefined,
         locale: normalizeLocale(i18n.language),
         idempotency_key: idempotencyKeyRef.current,
@@ -355,7 +370,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                 <div className="space-y-4">
                   {/* Mobile order summary (above form) */}
                   <div className="md:hidden">
-                    <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} seatLabels={seatLabels} />
+                    <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} bundleCart={bundleCart} seatLabels={seatLabels} />
                   </div>
 
                   {/* Identity / details */}
@@ -489,9 +504,10 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                     <PriceBreakdown
                       items={cart}
                       addonItems={addonCart}
+                      bundleItems={bundleCart}
                       totalTicketQty={cart.reduce((s, i) => s + i.quantity, 0)}
                       discount={discount}
-                      currency={cart[0]?.currency ?? 'USD'}
+                      currency={cart[0]?.currency ?? event.currency ?? 'USD'}
                       platformFeePayer={event.platform_fee_payer}
                       providerFeePayer={event.provider_fee_payer}
                       platformFeePercent={event.platform_fee_percent}
@@ -582,7 +598,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
           {/* Right column — sticky order summary (desktop only) */}
           <aside className="hidden flex-shrink-0 md:block">
             <div className="sticky top-[88px] flex flex-col gap-3">
-              <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} seatLabels={seatLabels} />
+              <OrderSummary event={event} sessionDate={session.date} cart={cart} addonCart={addonCart} bundleCart={bundleCart} seatLabels={seatLabels} />
 
               <div className="rounded-[18px] bg-[var(--bg-2)] p-5">
                 <span className="block text-[10.5px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">{t('checkout.summary_label')}</span>
@@ -590,9 +606,10 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                   <PriceBreakdown
                     items={cart}
                     addonItems={addonCart}
+                    bundleItems={bundleCart}
                     totalTicketQty={cart.reduce((s, i) => s + i.quantity, 0)}
                     discount={discount}
-                    currency={cart[0]?.currency ?? 'USD'}
+                    currency={cart[0]?.currency ?? event.currency ?? 'USD'}
                     platformFeePayer={event.platform_fee_payer}
                     providerFeePayer={event.provider_fee_payer}
                     platformFeePercent={event.platform_fee_percent}

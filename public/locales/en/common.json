@@ -113,7 +113,8 @@
 		"ticket_types_count_one": "ticket type",
 		"ticket_types_count_other": "ticket types",
 		"see_all": "See all",
-		"access_terms": "Access terms & discounts"
+		"access_terms": "Access terms & discounts",
+		"bundles_title": "Bundles"
 	},
 	"map": {
 		"unavailable": "Map unavailable",
@@ -245,7 +246,8 @@
 		"addons": "Add-ons",
 		"discount": "Discount",
 		"service_fee": "Service fee",
-		"total": "Total"
+		"total": "Total",
+		"bundles": "Bundles"
 	},
 	"order_summary": {
 		"event": "Event",
@@ -453,7 +455,6 @@
 		"categories": "Categories",
 		"your_seats": "Your seats",
 		"no_seats_yet": "No seats selected yet.",
-		"total": "Total",
 		"continue": "Continue to checkout",
 		"continue_hint": "Select at least one seat.",
 		"seats_count": "{{count}} seats",
@@ -494,7 +495,8 @@
 		"ticket_one": "ticket",
 		"ticket_other": "tickets",
 		"per_seat": "seat",
-		"nav_hint_title": "How to navigate"
+		"nav_hint_title": "How to navigate",
+		"autoalloc_preview_hint": "Seats are assigned automatically — you’ll get the best available seats in your category."
 	},
 	"profile": {
 		"subtitle": "Update the name and phone we use on your tickets.",
@@ -511,5 +513,13 @@
 		"last_name_required": "Last name is required",
 		"phone_invalid": "Enter a valid phone number",
 		"too_long": "Too long"
+	},
+	"bundle": {
+		"remaining": "{{count}} left",
+		"sold_out": "Sold out",
+		"seats_auto": "Seats auto-assigned",
+		"qty_for": "Quantity for {{name}}",
+		"decrease": "Decrease {{name}}",
+		"increase": "Increase {{name}}"
 	}
 }

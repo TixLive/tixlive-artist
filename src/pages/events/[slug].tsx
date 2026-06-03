@@ -41,6 +41,10 @@ import CampingInfoSection from '@/components/event/sections/CampingInfoSection';
 import SpecialMessageSection from '@/components/event/sections/SpecialMessageSection';
 import VideoSection from '@/components/event/sections/VideoSection';
 
+// Hard cap on the total number of bundles (summed across all bundle types) per order.
+// Mirrored server-side in besttix PublicOrder.Service (MAX_BUNDLES_PER_ORDER).
+const MAX_BUNDLES_PER_ORDER = 5;
+
 const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   const { t } = useTranslation('common');
   const router = useRouter();
@@ -162,6 +166,11 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   );
   const bundleTotal = useMemo(
     () => bundleSelections.reduce((sum, b) => sum + b.price * b.quantity, 0),
+    [bundleSelections]
+  );
+  // Total bundles selected across all types — capped at MAX_BUNDLES_PER_ORDER.
+  const totalBundleQty = useMemo(
+    () => bundleSelections.reduce((sum, b) => sum + b.quantity, 0),
     [bundleSelections]
   );
   // Add-on units already covered by the selected bundle(s), per addon id — surfaced as a
@@ -571,7 +580,10 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                               key={bundle.id}
                               bundle={bundle}
                               quantity={bundleQuantities[bundle.id] ?? 0}
-                              max={bundle.remaining_capacity ?? 20}
+                              max={Math.min(
+                                bundle.remaining_capacity ?? MAX_BUNDLES_PER_ORDER,
+                                (bundleQuantities[bundle.id] ?? 0) + (MAX_BUNDLES_PER_ORDER - totalBundleQty)
+                              )}
                               itemLabels={bundleItemLabels(bundle)}
                               currency={currency}
                               onQuantityChange={handleBundleQuantityChange}

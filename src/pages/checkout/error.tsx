@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -14,15 +15,42 @@ const CheckoutErrorPage: NextPageWithLayout = function CheckoutErrorPage() {
 	useBuyFlowStep(2);
 	const token = (router.query.token as string) ?? '';
 
-	// Single fetch (no polling) — only to recover the event so we can offer
-	// "back to event". A cancelled/failed order is still readable by token.
-	const { data: order } = useGetOrderByToken({
+	// NETOPIA sends the buyer to this cancelUrl even while a successful card payment is
+	// still settling. Fetching the order makes the server authoritatively reconcile it
+	// (re-query /operation/status); a short poll catches the moment it flips. Only a
+	// genuinely failed order shows the red screen — a paid / still-processing order is
+	// routed to the success page instead.
+	const { data: order, isError } = useGetOrderByToken({
 		token: router.isReady && token ? token : null,
-		refetchInterval: false,
+		refetchInterval: (q) => (q.state.data && q.state.data.status !== 'pending' ? false : 2000),
 	});
+
+	const status = order?.status;
+	useEffect(() => {
+		if (!token) return;
+		if (status === 'paid' || status === 'pending') {
+			router.replace(`/checkout/success?token=${token}`);
+		}
+	}, [status, token, router]);
 
 	const eventSlug = order?.event_slug;
 	const eventHref = eventSlug ? `/events/${eventSlug}` : '/';
+
+	// Only a confirmed-failed order (or an unreadable token) shows the failure screen;
+	// while we resolve / are about to redirect, show a neutral spinner.
+	const showFailure = isError || status === 'failed';
+	if (!showFailure) {
+		return (
+			<>
+				<Head>
+					<title>{t('payment_error.page_title')}</title>
+				</Head>
+				<div className="flex min-h-[50vh] items-center justify-center">
+					<Icon icon="svg-spinners:90-ring-with-bg" width={36} className="text-[var(--ink-3)]" />
+				</div>
+			</>
+		);
+	}
 
 	return (
 		<>

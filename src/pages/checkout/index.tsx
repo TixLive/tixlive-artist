@@ -513,6 +513,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                       platformFeePercent={event.platform_fee_percent}
                       platformFeeFixed={event.platform_fee_fixed}
                       providerFeePercent={selectedMethod?.fee_percent ?? 0}
+                      providerFeeFixed={selectedMethod?.fee_fixed ?? 0}
                     />
                   </div>
 
@@ -615,6 +616,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                     platformFeePercent={event.platform_fee_percent}
                     platformFeeFixed={event.platform_fee_fixed}
                     providerFeePercent={selectedMethod?.fee_percent ?? 0}
+                    providerFeeFixed={selectedMethod?.fee_fixed ?? 0}
                   />
                 </div>
               </div>

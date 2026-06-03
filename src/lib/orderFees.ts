@@ -12,6 +12,7 @@ export interface CheckoutFeeInput {
 	platformFeePercent?: number;
 	platformFeeFixed?: number;
 	providerFeePercent?: number;
+	providerFeeFixed?: number;
 }
 
 export interface CheckoutFees {
@@ -32,6 +33,8 @@ export function computeCheckoutFees(i: CheckoutFeeInput): CheckoutFees {
 			? round2((base * (i.platformFeePercent ?? 0)) / 100 + (i.platformFeeFixed ?? 0))
 			: 0;
 	const providerFee =
-		i.providerFeePayer === 'buyer' ? round2((base * (i.providerFeePercent ?? 0)) / 100) : 0;
+		i.providerFeePayer === 'buyer' && base > 0
+			? round2((base * (i.providerFeePercent ?? 0)) / 100 + (i.providerFeeFixed ?? 0))
+			: 0;
 	return { platformFee, providerFee, serviceFee: round2(platformFee + providerFee) };
 }

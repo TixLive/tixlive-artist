@@ -33,6 +33,15 @@ describe('computeCheckoutFees (white-label) — parity with besttix', () => {
 		expect(computeCheckoutFees(base({ platformFeePercent: 0, platformFeeFixed: 5 })).serviceFee).toBe(5);
 	});
 
+	it('applies the provider percent + fixed fee (Netopia 1% + 0.30)', () => {
+		// base 100: platform 3.5 + provider (1% = 1.00 + 0.30 fixed = 1.30) = 4.80
+		expect(computeCheckoutFees(base({ providerFeePercent: 1, providerFeeFixed: 0.3 })).serviceFee).toBe(4.8);
+		// organizer-absorbed provider fee → buyer only sees the platform fee
+		expect(
+			computeCheckoutFees(base({ providerFeePercent: 1, providerFeeFixed: 0.3, providerFeePayer: 'organizer' })).serviceFee
+		).toBe(3.5);
+	});
+
 	it('is zero for a zero base', () => {
 		expect(computeCheckoutFees(base({ afterDiscount: 0 })).serviceFee).toBe(0);
 	});

@@ -14,6 +14,7 @@ interface PriceBreakdownProps {
 	platformFeePercent?: number;
 	platformFeeFixed?: number;
 	providerFeePercent?: number;
+	providerFeeFixed?: number;
 }
 
 export default function PriceBreakdown({
@@ -28,6 +29,7 @@ export default function PriceBreakdown({
 	platformFeePercent = 0,
 	platformFeeFixed = 0,
 	providerFeePercent = 0,
+	providerFeeFixed = 0,
 }: PriceBreakdownProps) {
 	const { t } = useTranslation('common');
 	const ticketSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -54,6 +56,7 @@ export default function PriceBreakdown({
 		platformFeePercent,
 		platformFeeFixed,
 		providerFeePercent,
+		providerFeeFixed,
 	});
 	const total = afterDiscount + serviceFee;
 

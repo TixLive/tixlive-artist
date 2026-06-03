@@ -85,6 +85,7 @@ export interface IAvailablePaymentMethod {
 	type: 'redirect' | 'card';
 	logo_url: string | null;
 	fee_percent: number;
+	fee_fixed: number;
 }
 
 // --- Page content sub-types (event-type-specific sections) ---

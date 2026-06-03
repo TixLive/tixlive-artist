@@ -111,7 +111,8 @@
 		"price_label": "Preț",
 		"free": "Gratuit",
 		"ticket_types_count_one": "tip de bilet",
-		"ticket_types_count_other": "tipuri de bilete",
+		"ticket_types_count_few": "tipuri de bilete",
+		"ticket_types_count_other": "de tipuri de bilete",
 		"see_all": "Vezi toate",
 		"access_terms": "Condiții de acces & reduceri",
 		"bundles_title": "Pachete"

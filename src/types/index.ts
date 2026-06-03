@@ -223,6 +223,9 @@ export interface IEventDetail extends IEventListItem {
 	provider_fee_payer?: 'buyer' | 'organizer';
 	platform_fee_percent?: number;
 	platform_fee_fixed?: number;
+	/** RO fiscal: cultural-stamp rate % added to the price + VAT rate (0 = fiscal off). */
+	fiscal_stamp_rate?: number;
+	fiscal_vat_rate?: number;
 	/** True when the event sells assigned seats (has a seating chart). */
 	is_seated?: boolean;
 	/** Seated + category-purchase: the server auto-allocates seats, the buyer only

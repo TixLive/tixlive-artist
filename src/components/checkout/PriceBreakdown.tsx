@@ -15,6 +15,8 @@ interface PriceBreakdownProps {
 	platformFeeFixed?: number;
 	providerFeePercent?: number;
 	providerFeeFixed?: number;
+	/** RO cultural stamp (timbru) rate %, added on top of the ticket subtotal. */
+	stampRate?: number;
 }
 
 export default function PriceBreakdown({
@@ -30,6 +32,7 @@ export default function PriceBreakdown({
 	platformFeeFixed = 0,
 	providerFeePercent = 0,
 	providerFeeFixed = 0,
+	stampRate = 0,
 }: PriceBreakdownProps) {
 	const { t } = useTranslation('common');
 	const ticketSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -58,7 +61,9 @@ export default function PriceBreakdown({
 		providerFeePercent,
 		providerFeeFixed,
 	});
-	const total = afterDiscount + serviceFee;
+	// RO cultural stamp (timbru) — added on top, mirrors besttix computeFiscal exactly.
+	const stamp = afterDiscount > 0 && stampRate > 0 ? Math.round(((afterDiscount * stampRate) / 100) * 100) / 100 : 0;
+	const total = afterDiscount + serviceFee + stamp;
 
 	const fmt = (v: number) => v.toFixed(2);
 
@@ -99,6 +104,13 @@ export default function PriceBreakdown({
 				<div className="flex items-center justify-between text-[13px] text-[var(--ink-3)]">
 					<span>{t('price_breakdown.service_fee')}</span>
 					<span className="tabular-nums">+{fmt(serviceFee)} {currency}</span>
+				</div>
+			)}
+
+			{stamp > 0 && (
+				<div className="flex items-center justify-between text-[13px] text-[var(--ink-3)]">
+					<span>{t('price_breakdown.cultural_stamp', { defaultValue: 'Timbru cultural' })}</span>
+					<span className="tabular-nums">+{fmt(stamp)} {currency}</span>
 				</div>
 			)}
 

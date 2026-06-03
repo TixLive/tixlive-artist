@@ -28,6 +28,8 @@ interface SeatsState {
 	autoAllocate: boolean;
 	originalCart: ICartItem[];
 	bundles: Array<{ bundle_id: number; quantity: number; name: string; price: number }>;
+	bundleLines: Array<{ name: string; quantity: number; price: number; includedLabels: string[] }>;
+	bundleAddonQty: Record<number, number>;
 }
 
 export default function SeatsPage() {
@@ -137,6 +139,40 @@ export default function SeatsPage() {
 					}
 				}
 
+				// Resolve each selected bundle to its fixed price + included item labels
+				// ("2× VIP", "1× Parking") so the seat page can price the bundle line and
+				// surface its add-ons (which have no seat on the map).
+				const nameById = new Map<string, string>();
+				(event.ticket_types ?? []).forEach((tt) => nameById.set(`pkg:${tt.id}`, tt.name));
+				(event.ticket_addons ?? []).forEach((a) => nameById.set(`addon:${a.id}`, a.name));
+				const bundleLines = bundleSel.map((sel) => {
+					const def = event.bundles?.find((b) => b.id === sel.bundle_id);
+					const includedLabels = (def?.items ?? [])
+						.map((it) => {
+							const key =
+								it.ticket_package_id != null
+									? `pkg:${it.ticket_package_id}`
+									: it.addon_id != null
+										? `addon:${it.addon_id}`
+										: null;
+							const name = key ? nameById.get(key) : undefined;
+							return name ? `${it.quantity * sel.quantity}× ${name}` : null;
+						})
+						.filter((l): l is string => l !== null);
+					return { name: sel.name, quantity: sel.quantity, price: sel.price, includedLabels };
+				});
+				// Per-addon units covered by the selected bundle(s) — locked baseline for the
+				// "Enhance Your Experience" steppers.
+				const bundleAddonQty: Record<number, number> = {};
+				for (const sel of bundleSel) {
+					const def = event.bundles?.find((b) => b.id === sel.bundle_id);
+					if (!def) continue;
+					for (const it of def.items) {
+						if (it.addon_id == null) continue;
+						bundleAddonQty[it.addon_id] = (bundleAddonQty[it.addon_id] ?? 0) + it.quantity * sel.quantity;
+					}
+				}
+
 				const currency = seedCurrency ?? event.currency ?? 'MDL';
 				const maxPerOrder = event.ticket_types?.[0]?.max_tickets_per_user ?? 10;
 
@@ -159,6 +195,8 @@ export default function SeatsPage() {
 					autoAllocate: !!event.auto_allocate_seats,
 					originalCart,
 					bundles: bundleSel,
+					bundleLines,
+					bundleAddonQty,
 				});
 			} catch {
 				setNotFound(true);
@@ -195,6 +233,8 @@ export default function SeatsPage() {
 				readOnly={state.autoAllocate}
 				originalCart={state.originalCart}
 				bundles={state.bundles}
+				bundleLines={state.bundleLines}
+				bundleAddonQty={state.bundleAddonQty}
 			/>
 		</>
 	);

@@ -303,6 +303,7 @@
 	"addon": {
 		"per_ticket": "per bilet",
 		"one_off": "o singură dată",
+		"included_in_bundle": "{{count}} incluse în pachet",
 		"qty_for": "Cantitate pentru {{name}}",
 		"increase": "Mărește {{name}}",
 		"decrease": "Micșorează {{name}}"
@@ -469,6 +470,7 @@
 		"canvas_hint": "Trage pentru a naviga · deruleaza pentru zoom · atinge un loc pentru a-l selecta.",
 		"autopick_title": "Am ales cele mai bune locuri impreuna",
 		"autopick_body": "Am selectat {{count}} locuri unul langa altul. Atinge orice loc pe harta pentru a le schimba.",
+		"autoalloc_body": "Am rezervat {{count}} locuri unul langa altul pentru tine. Locurile sunt alocate automat si nu pot fi schimbate.",
 		"autopick_partial_title": "Cele mai apropiate locuri gasite",
 		"autopick_partial_body": "Nu am putut aseza toate locurile impreuna. Atinge harta pentru a ajusta selectia.",
 		"autopick_tap_hint": "Atinge orice loc pe harta pentru a-l schimba.",

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { IEventDetail, ICartItem, IAddonCartItem } from '@/types';
 
@@ -28,6 +29,28 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart, bund
 	};
 
 	const ticketCount = cart.reduce((s, i) => s + i.quantity, 0);
+
+	// Resolve a bundle's included tickets + add-ons to "2× PROMOTOR" labels so the
+	// buyer sees what the fixed bundle price covers (incl. add-ons baked into it).
+	const itemNameById = new Map<string, string>();
+	(event.ticket_types ?? []).forEach((tt) => itemNameById.set(`pkg:${tt.id}`, tt.name));
+	(event.ticket_addons ?? []).forEach((a) => itemNameById.set(`addon:${a.id}`, a.name));
+	const bundleItemLabels = (bundleId: number): string[] => {
+		const def = (event.bundles ?? []).find((b) => b.id === bundleId);
+		if (!def) return [];
+		return def.items
+			.map((it) => {
+				const key =
+					it.ticket_package_id != null
+						? `pkg:${it.ticket_package_id}`
+						: it.addon_id != null
+							? `addon:${it.addon_id}`
+							: null;
+				const name = key ? itemNameById.get(key) : undefined;
+				return name ? `${it.quantity}× ${name}` : null;
+			})
+			.filter((l): l is string => l !== null);
+	};
 
 	return (
 		<div className="overflow-hidden rounded-[18px] bg-[var(--surface)]" style={{ boxShadow: 'var(--shadow-2)' }}>
@@ -85,17 +108,32 @@ export default function OrderSummary({ event, sessionDate, cart, addonCart, bund
 					</>
 				)}
 
-				{bundleCart && bundleCart.length > 0 && bundleCart.map((b) => (
-					<div key={b.bundle_id} className="flex items-center justify-between gap-3 text-[13.5px]">
-						<span className="text-[var(--ink)]">
-							<b className="font-[700]">{b.quantity}×</b>
-							<span className="ml-2 text-[var(--ink-3)]">{b.name}</span>
-						</span>
-						<span className="font-[600] tabular-nums text-[var(--ink)]">
-							{(b.price * b.quantity).toFixed(2)} {cart[0]?.currency ?? event.currency}
-						</span>
-					</div>
-				))}
+				{bundleCart && bundleCart.length > 0 && bundleCart.map((b) => {
+					const labels = bundleItemLabels(b.bundle_id);
+					return (
+						<div key={b.bundle_id}>
+							<div className="flex items-center justify-between gap-3 text-[13.5px]">
+								<span className="text-[var(--ink)]">
+									<b className="font-[700]">{b.quantity}×</b>
+									<span className="ml-2 text-[var(--ink-3)]">{b.name}</span>
+								</span>
+								<span className="font-[600] tabular-nums text-[var(--ink)]">
+									{(b.price * b.quantity).toFixed(2)} {cart[0]?.currency ?? event.currency}
+								</span>
+							</div>
+							{labels.length > 0 && (
+								<ul className="ml-6 mt-1 flex flex-col gap-0.5">
+									{labels.map((label, i) => (
+										<li key={i} className="flex items-center gap-1.5 text-[11.5px] text-[var(--ink-3)]">
+											<Icon icon="mdi:check" width={12} className="shrink-0 opacity-60" />
+											{label}
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+					);
+				})}
 
 				{seatLabels && seatLabels.length > 0 && (
 					<div className="mt-1 border-t border-[var(--line-2)] pt-3">

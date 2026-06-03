@@ -11,6 +11,9 @@ interface AddonSectionProps {
 	onQuantityChange: (addonId: number, quantity: number) => void;
 	/** Hide the "Enhance Your Experience" heading + note (e.g. when a modal already titles it). */
 	showHeader?: boolean;
+	/** Per-addon units already covered by selected bundle(s). Surfaced as a locked baseline
+	 *  in each row's count so the buyer sees what the bundle already includes. */
+	includedQuantities?: Record<number, number>;
 }
 
 /**
@@ -23,9 +26,13 @@ export default function AddonSection({
 	ticketCount,
 	onQuantityChange,
 	showHeader = true,
+	includedQuantities,
 }: AddonSectionProps) {
 	const { t } = useTranslation('common');
-	if (addons.length === 0 || ticketCount === 0) return null;
+	const hasIncluded = Object.values(includedQuantities ?? {}).some((v) => v > 0);
+	// Show the section when there are seats/tickets to attach add-ons to, OR when a
+	// selected bundle already includes add-ons we need to surface.
+	if (addons.length === 0 || (ticketCount === 0 && !hasIncluded)) return null;
 
 	return (
 		<div>
@@ -46,6 +53,7 @@ export default function AddonSection({
 						key={addon.id}
 						addon={addon}
 						quantity={quantities[addon.id] ?? 0}
+						included={includedQuantities?.[addon.id] ?? 0}
 						max={addon.per_ticket ? ticketCount : addon.max_quantity ?? 4}
 						onQuantityChange={onQuantityChange}
 					/>

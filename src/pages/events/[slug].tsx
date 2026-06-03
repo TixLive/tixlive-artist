@@ -164,6 +164,20 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     () => bundleSelections.reduce((sum, b) => sum + b.price * b.quantity, 0),
     [bundleSelections]
   );
+  // Add-on units already covered by the selected bundle(s), per addon id — surfaced as a
+  // locked baseline in the "Enhance Your Experience" steppers.
+  const bundleAddonQty = useMemo(() => {
+    const m: Record<number, number> = {};
+    for (const sel of bundleSelections) {
+      const def = bundles.find((b) => b.id === sel.bundle_id);
+      if (!def) continue;
+      for (const it of def.items) {
+        if (it.addon_id == null) continue;
+        m[it.addon_id] = (m[it.addon_id] ?? 0) + it.quantity * sel.quantity;
+      }
+    }
+    return m;
+  }, [bundleSelections, bundles]);
 
   const totalPrice = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) + addonTotal + bundleTotal,
@@ -574,6 +588,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                       quantities={addonQuantities}
                       ticketCount={totalQuantity}
                       onQuantityChange={handleAddonQuantityChange}
+                      includedQuantities={bundleAddonQty}
                     />
 
                     {/* Cart summary */}

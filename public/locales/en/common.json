@@ -302,6 +302,7 @@
 	"addon": {
 		"per_ticket": "per ticket",
 		"one_off": "one-off",
+		"included_in_bundle": "{{count}} included in your package",
 		"qty_for": "Quantity for {{name}}",
 		"increase": "Increase {{name}}",
 		"decrease": "Decrease {{name}}"
@@ -466,6 +467,7 @@
 		"canvas_hint": "Drag to pan · scroll to zoom · tap a seat to select.",
 		"autopick_title": "We picked the best seats together",
 		"autopick_body": "We selected {{count}} seats next to each other. Tap any seat on the map to change them.",
+		"autoalloc_body": "We reserved {{count}} seats next to each other for you. Your seats are assigned automatically and can't be changed.",
 		"autopick_partial_title": "Closest seats we could find",
 		"autopick_partial_body": "We couldn't fit every seat together. Tap the map to adjust your selection.",
 		"autopick_tap_hint": "Tap any seat on the map to swap it.",

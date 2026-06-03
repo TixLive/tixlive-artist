@@ -73,6 +73,13 @@ interface SeatSelectionProps {
 	 *  purchases survive the seat-preview hop. */
 	originalCart?: ICartItem[];
 	bundles?: Array<{ bundle_id: number; quantity: number; name: string; price: number }>;
+	/** Selected bundle(s) resolved for the dock: fixed price + included item labels
+	 *  ("2× VIP", "1× Parking"). In auto-allocate mode the bundle seats are covered by
+	 *  this fixed price, so the dock prices the bundle lines (NOT the per-seat tiers). */
+	bundleLines?: Array<{ name: string; quantity: number; price: number; includedLabels: string[] }>;
+	/** Per-addon units already covered by the selected bundle(s) — locked baseline in the
+	 *  "Enhance Your Experience" steppers. */
+	bundleAddonQty?: Record<number, number>;
 }
 
 function useReducedMotion(): boolean {
@@ -105,6 +112,8 @@ export default function SeatSelection({
 	readOnly = false,
 	originalCart,
 	bundles,
+	bundleLines,
+	bundleAddonQty,
 }: SeatSelectionProps) {
 	const { t } = useTranslation('common');
 	const router = useRouter();
@@ -149,8 +158,20 @@ export default function SeatSelection({
 	}, [seatTier, bookedSet]);
 
 	// ── State ─────────────────────────────────────────────────────────────────
+	// Auto-allocate (readOnly): the seats are the server's full allocation for the
+	// selected categories/bundles — the per-user manual cap must NOT truncate them
+	// (a bundle can include more tickets than max_tickets_per_user). Interactive
+	// selection still honours maxPerOrder.
 	const [selected, setSelected] = useState<Set<string>>(
-		() => new Set(sanitizeSeats(initialSelectedSeatIds, seatTier, bookedSet, maxPerOrder))
+		() =>
+			new Set(
+				sanitizeSeats(
+					initialSelectedSeatIds,
+					seatTier,
+					bookedSet,
+					readOnly ? initialSelectedSeatIds.length : maxPerOrder
+				)
+			)
 	);
 	const [shortfall, setShortfall] = useState(initialShortfall);
 	const [repicking, setRepicking] = useState(false);
@@ -171,7 +192,21 @@ export default function SeatSelection({
 	const { isOpen: extrasOpen, onClose: closeExtras, onOpen: openExtras } = useDisclosure();
 
 	// ── Derived selection ─────────────────────────────────────────────────────
-	const total = useMemo(() => selectionTotal(selected, seatTier, tiers), [selected, seatTier, tiers]);
+	const hasBundles = (bundleLines?.length ?? 0) > 0;
+	// Interactive mode: the seats ARE the order, so price them by tier.
+	const seatTotal = useMemo(() => selectionTotal(selected, seatTier, tiers), [selected, seatTier, tiers]);
+	// Auto-allocate mode: the seats are just an allocation of fixed-price products
+	// (categories the buyer chose + bundles). Price from the SOURCE selection so a
+	// bundle shows its flat price (e.g. 1999), not the sum of its seats' tier prices.
+	const bundlesTotal = useMemo(
+		() => (bundleLines ?? []).reduce((s, b) => s + b.price * b.quantity, 0),
+		[bundleLines]
+	);
+	const originalTicketsTotal = useMemo(
+		() => (originalCart ?? []).reduce((s, c) => s + c.price * c.quantity, 0),
+		[originalCart]
+	);
+	const total = readOnly ? originalTicketsTotal + bundlesTotal : seatTotal;
 	const complete = isSelectionValid(selected.size);
 
 	// Add-on pricing mirrors the GA flow: per_ticket extras multiply by the seat count.
@@ -338,10 +373,12 @@ export default function SeatSelection({
 			// to omit selected_seats from the buy.
 			selected_seats: JSON.stringify([...selected]),
 			seat_labels: JSON.stringify(seatLabels),
+			// addonItems is authoritative: addonQuantities is seeded from addonCart and the
+			// on-page AddonSection edits it, so this already covers carried-in + newly picked
+			// add-ons. (A second `addons` key from addonCart would overwrite buyer changes.)
 			...(addonItems.length > 0 && { addons: JSON.stringify(addonItems) }),
 			...(readOnly && { auto_allocate: '1' }),
 			...(readOnly && bundles && bundles.length > 0 && { bundles: JSON.stringify(bundles) }),
-			...(addonCart.length > 0 && { addons: JSON.stringify(addonCart) }),
 		};
 		sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
 		router.push('/checkout');
@@ -514,6 +551,9 @@ export default function SeatSelection({
 						onContinue={handleContinue}
 						onRemove={handleRemove}
 						readOnly={readOnly}
+						bundleLines={bundleLines}
+						hideSeatPrices={readOnly && hasBundles}
+						addonIncluded={bundleAddonQty}
 						t={t}
 					/>
 
@@ -558,9 +598,13 @@ export default function SeatSelection({
 											<p className="m-0 text-[13px] font-[700] leading-tight tracking-[-0.005em] tabular-nums text-white">
 												{locStr ? <>{t('seating.row')} {rowStr} · {t('seating.seat')} {locStr}</> : rowStr}
 											</p>
-											<p className="m-0 text-[11px] font-[600] tabular-nums text-white/55">
-												{item.price} {currency}
-											</p>
+											{/* Bundle seats are covered by the bundle's flat price — don't show a
+											    per-seat price that wouldn't sum to the charged total. */}
+											{!(readOnly && hasBundles) && (
+												<p className="m-0 text-[11px] font-[600] tabular-nums text-white/55">
+													{item.price} {currency}
+												</p>
+											)}
 										</div>
 										{!readOnly && (
 											<button
@@ -577,6 +621,35 @@ export default function SeatSelection({
 								);
 							})}
 						</div>
+
+						{/* Bundle line items: fixed price + included tickets/add-ons. The seats
+						    above are the allocation; the bundle's flat price is what's charged. */}
+						{hasBundles && (
+							<div className="flex flex-col gap-2 px-4 pb-1 pt-1.5">
+								{bundleLines!.map((b, bi) => (
+									<div key={bi} className="rounded-[14px] bg-white/[0.12] px-3.5 py-3 backdrop-blur-md">
+										<div className="flex items-center justify-between gap-3">
+											<span className="min-w-0 truncate text-[13px] font-[700] tracking-[-0.005em] text-white">
+												<b className="font-[800]">{b.quantity}×</b> {b.name}
+											</span>
+											<span className="shrink-0 text-[13px] font-[700] tabular-nums text-white">
+												{(b.price * b.quantity).toLocaleString()} {currency}
+											</span>
+										</div>
+										{b.includedLabels.length > 0 && (
+											<ul className="mt-1.5 flex flex-col gap-1">
+												{b.includedLabels.map((label, i) => (
+													<li key={i} className="flex items-center gap-1.5 text-[11.5px] font-[600] text-white/70">
+														<Icon icon="mdi:check-circle" width={12} className="shrink-0 text-white/50" />
+														{label}
+													</li>
+												))}
+											</ul>
+										)}
+									</div>
+								))}
+							</div>
+						)}
 
 						{/* Add extras trigger */}
 						{addons.length > 0 && (
@@ -643,13 +716,15 @@ export default function SeatSelection({
 					{() => (
 						<>
 							<ModalHeader className="text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--ink)]">
-								{shortfall ? t('seating.autopick_partial_title') : t('seating.autopick_title')}
+								{!readOnly && shortfall ? t('seating.autopick_partial_title') : t('seating.autopick_title')}
 							</ModalHeader>
 							<ModalBody>
 								<p className="text-[0.875rem] text-[var(--ink-3)]">
-									{shortfall
-										? t('seating.autopick_partial_body')
-										: t('seating.autopick_body', { count: selected.size })}
+									{readOnly
+										? t('seating.autoalloc_body', { count: selected.size })
+										: shortfall
+											? t('seating.autopick_partial_body')
+											: t('seating.autopick_body', { count: selected.size })}
 								</p>
 								<ul className="mt-2 space-y-1.5">
 									{tiers.map((tier) => {
@@ -721,6 +796,7 @@ export default function SeatSelection({
 									ticketCount={selected.size}
 									onQuantityChange={handleAddonQuantityChange}
 									showHeader={false}
+									includedQuantities={bundleAddonQty}
 								/>
 							</ModalBody>
 							<ModalFooter>
@@ -925,6 +1001,9 @@ function OrderSummaryCard({
 	onContinue,
 	onRemove,
 	readOnly,
+	bundleLines,
+	hideSeatPrices,
+	addonIncluded,
 	t,
 }: {
 	groupedByTier: SelectedSeatGroup[];
@@ -940,6 +1019,9 @@ function OrderSummaryCard({
 	onContinue: () => void;
 	onRemove: (seatId: string) => void;
 	readOnly?: boolean;
+	bundleLines?: Array<{ name: string; quantity: number; price: number; includedLabels: string[] }>;
+	hideSeatPrices?: boolean;
+	addonIncluded?: Record<number, number>;
 	t: TFn;
 }) {
 	if (selectedCount === 0) {
@@ -970,9 +1052,49 @@ function OrderSummaryCard({
 
 			<div className="mt-3.5 flex flex-col gap-3">
 				{groupedByTier.map((group) => (
-					<SumLine key={group.tierName} group={group} currency={currency} onRemove={onRemove} readOnly={readOnly} t={t} />
+					<SumLine
+						key={group.tierName}
+						group={group}
+						currency={currency}
+						onRemove={onRemove}
+						readOnly={readOnly}
+						hidePrice={hideSeatPrices}
+						t={t}
+					/>
 				))}
 			</div>
+
+			{/* Bundle line items: fixed price + included tickets/add-ons. The seats above
+			    are the allocation; the bundle's flat price is what's charged. */}
+			{bundleLines && bundleLines.length > 0 && (
+				<>
+					<div className="my-3.5 h-px bg-[var(--line)]" />
+					<div className="flex flex-col gap-3">
+						{bundleLines.map((b, bi) => (
+							<div key={bi} className="text-[13px]">
+								<div className="flex items-start justify-between gap-3">
+									<span className="min-w-0 text-[13px] font-[700] tracking-[-0.005em] text-[var(--ink)]">
+										<b className="font-[800]">{b.quantity}×</b> {b.name}
+									</span>
+									<span className="shrink-0 tabular-nums font-[700] text-[var(--ink)]">
+										{(b.price * b.quantity).toLocaleString()} {currency}
+									</span>
+								</div>
+								{b.includedLabels.length > 0 && (
+									<ul className="ml-3 mt-1 flex flex-col gap-0.5">
+										{b.includedLabels.map((label, i) => (
+											<li key={i} className="flex items-center gap-1.5 text-[11.5px] text-[var(--ink-3)]">
+												<Icon icon="mdi:check" width={12} className="shrink-0 opacity-60" />
+												{label}
+											</li>
+										))}
+									</ul>
+								)}
+							</div>
+						))}
+					</div>
+				</>
+			)}
 
 			{addons.length > 0 && (
 				<>
@@ -982,6 +1104,7 @@ function OrderSummaryCard({
 						quantities={addonQuantities}
 						ticketCount={selectedCount}
 						onQuantityChange={onAddonChange}
+						includedQuantities={addonIncluded}
 					/>
 				</>
 			)}
@@ -1027,12 +1150,14 @@ function SumLine({
 	currency,
 	onRemove,
 	readOnly,
+	hidePrice,
 	t,
 }: {
 	group: SelectedSeatGroup;
 	currency: string;
 	onRemove: (seatId: string) => void;
 	readOnly?: boolean;
+	hidePrice?: boolean;
 	t: TFn;
 }) {
 	const qty = group.items.length;
@@ -1050,14 +1175,19 @@ function SumLine({
 						<span className="truncate text-[13px] font-[700] tracking-[-0.005em] text-[var(--ink)]">
 							{qty}× {group.tierName}
 						</span>
-						<span className="text-[10.5px] tabular-nums text-[var(--ink-3)]">
-							{group.price.toLocaleString()} {currency} / {t('seating.per_seat')}
-						</span>
+						{/* Bundle seats: price lives on the bundle line, not per seat. */}
+						{!hidePrice && (
+							<span className="text-[10.5px] tabular-nums text-[var(--ink-3)]">
+								{group.price.toLocaleString()} {currency} / {t('seating.per_seat')}
+							</span>
+						)}
 					</div>
 				</div>
-				<span className="shrink-0 text-[13px] font-[700] tabular-nums tracking-[-0.005em] text-[var(--ink)]">
-					{lineTotal.toLocaleString()} {currency}
-				</span>
+				{!hidePrice && (
+					<span className="shrink-0 text-[13px] font-[700] tabular-nums tracking-[-0.005em] text-[var(--ink)]">
+						{lineTotal.toLocaleString()} {currency}
+					</span>
+				)}
 			</div>
 			<div className="ml-[15px] mt-1.5 flex flex-wrap gap-1.5">
 				{group.items.map((it) => {

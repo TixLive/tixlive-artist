@@ -7,11 +7,15 @@ interface AddonRowProps {
 	quantity: number;
 	max: number;
 	onQuantityChange: (addonId: number, quantity: number) => void;
+	/** Units of this add-on already covered by selected bundle(s). Shown as a locked
+	 *  baseline in the count — the buyer can only add MORE on top, not remove these. */
+	included?: number;
 }
 
-export default function AddonRow({ addon, quantity, max, onQuantityChange }: AddonRowProps) {
+export default function AddonRow({ addon, quantity, max, onQuantityChange, included = 0 }: AddonRowProps) {
 	const { t } = useTranslation('common');
-	const isActive = quantity > 0;
+	const displayedQuantity = included + quantity;
+	const isActive = displayedQuantity > 0;
 
 	return (
 		<div
@@ -29,6 +33,12 @@ export default function AddonRow({ addon, quantity, max, onQuantityChange }: Add
 				</div>
 				{addon.description && (
 					<p className="mt-1 text-[13px] leading-[1.5] text-[var(--ink-3)]">{addon.description}</p>
+				)}
+				{included > 0 && (
+					<p className="mt-1 inline-flex items-center gap-1 text-[11.5px] font-[700] tracking-[0.01em] text-[var(--ink-2)]">
+						<Icon icon="mdi:check-circle" width={13} className="shrink-0 text-[var(--ink-3)]" />
+						{t('addon.included_in_bundle', { count: included })}
+					</p>
 				)}
 			</div>
 
@@ -50,7 +60,7 @@ export default function AddonRow({ addon, quantity, max, onQuantityChange }: Add
 						isActive ? 'bg-[var(--ink)] text-white' : 'text-[var(--ink)]'
 					}`}
 				>
-					{quantity}
+					{displayedQuantity}
 				</span>
 				<button
 					className="flex w-9 items-center justify-center rounded-full text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-3)] disabled:opacity-30"

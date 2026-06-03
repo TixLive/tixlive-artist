@@ -503,7 +503,6 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                 {[
                   { icon: 'mdi:shield-check-outline', title: t('event.trust.secure_payment'), sub: t('event.trust.ssl_256') },
                   { icon: 'mdi:flash-outline', title: t('event.trust.instant_ticket'), sub: t('event.trust.email_phone') },
-                  { icon: 'mdi:check-decagram-outline', title: t('event.trust.guarantee_100'), sub: t('event.trust.easy_refund') },
                 ].map((it) => (
                   <div
                     key={it.title}

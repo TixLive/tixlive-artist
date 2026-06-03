@@ -108,7 +108,7 @@
 			"instant_ticket": "Мгновенный билет",
 			"guarantee_100": "Гарантия 100%",
 			"ssl_256": "SSL 256-бит",
-			"email_phone": "Email и телефон",
+			"email_delivery": "Билет придёт на email сразу после оплаты",
 			"easy_refund": "Лёгкий возврат"
 		},
 		"date_label": "Дата",

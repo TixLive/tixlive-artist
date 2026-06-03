@@ -502,7 +502,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
               <div className="mt-1 flex flex-col gap-2">
                 {[
                   { icon: 'mdi:shield-check-outline', title: t('event.trust.secure_payment'), sub: t('event.trust.ssl_256') },
-                  { icon: 'mdi:flash-outline', title: t('event.trust.instant_ticket'), sub: t('event.trust.email_phone') },
+                  { icon: 'mdi:flash-outline', title: t('event.trust.instant_ticket'), sub: t('event.trust.email_delivery') },
                 ].map((it) => (
                   <div
                     key={it.title}

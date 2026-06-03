@@ -414,29 +414,43 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			}
 
 			if (isSelected) {
+				// Enforce a minimum on-screen marker size so a selected seat stays
+				// legible at ANY zoom. Zoomed out, the bare seat dot is sub-pixel and
+				// gets lost in the crowd — so grow the marker to a guaranteed screen
+				// radius. Zoomed in (r * sc already large) mr === r, so the close-up
+				// rendering is unchanged.
+				const MIN_SEL_PX = 6;
+				const mr = Math.max(r, MIN_SEL_PX / sc);
+
+				// Re-fill the tier color at marker size (covers the base dot above)
+				ctx.fillStyle = tier!;
+				ctx.beginPath();
+				ctx.arc(seat.x, seat.y, mr, 0, Math.PI * 2);
+				ctx.fill();
+
 				// White gap ring (between fill and accent ring — Yandex-style double ring)
 				ctx.strokeStyle = '#fff';
 				ctx.lineWidth = Math.max(1.5, 2 / sc);
 				ctx.beginPath();
-				ctx.arc(seat.x, seat.y, r + Math.max(1, 1.5 / sc), 0, Math.PI * 2);
+				ctx.arc(seat.x, seat.y, mr + Math.max(1, 1.5 / sc), 0, Math.PI * 2);
 				ctx.stroke();
 
 				// Accent outer ring
 				ctx.strokeStyle = pal.accent;
 				ctx.lineWidth = Math.max(1.5, 2.5 / sc);
 				ctx.beginPath();
-				ctx.arc(seat.x, seat.y, r + Math.max(3, 4 / sc), 0, Math.PI * 2);
+				ctx.arc(seat.x, seat.y, mr + Math.max(3, 4 / sc), 0, Math.PI * 2);
 				ctx.stroke();
 
-				if (r * sc > 7) {
+				if (mr * sc > 7) {
 					ctx.strokeStyle = pal.onAccent;
-					ctx.lineWidth = Math.max(1, r * 0.22);
+					ctx.lineWidth = Math.max(1, mr * 0.22);
 					ctx.lineCap = 'round';
 					ctx.lineJoin = 'round';
 					ctx.beginPath();
-					ctx.moveTo(seat.x - r * 0.42, seat.y + r * 0.02);
-					ctx.lineTo(seat.x - r * 0.08, seat.y + r * 0.38);
-					ctx.lineTo(seat.x + r * 0.46, seat.y - r * 0.34);
+					ctx.moveTo(seat.x - mr * 0.42, seat.y + mr * 0.02);
+					ctx.lineTo(seat.x - mr * 0.08, seat.y + mr * 0.38);
+					ctx.lineTo(seat.x + mr * 0.46, seat.y - mr * 0.34);
 					ctx.stroke();
 					ctx.lineCap = 'butt';
 				}

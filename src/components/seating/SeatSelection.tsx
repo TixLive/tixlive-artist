@@ -716,38 +716,46 @@ export default function SeatSelection({
 					{() => (
 						<>
 							<ModalHeader className="text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--ink)]">
-								{!readOnly && shortfall ? t('seating.autopick_partial_title') : t('seating.autopick_title')}
+								{readOnly
+									? t('seating.autoalloc_title')
+									: shortfall
+										? t('seating.autopick_partial_title')
+										: t('seating.autopick_title')}
 							</ModalHeader>
 							<ModalBody>
 								<p className="text-[0.875rem] text-[var(--ink-3)]">
 									{readOnly
-										? t('seating.autoalloc_body', { count: selected.size })
+										? t('seating.autoalloc_body')
 										: shortfall
 											? t('seating.autopick_partial_body')
 											: t('seating.autopick_body', { count: selected.size })}
 								</p>
-								<ul className="mt-2 space-y-1.5">
-									{tiers.map((tier) => {
-										const seatsForTier = selectedItems.filter((it) => it.tierId === tier.ticket_package_id);
-										if (seatsForTier.length === 0) return null;
-										return (
-											<li key={tier.ticket_package_id} className="flex items-center gap-2 text-[0.8125rem]">
-												<span
-													className="h-2.5 w-2.5 shrink-0 rounded-full"
-													style={{ backgroundColor: colorByTierId.get(tier.ticket_package_id) ?? 'var(--ink-3)' }}
-													aria-hidden="true"
-												/>
-												<span className="font-medium text-[var(--ink)]">{tier.name.split(' — ')[0].split(' (')[0].trim()}</span>
-												<span className="tabular-nums text-[var(--ink-3)]">
-													{seatsForTier.map((s) => s.label).join(', ')}
-												</span>
-											</li>
-										);
-									})}
-								</ul>
-								<p className="mt-2 text-[0.75rem] text-[var(--ink-3)]">
-									{readOnly ? t('seating.autoalloc_preview_hint') : t('seating.autopick_tap_hint')}
-								</p>
+								{!readOnly && (
+									<>
+										<ul className="mt-2 space-y-1.5">
+											{tiers.map((tier) => {
+												const seatsForTier = selectedItems.filter((it) => it.tierId === tier.ticket_package_id);
+												if (seatsForTier.length === 0) return null;
+												return (
+													<li key={tier.ticket_package_id} className="flex items-center gap-2 text-[0.8125rem]">
+														<span
+															className="h-2.5 w-2.5 shrink-0 rounded-full"
+															style={{ backgroundColor: colorByTierId.get(tier.ticket_package_id) ?? 'var(--ink-3)' }}
+															aria-hidden="true"
+														/>
+														<span className="font-medium text-[var(--ink)]">{tier.name.split(' — ')[0].split(' (')[0].trim()}</span>
+														<span className="tabular-nums text-[var(--ink-3)]">
+															{seatsForTier.map((s) => s.label).join(', ')}
+														</span>
+													</li>
+												);
+											})}
+										</ul>
+										<p className="mt-2 text-[0.75rem] text-[var(--ink-3)]">
+											{t('seating.autopick_tap_hint')}
+										</p>
+									</>
+								)}
 							</ModalBody>
 							<ModalFooter>
 								{!readOnly && seedCart.length > 0 && (

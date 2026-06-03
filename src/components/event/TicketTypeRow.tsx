@@ -10,13 +10,14 @@ interface TicketTypeRowProps {
 	orderRemaining: number;
 	onQuantityChange: (ticketTypeId: number, quantity: number) => void;
 	showLowStockUrgency?: boolean;
-	index?: number;
 }
 
 /**
- * Price-rail + tier-card row. Rail anchors the price in black with mono-style
- * eyebrow; card holds name, capacity, optional description, and the pill
- * quantity stepper. Selected card lifts via `--shadow-2` and a 1.5px ink ring.
+ * One tier row inside the ticket list. The parent wraps all rows in a single
+ * bordered surface with hairline dividers (`divide-y`), so the row carries no
+ * chrome of its own: name + inline availability + optional description on the
+ * left, price and the quantity stepper on the right, vertically centred. When a
+ * tier is sold out the stepper is replaced by a muted dash.
  */
 export default function TicketTypeRow({
 	ticket,
@@ -24,7 +25,6 @@ export default function TicketTypeRow({
 	orderRemaining,
 	onQuantityChange,
 	showLowStockUrgency,
-	index,
 }: TicketTypeRowProps) {
 	const { t } = useTranslation('common');
 	const isSoldOut = ticket.remaining_capacity === 0;
@@ -34,68 +34,48 @@ export default function TicketTypeRow({
 		ticket.remaining_capacity ?? Infinity,
 		quantity + orderRemaining
 	);
-	const isSelected = quantity > 0;
 
 	return (
 		<div
-			className={`grid grid-cols-[64px_1fr] gap-2.5 sm:grid-cols-[88px_1fr] sm:gap-3 ${
-				isSoldOut ? 'opacity-55' : ''
+			className={`flex items-center gap-3 px-4 py-3.5 sm:gap-[18px] sm:px-[22px] sm:py-[18px] ${
+				isSoldOut ? 'opacity-50' : ''
 			}`}
 		>
-			{/* Price rail */}
-			<div className="flex flex-col justify-between rounded-[18px] bg-[var(--ink)] p-3 text-white sm:p-4">
-				{index != null && (
-					<div className="text-[9px] font-[700] uppercase tracking-[0.15em] text-white/55">
-						T{String(index).padStart(2, '0')}
-					</div>
+			{/* Name + availability + description */}
+			<div className="min-w-0 flex-1">
+				<div className="flex flex-wrap items-center gap-2">
+					<h4 className="font-[family-name:var(--font-display)] text-[15px] font-[700] tracking-[-0.018em] text-[var(--ink)] sm:text-[18px]">
+						{ticket.name}
+					</h4>
+					<CapacityBadge remainingCapacity={ticket.remaining_capacity} showLowStockUrgency={showLowStockUrgency} />
+				</div>
+				{ticket.description && (
+					<p className="mt-1 text-[12px] leading-[1.4] text-[var(--ink-3)] sm:text-[13px]">{ticket.description}</p>
 				)}
-				<div>
-					<div className="text-[24px] font-[800] leading-[0.9] tracking-[-0.02em] tabular-nums sm:text-[28px]">
-						{ticket.price}
-					</div>
-					<div className="mt-1 text-[9px] font-[700] uppercase tracking-[0.1em] text-white/55">
-						{ticket.currency}
-					</div>
+			</div>
+
+			{/* Price */}
+			<div className="shrink-0 text-right">
+				<div className="font-[family-name:var(--font-display)] text-[17px] font-[800] leading-none tracking-[-0.025em] tabular-nums text-[var(--ink)] sm:text-[20px]">
+					{ticket.price}
+				</div>
+				<div className="mt-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.1em] text-[var(--ink-4)]">
+					{ticket.currency}
 				</div>
 			</div>
 
-			{/* Tier card */}
-			<div
-				className="flex flex-col justify-between gap-2.5 rounded-[18px] bg-[var(--surface)] p-4 transition-shadow duration-200 sm:p-5"
-				style={{
-					boxShadow: isSelected
-						? '0 0 0 1.5px var(--ink), var(--shadow-2)'
-						: 'var(--shadow-1)',
-				}}
-			>
-				<div className="min-w-0">
-					<div className="flex flex-wrap items-center gap-2">
-						<h4 className="text-[15px] font-[700] tracking-[-0.012em] text-[var(--ink)] sm:text-[17px]">
-							{ticket.name}
-						</h4>
-						<CapacityBadge remainingCapacity={ticket.remaining_capacity} showLowStockUrgency={showLowStockUrgency} />
-					</div>
-					{ticket.description && (
-						<p className="mt-1 text-[13px] leading-[1.5] text-[var(--ink-3)]">{ticket.description}</p>
-					)}
-				</div>
-
-				<div className="flex items-center justify-end">
-					{isSoldOut ? (
-						<span className="inline-flex items-center rounded-full bg-[#DC2626]/10 px-3 py-1.5 text-[10.5px] font-[700] uppercase tracking-[0.1em] text-[#DC2626]">
-							{t('event.sold_out')}
-						</span>
-					) : (
-						<QuantityStepper
-							quantity={quantity}
-							maxQty={maxQty}
-							ticketName={ticket.name}
-							onChange={(qty) => onQuantityChange(ticket.id, qty)}
-							t={t}
-						/>
-					)}
-				</div>
-			</div>
+			{/* Stepper — or a muted dash for a sold-out tier */}
+			{isSoldOut ? (
+				<span className="shrink-0 font-[family-name:var(--font-mono)] text-[13px] tracking-[0.1em] text-[var(--ink-4)]">—</span>
+			) : (
+				<QuantityStepper
+					quantity={quantity}
+					maxQty={maxQty}
+					ticketName={ticket.name}
+					onChange={(qty) => onQuantityChange(ticket.id, qty)}
+					t={t}
+				/>
+			)}
 		</div>
 	);
 }
@@ -115,7 +95,7 @@ function QuantityStepper({
 }) {
 	return (
 		<div
-			className="inline-flex h-9 items-stretch rounded-full bg-[var(--bg-2)] p-0.5"
+			className="inline-flex h-9 shrink-0 items-stretch rounded-full bg-[var(--bg-2)] p-0.5"
 			role="group"
 			aria-label={t('ticket_row.qty_for', { name: ticketName })}
 		>

@@ -3,32 +3,31 @@ import { useTranslation } from 'next-i18next';
 interface CapacityBadgeProps {
   remainingCapacity: number | null | undefined;
   /**
-   * Show the low-stock urgency badges ("X left" / "Only X left!"). Gated by the
-   * event's `fomo_low_stock` toggle on the detail page. "Sold Out" always shows
-   * regardless — it is a real availability state, not a marketing nudge.
-   * Defaults true so other surfaces (landing cards) keep their behavior.
+   * Show the low-stock urgency indicators ("X left" / "Only X left!"). Gated by
+   * the event's `fomo_low_stock` toggle on the detail page. "Sold Out" always
+   * shows regardless — it is a real availability state, not a marketing nudge.
+   * Defaults true so other surfaces keep their behavior.
    */
   showLowStockUrgency?: boolean;
 }
 
 /**
- * 4-tier urgency badge:
- * - Available (>20): no badge
- * - Low stock (<=20): warm amber
- * - Critical (<=5): red + pulse animation
- * - Sold out (0): red static
+ * Inline availability indicator for the ticket list:
+ * - Sold out (0): solid red pill — always shown.
+ * - Critical (≤5): red dot + "Only X left!" + pulse — gated by showLowStockUrgency.
+ * - Low (≤20): amber dot + "X left" — gated by showLowStockUrgency.
+ * - Plentiful (>20): nothing.
  */
 export default function CapacityBadge({
   remainingCapacity,
   showLowStockUrgency = true,
 }: CapacityBadgeProps) {
   const { t } = useTranslation('common');
-  if (remainingCapacity == null || remainingCapacity > 20) return null;
 
   if (remainingCapacity === 0) {
     return (
       <span
-        className="inline-block rounded-full bg-[#DC2626]/10 px-2.5 py-1 text-[10.5px] font-[700] uppercase tracking-[0.06em] text-[#DC2626] line-through"
+        className="inline-flex items-center rounded-full bg-[#DC2626] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.1em] text-white"
         aria-label="0 tickets remaining"
       >
         {t('event.sold_out')}
@@ -36,26 +35,23 @@ export default function CapacityBadge({
     );
   }
 
-  if (!showLowStockUrgency) return null;
+  if (!showLowStockUrgency || remainingCapacity == null || remainingCapacity > 20) return null;
 
-  if (remainingCapacity <= 5) {
-    return (
-      <span
-        className="animate-urgency-pulse inline-block rounded-full bg-[#DC2626]/10 px-2.5 py-1 text-[10.5px] font-[700] uppercase tracking-[0.06em] text-[#DC2626]"
-        aria-label={`${remainingCapacity} tickets remaining`}
-      >
-        {t('event.only_left', { count: remainingCapacity })}
-      </span>
-    );
-  }
+  const critical = remainingCapacity <= 5;
+  const tone = critical ? '#DC2626' : '#D97706';
 
-  // <=20
   return (
     <span
-      className="inline-block rounded-full bg-[#D97706]/10 px-2.5 py-1 text-[10.5px] font-[700] uppercase tracking-[0.06em] text-[#D97706]"
+      className={`inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.04em] ${
+        critical ? 'animate-urgency-pulse' : ''
+      }`}
+      style={{ color: tone }}
       aria-label={`${remainingCapacity} tickets remaining`}
     >
-      {t('event.left', { count: remainingCapacity })}
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: tone }} />
+      {critical
+        ? t('event.only_left', { count: remainingCapacity })
+        : t('event.left', { count: remainingCapacity })}
     </span>
   );
 }

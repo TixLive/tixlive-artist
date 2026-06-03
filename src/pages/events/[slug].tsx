@@ -542,12 +542,11 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                   <TicketAvailabilityNotice variant={availabilityNotice} />
                 ) : showCategorySelector ? (
                   <>
-                    {/* Price ladder */}
-                    <div className="flex flex-col gap-3">
-                      {ticketTypes.map((ticket, i) => (
+                    {/* Ticket list — one bordered surface, rows split by hairlines */}
+                    <div className="divide-y divide-[var(--line)] overflow-hidden rounded-[22px] border border-[var(--line)] bg-[var(--surface)]">
+                      {ticketTypes.map((ticket) => (
                         <TicketTypeRow
                           key={ticket.id}
-                          index={i + 1}
                           ticket={ticket}
                           quantity={quantities[ticket.id] ?? 0}
                           orderRemaining={orderRemaining}

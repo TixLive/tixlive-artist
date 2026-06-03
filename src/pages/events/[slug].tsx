@@ -21,6 +21,7 @@ import KeyFactsStrip from '@/components/event/KeyFactsStrip';
 import SectionShell from '@/components/event/sections/SectionShell';
 import SessionPicker from '@/components/event/SessionPicker';
 import TicketTypeRow from '@/components/event/TicketTypeRow';
+import AddonSection from '@/components/event/AddonSection';
 import AddonRow from '@/components/event/AddonRow';
 import BundleRow from '@/components/event/BundleRow';
 import AddressMap from '@/components/common/AddressMap';
@@ -568,30 +569,12 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
                     )}
 
                     {/* Add-ons */}
-                    {addons.length > 0 && totalQuantity > 0 && (
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Icon icon="mdi:auto-awesome" width={18} className="text-[var(--brand-accent)]" />
-                          <h3 className="font-[family-name:var(--font-display)] text-[1.25rem] font-[700] tracking-[-0.01em] text-[var(--theme-text)]">
-                            {t('event.enhance_experience')}
-                          </h3>
-                        </div>
-                        <p className="mt-1 text-[0.75rem] text-[var(--theme-text-muted)]">
-                          {t('event.addon_per_ticket_note')}
-                        </p>
-                        <div className="mt-3 flex flex-col gap-2.5">
-                          {addons.map((addon) => (
-                            <AddonRow
-                              key={addon.id}
-                              addon={addon}
-                              quantity={addonQuantities[addon.id] ?? 0}
-                              max={addon.per_ticket ? totalQuantity : addon.max_quantity ?? 4}
-                              onQuantityChange={handleAddonQuantityChange}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <AddonSection
+                      addons={addons}
+                      quantities={addonQuantities}
+                      ticketCount={totalQuantity}
+                      onQuantityChange={handleAddonQuantityChange}
+                    />
 
                     {/* Cart summary */}
                     {(totalQuantity > 0 || bundleSelections.length > 0) && (

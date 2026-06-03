@@ -11,6 +11,12 @@ export interface IOrganizer {
 	pages?: Array<{ page_type: string; locales: string[] }>;
 	/** Public Facebook Pixel id (company default). Browser pixel only — no token here. */
 	facebook_pixel_id?: string | null;
+	/** ISO 3166-1 alpha-2 country code of the organizer's company (e.g. 'RO').
+	 *  Drives country-specific footer compliance marks (ANPC links). */
+	country_code?: string | null;
+	/** Names of the organizer's connected payment methods (e.g. ['MAIB', 'NETOPIA']).
+	 *  Drives the accepted-payment marks shown in the footer. */
+	payment_methods?: string[];
 }
 
 /** A single legal/info page (HTML content per locale). */

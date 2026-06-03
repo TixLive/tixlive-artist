@@ -29,7 +29,8 @@ import {
 } from '@/lib/seatSelection';
 import { buildTierColorById, buildTierColorBySeatId } from '@/lib/tierColors';
 import { suggestSeats } from '@/queries/seating/useSuggestSeats';
-import type { IAddonCartItem, ICartItem, ISeatingResponse } from '@/types';
+import AddonSection from '@/components/event/AddonSection';
+import type { IAddonCartItem, ITicketAddon, ICartItem, ISeatingResponse } from '@/types';
 
 function SeatingViewerLoading() {
 	const { t } = useTranslation('common');
@@ -59,6 +60,7 @@ interface SeatSelectionProps {
 	maxPerOrder: number;
 	seedCart: Array<{ ticket_package_id: number; quantity: number }>;
 	addonCart: IAddonCartItem[];
+	addons: ITicketAddon[];
 	seating: ISeatingResponse;
 	initialSelectedSeatIds: string[];
 	initialShortfall: boolean;
@@ -95,6 +97,7 @@ export default function SeatSelection({
 	maxPerOrder,
 	seedCart,
 	addonCart,
+	addons,
 	seating,
 	initialSelectedSeatIds,
 	initialShortfall,
@@ -153,14 +156,37 @@ export default function SeatSelection({
 	const [repicking, setRepicking] = useState(false);
 	const [continuing, setContinuing] = useState(false);
 	const [highlightedPrice, setHighlightedPrice] = useState<number | null>(null);
+	// Add-on quantities, seeded from anything pre-picked on the event page (usually empty
+	// for seated events, where extras are chosen here on the seat map).
+	const [addonQuantities, setAddonQuantities] = useState<Record<number, number>>(
+		() => Object.fromEntries(addonCart.map((a) => [a.addon_id, a.quantity]))
+	);
+	const handleAddonQuantityChange = useCallback((addonId: number, qty: number) => {
+		setAddonQuantities((prev) => ({ ...prev, [addonId]: qty }));
+	}, []);
 
 	const { isOpen: autopickOpen, onClose: closeAutopick, onOpen: openAutopick } = useDisclosure({
 		defaultOpen: !versionMismatch && initialSelectedSeatIds.length > 0,
 	});
+	const { isOpen: extrasOpen, onClose: closeExtras, onOpen: openExtras } = useDisclosure();
 
 	// ── Derived selection ─────────────────────────────────────────────────────
 	const total = useMemo(() => selectionTotal(selected, seatTier, tiers), [selected, seatTier, tiers]);
 	const complete = isSelectionValid(selected.size);
+
+	// Add-on pricing mirrors the GA flow: per_ticket extras multiply by the seat count.
+	const addonTotal = useMemo(() => {
+		return addons.reduce((sum, addon) => {
+			const qty = addonQuantities[addon.id] ?? 0;
+			if (qty === 0) return sum;
+			return sum + addon.price * qty * (addon.per_ticket ? selected.size : 1);
+		}, 0);
+	}, [addons, addonQuantities, selected.size]);
+	const grandTotal = total + addonTotal;
+	const addonCount = useMemo(
+		() => addons.reduce((n, a) => n + (addonQuantities[a.id] ?? 0), 0),
+		[addons, addonQuantities]
+	);
 
 	type SelectedSeatItem = {
 		seatId: string;
@@ -238,7 +264,7 @@ export default function SeatSelection({
 
 	const liveMessage = selected.size === 0
 		? t('seating.no_seats_yet')
-		: t('seating.live_complete', { count: selected.size, total, currency });
+		: t('seating.live_complete', { count: selected.size, total: grandTotal, currency });
 
 	// ── Handlers ─────────────────────────────────────────────────────────────
 	const handleSeatToggle = useCallback(
@@ -290,6 +316,17 @@ export default function SeatSelection({
 			return `${it.tierName} · ${seatPart}`;
 		});
 
+		const addonItems = addons
+			.filter((a) => (addonQuantities[a.id] ?? 0) > 0)
+			.map((a) => ({
+				addon_id: a.id,
+				addon_name: a.name,
+				price: a.price,
+				quantity: addonQuantities[a.id],
+				per_ticket: a.per_ticket,
+				currency,
+			}));
+
 		const data: Record<string, string> = {
 			event: slug,
 			session: String(sessionId),
@@ -301,13 +338,14 @@ export default function SeatSelection({
 			// to omit selected_seats from the buy.
 			selected_seats: JSON.stringify([...selected]),
 			seat_labels: JSON.stringify(seatLabels),
+			...(addonItems.length > 0 && { addons: JSON.stringify(addonItems) }),
 			...(readOnly && { auto_allocate: '1' }),
 			...(readOnly && bundles && bundles.length > 0 && { bundles: JSON.stringify(bundles) }),
 			...(addonCart.length > 0 && { addons: JSON.stringify(addonCart) }),
 		};
 		sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
 		router.push('/checkout');
-	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addonCart, router, t, readOnly, originalCart, bundles]);
+	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addons, addonQuantities, addonCart, router, t, readOnly, originalCart, bundles]);
 
 	// Reset continuing when page is restored from bfcache (browser back button)
 	useEffect(() => {
@@ -465,7 +503,11 @@ export default function SeatSelection({
 					<OrderSummaryCard
 						groupedByTier={groupedByTier}
 						selectedCount={selected.size}
-						total={total}
+						addons={addons}
+						addonQuantities={addonQuantities}
+						onAddonChange={handleAddonQuantityChange}
+						addonTotal={addonTotal}
+						grandTotal={grandTotal}
 						currency={currency}
 						complete={complete}
 						continuing={continuing}
@@ -536,6 +578,28 @@ export default function SeatSelection({
 							})}
 						</div>
 
+						{/* Add extras trigger */}
+						{addons.length > 0 && (
+							<div className="px-4 pb-1 pt-1.5">
+								<button
+									type="button"
+									onClick={openExtras}
+									className="flex w-full items-center gap-2.5 rounded-[14px] bg-white/[0.12] px-3.5 py-3 text-left backdrop-blur-md transition-colors duration-150 hover:bg-white/[0.18]"
+								>
+									<Icon icon="mdi:auto-awesome" width={16} className="shrink-0 text-white" />
+									<span className="min-w-0 flex-1 truncate text-[13px] font-[700] tracking-[-0.005em] text-white">
+										{t('seating.add_extras')}
+									</span>
+									{addonCount > 0 && (
+										<span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[11px] font-[800] tabular-nums text-[var(--ink)]">
+											{addonCount}
+										</span>
+									)}
+									<Icon icon="mdi:chevron-right" width={14} className="shrink-0 text-white/60" />
+								</button>
+							</div>
+						)}
+
 						{/* Total + CTA */}
 						<div
 							className="flex items-center gap-4 px-4 pt-3"
@@ -546,7 +610,7 @@ export default function SeatSelection({
 									{t('seating.total')}
 								</span>
 								<span className="block text-[22px] font-[800] tracking-[-0.022em] tabular-nums text-white">
-									{total.toLocaleString()}{' '}
+									{grandTotal.toLocaleString()}{' '}
 									<span className="text-[13px] font-[700] text-white/65">{currency}</span>
 								</span>
 							</div>
@@ -626,6 +690,44 @@ export default function SeatSelection({
 									className="rounded-full bg-[var(--ink)] font-[700] text-white"
 								>
 									{t('seating.looks_good')}
+								</Button>
+							</ModalFooter>
+						</>
+					)}
+				</ModalContent>
+			</Modal>
+
+			{/* ── Add-ons modal (mobile) ─────────────────────────────────────── */}
+			<Modal
+				isOpen={extrasOpen}
+				onClose={closeExtras}
+				placement="center"
+				backdrop="opaque"
+				size="md"
+				scrollBehavior="inside"
+			>
+				<ModalContent>
+					{() => (
+						<>
+							<ModalHeader className="flex items-center gap-2 text-[1.125rem] font-[700] tracking-[-0.01em] text-[var(--ink)]">
+								<Icon icon="mdi:auto-awesome" width={18} className="text-[var(--brand-accent)]" />
+								{t('event.enhance_experience')}
+							</ModalHeader>
+							<ModalBody>
+								<p className="-mt-1 text-[0.75rem] text-[var(--ink-3)]">{t('event.addon_per_ticket_note')}</p>
+								<AddonSection
+									addons={addons}
+									quantities={addonQuantities}
+									ticketCount={selected.size}
+									onQuantityChange={handleAddonQuantityChange}
+									showHeader={false}
+								/>
+							</ModalBody>
+							<ModalFooter>
+								<Button onPress={closeExtras} className="rounded-full bg-[var(--ink)] font-[700] text-white">
+									{addonTotal > 0
+										? t('seating.extras_done_total', { total: addonTotal.toLocaleString(), currency })
+										: t('seating.extras_done')}
 								</Button>
 							</ModalFooter>
 						</>
@@ -812,7 +914,11 @@ interface SelectedSeatGroup {
 function OrderSummaryCard({
 	groupedByTier,
 	selectedCount,
-	total,
+	addons,
+	addonQuantities,
+	onAddonChange,
+	addonTotal,
+	grandTotal,
 	currency,
 	complete,
 	continuing,
@@ -823,7 +929,11 @@ function OrderSummaryCard({
 }: {
 	groupedByTier: SelectedSeatGroup[];
 	selectedCount: number;
-	total: number;
+	addons: ITicketAddon[];
+	addonQuantities: Record<number, number>;
+	onAddonChange: (addonId: number, quantity: number) => void;
+	addonTotal: number;
+	grandTotal: number;
 	currency: string;
 	complete: boolean;
 	continuing: boolean;
@@ -864,12 +974,31 @@ function OrderSummaryCard({
 				))}
 			</div>
 
+			{addons.length > 0 && (
+				<>
+					<div className="my-3.5 h-px bg-[var(--line)]" />
+					<AddonSection
+						addons={addons}
+						quantities={addonQuantities}
+						ticketCount={selectedCount}
+						onQuantityChange={onAddonChange}
+					/>
+				</>
+			)}
+
 			<div className="my-3.5 h-px bg-[var(--line)]" />
+
+			{addonTotal > 0 && (
+				<div className="mb-2 flex items-center justify-between text-[12.5px] text-[var(--ink-3)]">
+					<span>{t('seating.extras')}</span>
+					<span className="tabular-nums">+{addonTotal.toLocaleString()} {currency}</span>
+				</div>
+			)}
 
 			<div className="flex items-baseline justify-between">
 				<span className="text-[15px] font-[700] tracking-[-0.012em] text-[var(--ink)]">{t('seating.total')}</span>
 				<span className="text-[20px] font-[800] leading-none tracking-[-0.018em] tabular-nums text-[var(--ink)]">
-					{total.toLocaleString()}{' '}
+					{grandTotal.toLocaleString()}{' '}
 					<span className="text-[12px] font-[600] text-[var(--ink-3)]">{currency}</span>
 				</span>
 			</div>

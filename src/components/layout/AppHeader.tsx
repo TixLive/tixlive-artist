@@ -2,15 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import { Icon } from '@iconify/react';
-
-interface AppHeaderProps {
-	organizerName: string;
-	logoUrl?: string | null;
-	cartQuantity?: number;
-	cartTotal?: number;
-	currency?: string;
-	onCartClick?: () => void;
-}
+import { useOrganizer } from '@/contexts/OrganizerContext';
+import { useLayout } from '@/contexts/LayoutContext';
 
 const LOCALE_LABELS: Record<string, { flag: string; name: string }> = {
 	en: { flag: '🇬🇧', name: 'English' },
@@ -18,9 +11,14 @@ const LOCALE_LABELS: Record<string, { flag: string; name: string }> = {
 	ru: { flag: '🇷🇺', name: 'Русский' },
 };
 
-export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTotal, currency, onCartClick }: AppHeaderProps) {
+export default function AppHeader() {
 	const { t } = useTranslation('common');
-	const hasCart = (cartQuantity ?? 0) > 0;
+	const { organizer } = useOrganizer();
+	const { cart } = useLayout();
+
+	const organizerName = organizer?.name ?? '';
+	const logoUrl = organizer?.logo_url;
+	const hasCart = (cart?.cartQuantity ?? 0) > 0;
 
 	return (
 		<header
@@ -55,12 +53,12 @@ export default function AppHeader({ organizerName, logoUrl, cartQuantity, cartTo
 
 					{hasCart ? (
 						<button
-							onClick={onCartClick}
+							onClick={cart?.onCartClick}
 							className="inline-flex items-center gap-2 rounded-full bg-[var(--ink)] py-2.5 pl-3.5 pr-4 text-[13.5px] font-[600] tracking-[-0.005em] text-white transition-colors duration-150 hover:bg-[var(--ink-2)]"
 						>
 							<Icon icon="mdi:ticket-outline" width={14} />
 							<span className="tabular-nums">
-								{cartQuantity} · {cartTotal} {currency}
+								{cart?.cartQuantity} · {cart?.cartTotal} {cart?.currency}
 							</span>
 						</button>
 					) : (

@@ -516,6 +516,10 @@
 		"ticket_other": "билетов",
 		"per_seat": "место",
 		"nav_hint_title": "Как перемещаться",
+		"add_extras": "Добавить опции",
+		"extras": "Опции",
+		"extras_done": "Готово",
+		"extras_done_total": "Готово · +{{total}} {{currency}}",
 		"autoalloc_preview_hint": "Места назначаются автоматически — вы получите лучшие доступные места в вашей категории."
 	},
 	"profile": {

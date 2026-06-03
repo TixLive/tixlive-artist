@@ -499,6 +499,10 @@
 		"ticket_other": "bilete",
 		"per_seat": "loc",
 		"nav_hint_title": "Cum navighezi",
+		"add_extras": "Adaugă extra",
+		"extras": "Extra",
+		"extras_done": "Gata",
+		"extras_done_total": "Gata · +{{total}} {{currency}}",
 		"autoalloc_preview_hint": "Locurile sunt alocate automat — vei primi cele mai bune locuri disponibile din categoria ta."
 	},
 	"profile": {

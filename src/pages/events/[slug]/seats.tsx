@@ -7,7 +7,7 @@ import SeatSelection from '@/components/seating/SeatSelection';
 import { fetchEvent } from '@/queries/events/useGetEvent';
 import { fetchSeating } from '@/queries/seating/useGetSeating';
 import { suggestSeats } from '@/queries/seating/useSuggestSeats';
-import type { ICartItem, IAddonCartItem, ISeatingResponse } from '@/types';
+import type { ICartItem, IAddonCartItem, ITicketAddon, ISeatingResponse } from '@/types';
 
 interface SeatsState {
 	slug: string;
@@ -20,6 +20,7 @@ interface SeatsState {
 	maxPerOrder: number;
 	seedCart: Array<{ ticket_package_id: number; quantity: number }>;
 	addonCart: IAddonCartItem[];
+	addons: ITicketAddon[];
 	seating: ISeatingResponse;
 	initialSelectedSeatIds: string[];
 	initialShortfall: boolean;
@@ -150,6 +151,7 @@ export default function SeatsPage() {
 					maxPerOrder,
 					seedCart: previewCart,
 					addonCart,
+					addons: event.ticket_addons ?? [],
 					seating,
 					initialSelectedSeatIds,
 					initialShortfall,
@@ -185,6 +187,7 @@ export default function SeatsPage() {
 				maxPerOrder={state.maxPerOrder}
 				seedCart={state.seedCart}
 				addonCart={state.addonCart}
+				addons={state.addons}
 				seating={state.seating}
 				initialSelectedSeatIds={state.initialSelectedSeatIds}
 				initialShortfall={state.initialShortfall}

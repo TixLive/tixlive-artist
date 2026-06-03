@@ -496,6 +496,10 @@
 		"ticket_other": "tickets",
 		"per_seat": "seat",
 		"nav_hint_title": "How to navigate",
+		"add_extras": "Add extras",
+		"extras": "Extras",
+		"extras_done": "Done",
+		"extras_done_total": "Done · +{{total}} {{currency}}",
 		"autoalloc_preview_hint": "Seats are assigned automatically — you’ll get the best available seats in your category."
 	},
 	"profile": {

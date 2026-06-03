@@ -1,5 +1,7 @@
 import PhoneInputRHF from 'react-phone-number-input/react-hook-form';
 import type { Control, FieldValues, Path } from 'react-hook-form';
+import { useVisitorCountry } from '@/hooks/useVisitorCountry';
+import { useOrganizer } from '@/contexts/OrganizerContext';
 
 interface PhoneNumberInputProps<T extends FieldValues> {
 	id?: string;
@@ -8,6 +10,9 @@ interface PhoneNumberInputProps<T extends FieldValues> {
 	label?: string;
 	isRequired?: boolean;
 	errorMessage?: string;
+	/** Force a specific ISO country. When omitted, the country is auto-detected
+	 *  from the visitor's browser time zone, falling back to the organizer's
+	 *  country, then 'MD'. */
 	defaultCountry?: string;
 	placeholder?: string;
 }
@@ -19,11 +24,17 @@ export default function PhoneNumberInput<T extends FieldValues>({
 	label,
 	isRequired,
 	errorMessage,
-	defaultCountry = 'MD',
+	defaultCountry,
 	placeholder,
 }: PhoneNumberInputProps<T>) {
 	const inputId = id ?? `phone-${String(name)}`;
 	const invalid = Boolean(errorMessage);
+
+	const visitorCountry = useVisitorCountry();
+	const { organizer } = useOrganizer();
+	// explicit prop wins, then visitor time-zone country, then organizer country, then Moldova.
+	const resolvedCountry =
+		defaultCountry ?? visitorCountry ?? organizer?.country_code?.toUpperCase() ?? 'MD';
 
 	return (
 		<div className="flex flex-col gap-1.5">
@@ -43,11 +54,14 @@ export default function PhoneNumberInput<T extends FieldValues>({
 				style={{ height: '56px' }}
 			>
 				<PhoneInputRHF
+					// remount when the auto-detected country resolves so the new
+					// defaultCountry applies (RHF holds the value, so it survives).
+					key={resolvedCountry}
 					id={inputId}
 					name={name}
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					control={control as any}
-					defaultCountry={defaultCountry as Parameters<typeof PhoneInputRHF>[0]['defaultCountry']}
+					defaultCountry={resolvedCountry as Parameters<typeof PhoneInputRHF>[0]['defaultCountry']}
 					international
 					countryCallingCodeEditable={false}
 					placeholder={placeholder}

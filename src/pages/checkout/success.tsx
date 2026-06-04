@@ -12,6 +12,8 @@ import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
 import { useConsent } from '@/contexts/ConsentContext';
 import { initPixel, track } from '@/lib/fbpixel';
+import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
+import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import type { IOrderDetail } from '@/types';
 
 const MAX_POLLS = 20;
@@ -66,6 +68,10 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 		);
 		purchaseFiredRef.current = true;
 	}, [marketingConsent, order, event]);
+
+	// Clarity: mark the purchase and force the session to be recorded (sampling-proof). Independent
+	// of marketing consent — runs on Clarity's own (cookieless-until-consent) stream.
+	useClarityEventOnce({ name: CLARITY_EVENTS.PURCHASE, when: order?.status === 'paid', upgrade: true });
 
 	const notFound = (router.isReady && !orderId) || isError;
 	const loading = !notFound && !order;

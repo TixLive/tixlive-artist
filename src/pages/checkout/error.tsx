@@ -8,6 +8,8 @@ import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import { useGetOrderByToken } from '@/queries/orders/useGetOrderByToken';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
+import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
+import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 
 const CheckoutErrorPage: NextPageWithLayout = function CheckoutErrorPage() {
 	const { t } = useTranslation('common');
@@ -39,6 +41,10 @@ const CheckoutErrorPage: NextPageWithLayout = function CheckoutErrorPage() {
 	// Only a confirmed-failed order (or an unreadable token) shows the failure screen;
 	// while we resolve / are about to redirect, show a neutral spinner.
 	const showFailure = isError || status === 'failed';
+
+	// Clarity: mark the failed payment and force the session to be recorded so it's reviewable.
+	useClarityEventOnce({ name: CLARITY_EVENTS.PAYMENT_FAILED, when: showFailure, upgrade: true });
+
 	if (!showFailure) {
 		return (
 			<>

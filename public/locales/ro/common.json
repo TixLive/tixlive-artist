@@ -19,7 +19,7 @@
 			"necessaryTitle": "Strict necesare",
 			"necessaryDescription": "Necesare pentru funcționarea site-ului — autentificare și sesiune, limba aleasă și protecția anti-spam (reCAPTCHA). Mereu active.",
 			"analyticsTitle": "Analiză",
-			"analyticsDescription": "Ne ajută să înțelegem cum este folosit site-ul, ca să-l îmbunătățim. Dezactivate până le permiți.",
+			"analyticsDescription": "Ne ajută să înțelegem cum este folosit site-ul, ca să-l îmbunătățim, prin Microsoft Clarity (înregistrări de sesiune și hărți termice). Dezactivate până le permiți.",
 			"marketingTitle": "Marketing",
 			"marketingDescription": "Permit organizatorului să măsoare performanța campaniilor publicitare (ex. Facebook Pixel). Dezactivate până le permiți."
 		}

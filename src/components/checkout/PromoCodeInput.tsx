@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { useValidatePromo } from '@/queries/promo/useValidatePromo';
+import { trackEvent as clarityEvent } from '@/lib/clarity';
+import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 
 interface PromoCodeInputProps {
 	eventId: number;
@@ -29,14 +31,17 @@ export default function PromoCodeInput({ eventId, onApply, onRemove }: PromoCode
 			const response = await validatePromo.mutateAsync({ eventId, code: code.trim() });
 			if (response.valid) {
 				setApplied(true);
+				clarityEvent(CLARITY_EVENTS.PROMO_APPLIED);
 				onApply(
 					{ percent: response.discount_percent, amount: response.discount_amount },
 					code.trim(),
 				);
 			} else {
+				clarityEvent(CLARITY_EVENTS.PROMO_REJECTED);
 				setError(response.error ?? t('checkout.promo_invalid'));
 			}
 		} catch {
+			clarityEvent(CLARITY_EVENTS.PROMO_REJECTED);
 			setError(t('checkout.error_generic'));
 		}
 	};

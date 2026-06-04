@@ -10,6 +10,8 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetMyTickets } from '@/queries/tickets/useGetMyTickets';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
+import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import type { ITicket } from '@/types';
@@ -29,6 +31,9 @@ function AccountTicketsContent() {
 	} = useGetMyTickets();
 
 	const tickets = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
+
+	// Clarity: mark that an attendee reviewed their tickets (fires once per mount).
+	useClarityEventOnce({ name: CLARITY_EVENTS.TICKETS_VIEWED, when: tickets.length > 0 });
 
 	// Group the currently-loaded set by event_title. Counts evolve as more pages
 	// load — this is the agreed pagination behavior (paginate by ticket row,

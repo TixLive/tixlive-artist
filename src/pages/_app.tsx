@@ -17,6 +17,7 @@ import { LayoutProvider } from '@/contexts/LayoutContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { RecaptchaProvider } from '@/contexts/RecaptchaContext';
 import { FacebookPixel } from '@/components/FacebookPixel';
+import { MicrosoftClarity } from '@/components/MicrosoftClarity';
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 	getLayout?: (page: ReactElement) => ReactNode;
@@ -57,6 +58,7 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
 									<ToastProvider placement="bottom-center" toastOffset={16} />
 									<LocaleHydrator />
 									<FacebookPixel />
+									<MicrosoftClarity />
 									<div className={`${manrope.variable} ${jetbrainsMono.variable} font-sans min-h-screen`}>
 										{getLayout(<Component {...pageProps} />)}
 									</div>

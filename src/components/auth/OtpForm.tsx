@@ -5,6 +5,8 @@ import { useTranslation } from 'next-i18next';
 import { useValidateLoginCode } from '@/queries/auth/useValidateLoginCode';
 import { useResendLoginCode } from '@/queries/auth/useResendLoginCode';
 import RecaptchaDisclaimer from '@/components/common/RecaptchaDisclaimer';
+import { trackEvent as clarityEvent } from '@/lib/clarity';
+import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 
 interface OtpFormProps {
 	email: string;
@@ -37,8 +39,10 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 			setError(false);
 			try {
 				await validate.mutateAsync({ email, code });
+				clarityEvent(CLARITY_EVENTS.LOGIN_SUCCESS);
 				onSuccess();
 			} catch {
+				clarityEvent(CLARITY_EVENTS.LOGIN_FAILED);
 				setError(true);
 				setOtp('');
 			}

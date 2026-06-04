@@ -19,7 +19,7 @@
 			"necessaryTitle": "Strictly necessary",
 			"necessaryDescription": "Required for the site to work — sign-in and session, your language choice, and anti-spam protection (reCAPTCHA). Always on.",
 			"analyticsTitle": "Analytics",
-			"analyticsDescription": "Help us understand how visitors use the site so we can improve it. Off until you allow them.",
+			"analyticsDescription": "Help us understand how visitors use the site so we can improve it, using Microsoft Clarity (session recordings and heatmaps). Off until you allow them.",
 			"marketingTitle": "Marketing",
 			"marketingDescription": "Let the organizer measure ad-campaign performance (e.g. Facebook Pixel). Off until you allow them."
 		}

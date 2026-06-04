@@ -28,6 +28,8 @@ import {
 	formatSeatLabel,
 } from '@/lib/seatSelection';
 import { buildTierColorById, buildTierColorBySeatId } from '@/lib/tierColors';
+import { trackEvent as clarityEvent } from '@/lib/clarity';
+import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import { suggestSeats } from '@/queries/seating/useSuggestSeats';
 import AddonSection from '@/components/event/AddonSection';
 import type { IAddonCartItem, ITicketAddon, ICartItem, ISeatingResponse } from '@/types';
@@ -381,8 +383,9 @@ export default function SeatSelection({
 			...(readOnly && bundles && bundles.length > 0 && { bundles: JSON.stringify(bundles) }),
 		};
 		sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
+		clarityEvent(CLARITY_EVENTS.SEATS_SELECTED);
 		router.push('/checkout');
-	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addons, addonQuantities, addonCart, router, t, readOnly, originalCart, bundles]);
+	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addons, addonQuantities, router, t, readOnly, originalCart, bundles]);
 
 	// Reset continuing when page is restored from bfcache (browser back button)
 	useEffect(() => {

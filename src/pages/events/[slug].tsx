@@ -11,6 +11,8 @@ import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useConsent } from '@/contexts/ConsentContext';
 import { initPixel, track } from '@/lib/fbpixel';
+import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
+import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import { useHeaderCart } from '@/contexts/LayoutContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -118,6 +120,10 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
   const currency = ticketTypes[0]?.currency ?? event?.currency ?? 'MDL';
   const ticketsRef = useRef<HTMLDivElement>(null);
+
+  // Clarity: mark the event view (anonymous, cookieless until consent — runs independently of the
+  // marketing-gated Meta Pixel ViewContent above).
+  useClarityEventOnce({ name: CLARITY_EVENTS.EVENT_VIEWED, when: !!event });
 
   const totalQuantity = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.quantity, 0),

@@ -30,6 +30,9 @@ import { useCreateOrder } from '@/queries/orders/useCreateOrder';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useConsent } from '@/contexts/ConsentContext';
 import { getFbCookies } from '@/lib/fbpixel';
+import { trackEvent as clarityEvent, setTag as claritySetTag } from '@/lib/clarity';
+import { CLARITY_EVENTS, CLARITY_TAGS } from '@/lib/clarity.constants';
+import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
 import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
 
@@ -181,6 +184,9 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     }
   }, [drawerOpen, profileIncomplete]);
 
+  // Clarity: mark checkout reached once the cart + event have loaded.
+  useClarityEventOnce({ name: CLARITY_EVENTS.CHECKOUT_STARTED, when: ready && !!event });
+
   const goPickSeats = () => {
     if (!event) return;
     const data: Record<string, string> = {
@@ -243,11 +249,13 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
         const code = String(e.code ?? e.message ?? '');
         const status = e.status ?? 0;
         if (code.includes('PROFILE_INCOMPLETE')) {
+          // Not a real failure — the buyer just needs to complete their profile, then retries.
           setProfileIncomplete(true);
           setSubmitting(false);
           openDrawer();
           return;
         }
+        clarityEvent(CLARITY_EVENTS.ORDER_FAILED);
         const SEAT_ERROR_CODES = ['SEAT_TAKEN', 'SEATS_REQUIRED', 'SEAT_COUNT_MISMATCH', 'INVALID_SEAT_ID', 'DUPLICATE_SEATS'];
         if (SEAT_ERROR_CODES.some((c) => code.includes(c))) {
           setSubmitError(t('checkout.error_seat_taken'));
@@ -279,6 +287,9 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
         return;
       }
 
+      const methodName = event?.available_payment_methods?.find((m) => m.id === selectedPaymentId)?.name;
+      if (methodName) claritySetTag(CLARITY_TAGS.PAYMENT_METHOD, methodName);
+      clarityEvent(CLARITY_EVENTS.ORDER_INITIATED);
       window.location.href = response.payment_url;
     } catch {
       setSubmitError(t('checkout.error_generic'));

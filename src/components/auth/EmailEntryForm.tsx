@@ -3,6 +3,8 @@ import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { useRequestLoginCode } from '@/queries/auth/useRequestLoginCode';
 import RecaptchaDisclaimer from '@/components/common/RecaptchaDisclaimer';
+import { trackEvent as clarityEvent } from '@/lib/clarity';
+import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 
 interface EmailEntryFormProps {
 	initialEmail?: string;
@@ -22,6 +24,7 @@ export default function EmailEntryForm({ initialEmail = '', onCodeSent, autoFocu
 		setError(false);
 		try {
 			const data = await requestCode.mutateAsync(trimmed);
+			clarityEvent(CLARITY_EVENTS.LOGIN_CODE_SENT);
 			onCodeSent(trimmed, typeof data.resendTime === 'number' ? data.resendTime : 0);
 		} catch {
 			setError(true);

@@ -79,7 +79,10 @@ export function buildCookieConsentConfig(i18n: I18n, onUpdate: () => void): Cook
 		},
 		categories: {
 			necessary: { enabled: true, readOnly: true },
-			[ANALYTICS_CATEGORY]: {},
+			// Microsoft Clarity (session recordings + heatmaps) named explicitly for transparency.
+			// Brand name — identical across locales — so it isn't routed through i18n. The localized
+			// explanation lives in the analytics section description.
+			[ANALYTICS_CATEGORY]: { services: { clarity: { label: 'Microsoft Clarity' } } },
 			[MARKETING_CATEGORY]: {},
 		},
 		language: { default: current, translations },

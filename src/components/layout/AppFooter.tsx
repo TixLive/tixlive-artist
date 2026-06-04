@@ -60,6 +60,8 @@ export default function AppFooter() {
 	const { organizer } = useOrganizer();
 
 	const organizerName = organizer?.name ?? '';
+	// Copyright credits the registered legal entity; fall back to the display name when unset.
+	const copyrightName = organizer?.legal_name || organizerName;
 	const organizerBio = organizer?.bio;
 	const logoUrl = organizer?.logo_url;
 
@@ -101,6 +103,14 @@ export default function AppFooter() {
 									</Link>
 								</li>
 							))}
+							{/* Romanian consumer-protection authority — required link for RO e-commerce (ANPC). */}
+							{showAnpc && (
+								<li>
+									<a href="https://anpc.ro" target="_blank" rel="noopener noreferrer" className={link}>
+										ANPC
+									</a>
+								</li>
+							)}
 							<li>
 								<button type="button" onClick={showPreferences} className={`${link} cursor-pointer text-left`}>
 									{t('footer.cookieSettings')}
@@ -165,7 +175,7 @@ export default function AppFooter() {
 					{/* Credit row */}
 					<div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
 						<span className="text-[12px] text-[var(--ink-3)]">
-							© {new Date().getFullYear()} {organizerName}
+							© {new Date().getFullYear()} {copyrightName}
 						</span>
 
 						<span className="inline-flex items-center gap-1.5 text-[12px] uppercase tracking-[0.12em] text-[var(--ink-3)]">

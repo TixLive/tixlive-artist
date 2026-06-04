@@ -3,6 +3,9 @@ import type { Section } from '@/lib/seatingGeometry';
 export interface IOrganizer {
 	id: number;
 	name: string;
+	/** Registered legal entity name. Shown in the footer copyright line when present;
+	 *  falls back to `name`. */
+	legal_name?: string | null;
 	slug: string;
 	logo_url: string | null;
 	bio: string | null;

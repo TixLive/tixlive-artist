@@ -81,6 +81,18 @@ body {
 	overflow-x: hidden;
 }
 
+/* iOS Safari auto-zooms on focus when a form control's font-size is < 16px.
+   The design uses 13.5–15px inputs, which trips this on every touch device.
+   On touch (coarse pointer) only, force the minimum 16px so focus never zooms;
+   desktop keeps the designed sizes. !important beats Tailwind/HeroUI utilities. */
+@media (pointer: coarse) {
+	input:not([type='checkbox']):not([type='radio']):not([type='range']),
+	textarea,
+	select {
+		font-size: 16px !important;
+	}
+}
+
 /* Premium scrollbar */
 ::-webkit-scrollbar {
 	width: 10px;

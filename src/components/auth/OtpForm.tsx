@@ -109,6 +109,7 @@ export default function OtpForm({ email, initialResendTime, onBack, onSuccess }:
 				onValueChange={handleOtpChange}
 				isInvalid={error}
 				isDisabled={loading}
+				validationBehavior="aria"
 				size="lg"
 			/>
 

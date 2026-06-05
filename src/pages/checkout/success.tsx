@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -11,8 +11,6 @@ import { formatEventDate, formatEventTimeWithZone } from '@/lib/datetime';
 import { useGetOrderByToken } from '@/queries/orders/useGetOrderByToken';
 import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
-import { useConsent } from '@/contexts/ConsentContext';
-import { initPixel, track } from '@/lib/fbpixel';
 import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
 import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import type { IOrderDetail } from '@/types';
@@ -50,25 +48,6 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 	// Enrich the ticket card with the event banner + venue once the order resolves.
 	const { data: event } = useGetEvent({ slug: order?.event_slug ?? null });
 
-	// Browser-side Purchase. event_id = order id, shared with the besttix server CAPI Purchase
-	// so Facebook deduplicates the two. Fires once, only with consent, on the event's pixel.
-	const { granted: marketingConsent } = useConsent();
-	const purchaseFiredRef = useRef(false);
-	useEffect(() => {
-		if (purchaseFiredRef.current || !marketingConsent) return;
-		if (!order || order.status !== 'paid') return;
-		const pixelId = event?.facebook_pixel_id;
-		if (!pixelId) return;
-		initPixel(pixelId);
-		// Facebook-safe money (besttix converts unsupported currencies like MDL → USD); the
-		// server CAPI Purchase reports the same value, so the deduped event stays consistent.
-		track(
-			'Purchase',
-			{ value: order.pixel_value ?? order.total, currency: order.pixel_currency ?? order.currency },
-			order.id
-		);
-		purchaseFiredRef.current = true;
-	}, [marketingConsent, order, event]);
 
 	// Clarity: mark the purchase and force the session to be recorded (sampling-proof). Independent
 	// of marketing consent — runs on Clarity's own (cookieless-until-consent) stream.

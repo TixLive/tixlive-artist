@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import { useTranslation, type TFunction } from 'next-i18next';
 import { IEventListItem } from '@/types';
 import { usePrefetchEvent } from '@/hooks/usePrefetchEvent';
+import { formatEventDateParts, formatEventTimeWithZone } from '@/lib/datetime';
 
 interface FeaturedHeroProps {
 	events: IEventListItem[];
@@ -16,9 +17,9 @@ interface HeroParts {
 	t: TFunction;
 	featured: IEventListItem;
 	dowShort: string;
-	day: number;
+	day: string;
 	mon: string;
-	year: number;
+	year: string;
 	time: string;
 	venueLine: string;
 }
@@ -68,17 +69,13 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
 	if (openEvents.length === 0) return null;
 
 	const featured = openEvents[0];
-	const date = new Date(featured.date_start);
-	const dowShort = date
-		.toLocaleDateString('ro-RO', { weekday: 'short' })
-		.replace('.', '');
-	const day = date.getDate();
-	const mon = date.toLocaleDateString('ro-RO', { month: 'long' });
-	const year = date.getFullYear();
-	const time = date.toLocaleTimeString('ro-RO', {
-		hour: '2-digit',
-		minute: '2-digit',
+	// Render in the venue's timezone (not the viewer's), with a GMT-offset hint on the time.
+	const { weekday, day, month: mon, year } = formatEventDateParts(featured.date_start, featured.timezone, 'ro-RO', {
+		weekday: 'short',
+		month: 'long',
 	});
+	const dowShort = weekday.replace('.', '');
+	const time = formatEventTimeWithZone(featured.date_start, featured.timezone, 'ro-RO');
 
 	const parts: HeroParts = {
 		href: `/events/${featured.slug}`,

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { IEventDetail } from '@/types';
+import { formatEventDateParts, formatEventTimeWithZone } from '@/lib/datetime';
 
 function useImageAspect(src: string | null | undefined): number | null {
 	const [aspect, setAspect] = useState<number | null>(null);
@@ -42,12 +43,13 @@ interface EventHeroProps {
  */
 export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel }: EventHeroProps) {
 	const { t } = useTranslation('common');
-	const date = new Date(event.date_start);
-	const dowShort = date.toLocaleDateString('ro-RO', { weekday: 'short' }).replace('.', '');
-	const day = date.getDate();
-	const mon = date.toLocaleDateString('ro-RO', { month: 'long' });
-	const year = date.getFullYear();
-	const time = date.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', hour12: false });
+	// Render in the venue's timezone (not the viewer's), with a GMT-offset hint on the time.
+	const { weekday, day, month: mon, year } = formatEventDateParts(event.date_start, event.timezone, 'ro-RO', {
+		weekday: 'short',
+		month: 'long',
+	});
+	const dowShort = weekday.replace('.', '');
+	const time = formatEventTimeWithZone(event.date_start, event.timezone, 'ro-RO');
 
 	const landscapeUrl = event.poster_url ?? event.poster_portrait_url ?? null;
 	const portraitUrl = event.poster_portrait_url ?? event.poster_url ?? null;

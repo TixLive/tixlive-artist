@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { ITicket } from '@/types';
 import { parseSeatId } from '@/lib/seat';
+import { formatEventDate, formatEventTimeWithZone } from '@/lib/datetime';
 
 interface TicketCardProps {
 	ticket: ITicket;
@@ -13,15 +14,16 @@ export default function TicketCard({ ticket, locale = 'en' }: TicketCardProps) {
 	const { t } = useTranslation('common');
 	const seat = parseSeatId(ticket.seat_id);
 
+	// Date + time in the venue's timezone (not the viewer's), with a GMT-offset hint.
 	const formatDate = (dateStr: string) => {
-		const date = new Date(dateStr);
-		return date.toLocaleDateString(locale, {
+		const date = formatEventDate(dateStr, ticket.timezone, locale, {
 			weekday: 'short',
 			month: 'short',
 			day: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit',
+			year: undefined,
 		});
+		if (!date) return '';
+		return `${date}, ${formatEventTimeWithZone(dateStr, ticket.timezone, locale)}`;
 	};
 
 	return (

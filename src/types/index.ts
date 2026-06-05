@@ -41,6 +41,10 @@ export interface IEventListItem {
 	venue_name: string;
 	venue_address: string;
 	date_start: string;
+	/** IANA timezone of the event's (nearest) session, e.g. "Europe/Bucharest".
+	 *  Format date_start in this zone so the time shown is always the venue's
+	 *  local time, regardless of the viewer's location. See src/utils/datetime.ts. */
+	timezone?: string;
 	price_from: number;
 	currency: string;
 	remaining_capacity: number | null;
@@ -50,6 +54,8 @@ export interface IEventSession {
 	id: number;
 	date: string;
 	label: string;
+	/** IANA timezone for this session (e.g. "Europe/Bucharest"). */
+	timezone?: string;
 }
 
 export interface ITicketType {
@@ -300,6 +306,8 @@ export interface IOrderDetail {
 	event_title: string;
 	event_slug: string;
 	session_date: string;
+	/** IANA timezone of the session (e.g. "Europe/Bucharest"). Format session_date in this zone. */
+	timezone?: string;
 	items: Array<{ name: string; quantity: number; price: number; seat_id?: string | null }>;
 	total: number;
 	currency: string;
@@ -328,6 +336,8 @@ export interface ITicket {
 	event_title: string;
 	event_slug: string;
 	session_date: string;
+	/** IANA timezone of the session (e.g. "Europe/Bucharest"). Format session_date in this zone. */
+	timezone?: string;
 	ticket_type: string;
 	attendee_name: string;
 	qr_code_data: string;

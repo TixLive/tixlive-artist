@@ -11,6 +11,7 @@ import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useConsent } from '@/contexts/ConsentContext';
 import { initPixel, track } from '@/lib/fbpixel';
+import { formatEventDate, formatEventTimeWithZone } from '@/lib/datetime';
 import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
 import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import { useHeaderCart } from '@/contexts/LayoutContext';
@@ -236,10 +237,10 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
     }
   }, [event?.title]);
 
+  // Render in the venue's timezone (not the viewer's), with a GMT-offset hint on the time.
   const fmtDate = (d: string) =>
-    new Date(d).toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const fmtTime = (d: string) =>
-    new Date(d).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', hour12: false });
+    formatEventDate(d, event?.timezone, 'ro-RO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const fmtTime = (d: string) => formatEventTimeWithZone(d, event?.timezone, 'ro-RO');
 
   // Only true interactive-seat events use the seat-picker CTA. Auto-allocate (category
   // purchase) events behave like GA: the CTA scrolls to the category/bundle selector.

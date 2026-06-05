@@ -4,6 +4,7 @@ import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { IEventListItem } from '@/types';
 import { usePrefetchEvent } from '@/hooks/usePrefetchEvent';
+import { formatEventDate } from '@/lib/datetime';
 
 interface EventCardProps {
 	event: IEventListItem;
@@ -18,8 +19,9 @@ export default function EventCard({ event }: EventCardProps) {
 	const { t } = useTranslation('common');
 	const prefetch = usePrefetchEvent();
 
+	// Date in the venue's timezone (not the viewer's).
 	const formatDate = (dateStr: string) =>
-		new Date(dateStr).toLocaleDateString('ro-RO', {
+		formatEventDate(dateStr, event.timezone, 'ro-RO', {
 			weekday: 'short',
 			day: 'numeric',
 			month: 'short',

@@ -7,6 +7,7 @@ import { useTranslation } from 'next-i18next';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import { parseSeatId } from '@/lib/seat';
+import { formatEventDate, formatEventTimeWithZone } from '@/lib/datetime';
 import { useGetOrderByToken } from '@/queries/orders/useGetOrderByToken';
 import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
@@ -104,10 +105,11 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 
 	// ----- derived display data (paid view) -----
 	const dateSource = order?.session_date || event?.date_start || '';
-	const fmtDate = (d: string) =>
-		d ? new Date(d).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '';
-	const fmtTime = (d: string) =>
-		d ? new Date(d).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' }) : '';
+	// Venue timezone: prefer the order's, fall back to the event's. Times render in this
+	// zone (not the buyer's browser zone), with a GMT-offset hint. See src/lib/datetime.ts.
+	const eventTz = order?.timezone || event?.timezone;
+	const fmtDate = (d: string) => formatEventDate(d, eventTz, i18n.language);
+	const fmtTime = (d: string) => formatEventTimeWithZone(d, eventTz, i18n.language);
 
 	const items = order?.items ?? [];
 	const totalQty = items.reduce((s, i) => s + i.quantity, 0);

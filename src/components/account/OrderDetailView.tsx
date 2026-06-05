@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import type { IOrderDetail } from '@/types';
 import { parseSeatId } from '@/lib/seat';
+import { formatEventDate, formatEventTimeWithZone } from '@/lib/datetime';
 
 interface OrderDetailViewProps {
 	order: IOrderDetail;
@@ -19,22 +20,16 @@ export default function OrderDetailView({ order, locale = 'en' }: OrderDetailVie
 	const { t } = useTranslation('common');
 	const statusColor = STATUS_COLORS[order.status];
 
-	const formatDate = (dateStr: string) => {
-		if (!dateStr) return '';
-		const date = new Date(dateStr);
-		return date.toLocaleDateString(locale, {
+	// Date + time in the venue's timezone (not the viewer's), with a GMT-offset hint.
+	const formatDate = (dateStr: string) =>
+		formatEventDate(dateStr, order.timezone, locale, {
 			weekday: 'long',
 			month: 'long',
 			day: 'numeric',
 			year: 'numeric',
 		});
-	};
 
-	const formatTime = (dateStr: string) => {
-		if (!dateStr) return '';
-		const date = new Date(dateStr);
-		return date.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
-	};
+	const formatTime = (dateStr: string) => formatEventTimeWithZone(dateStr, order.timezone, locale);
 
 	return (
 		<div className="space-y-5">

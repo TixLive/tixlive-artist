@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { IEventDetail, ICartItem, IAddonCartItem } from '@/types';
+import { formatEventDate, formatEventTimeWithZone } from '@/lib/datetime';
 
 interface OrderSummaryProps {
 	event: IEventDetail;
@@ -14,18 +15,16 @@ interface OrderSummaryProps {
 
 export default function OrderSummary({ event, sessionDate, cart, addonCart, bundleCart, seatLabels }: OrderSummaryProps) {
 	const { t } = useTranslation('common');
+	// Date + time in the venue's timezone (not the viewer's), with a GMT-offset hint.
 	const formatDate = (dateStr: string) => {
-		if (!dateStr) return '';
-		const date = new Date(dateStr);
-		if (isNaN(date.getTime())) return '';
-		return date.toLocaleDateString('en-US', {
+		const date = formatEventDate(dateStr, event.timezone, 'en-US', {
 			weekday: 'short',
 			month: 'short',
 			day: 'numeric',
 			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit',
 		});
+		if (!date) return '';
+		return `${date}, ${formatEventTimeWithZone(dateStr, event.timezone, 'en-US')}`;
 	};
 
 	const ticketCount = cart.reduce((s, i) => s + i.quantity, 0);

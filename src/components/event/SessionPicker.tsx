@@ -1,6 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { useTranslation } from 'next-i18next';
 import { IEventSession } from '@/types';
+import { formatEventDateParts } from '@/lib/datetime';
 
 interface SessionPickerProps {
   sessions: IEventSession[];
@@ -12,11 +13,9 @@ export default function SessionPicker({ sessions, activeSessionId, onSelect }: S
   const { t } = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const formatSessionDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const weekday = date.toLocaleDateString('ro-RO', { weekday: 'short' });
-    const day = date.getDate();
-    const month = date.toLocaleDateString('ro-RO', { month: 'short' });
+  // Format in the session's own venue timezone (not the viewer's).
+  const formatSessionDate = (dateStr: string, timeZone?: string) => {
+    const { weekday, day, month } = formatEventDateParts(dateStr, timeZone, 'ro-RO', { weekday: 'short', month: 'short' });
     return `${weekday} ${day} ${month}`;
   };
 
@@ -69,7 +68,7 @@ export default function SessionPicker({ sessions, activeSessionId, onSelect }: S
             }`}
             onClick={() => onSelect(session.id)}
           >
-            {session.label || formatSessionDate(session.date)}
+            {session.label || formatSessionDate(session.date, session.timezone)}
           </button>
         );
       })}

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import type { IOrderDetail } from '@/types';
+import { formatEventDate } from '@/lib/datetime';
 
 interface OrderCardProps {
 	order: IOrderDetail;
@@ -21,13 +22,13 @@ export default function OrderCard({ order, locale = 'en' }: OrderCardProps) {
 	const status = order.status;
 	const statusColor = STATUS_COLORS[status];
 
-	const formattedDate = order.session_date
-		? new Date(order.session_date).toLocaleDateString(locale, {
-				month: 'short',
-				day: 'numeric',
-				year: 'numeric',
-			})
-		: '';
+	// Date in the venue's timezone (not the viewer's).
+	const formattedDate = formatEventDate(order.session_date, order.timezone, locale, {
+		weekday: undefined,
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric',
+	});
 
 	return (
 		<Link href={`/account/orders/${order.id}`} className="group block">

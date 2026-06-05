@@ -4,6 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'next-i18next';
 import { ITicket } from '@/types';
 import { parseSeatId } from '@/lib/seat';
+import { formatEventDate, formatEventTimeWithZone } from '@/lib/datetime';
 
 interface TicketDetailViewProps {
 	ticket: ITicket;
@@ -13,23 +14,16 @@ interface TicketDetailViewProps {
 export default function TicketDetailView({ ticket, locale = 'en' }: TicketDetailViewProps) {
 	const { t } = useTranslation('common');
 
-	const formatDate = (dateStr: string) => {
-		const date = new Date(dateStr);
-		return date.toLocaleDateString(locale, {
+	// Date + time in the venue's timezone (not the viewer's), with a GMT-offset hint.
+	const formatDate = (dateStr: string) =>
+		formatEventDate(dateStr, ticket.timezone, locale, {
 			weekday: 'long',
 			month: 'long',
 			day: 'numeric',
 			year: 'numeric',
 		});
-	};
 
-	const formatTime = (dateStr: string) => {
-		const date = new Date(dateStr);
-		return date.toLocaleTimeString(locale, {
-			hour: 'numeric',
-			minute: '2-digit',
-		});
-	};
+	const formatTime = (dateStr: string) => formatEventTimeWithZone(dateStr, ticket.timezone, locale);
 
 	return (
 		<div className="flex flex-col items-center gap-8">

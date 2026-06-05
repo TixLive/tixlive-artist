@@ -34,7 +34,7 @@ export default function AppHeader() {
 				<Link href="/" className="flex h-10 shrink-0 items-center gap-2.5">
 					{logoUrl ? (
 						// eslint-disable-next-line @next/next/no-img-element
-						<img src={logoUrl} alt={organizerName} className="block h-10 w-auto max-w-[180px] object-contain" />
+						<img src={logoUrl} alt={organizerName} className="block h-8 w-auto max-w-[130px] object-contain sm:h-10 sm:max-w-[180px]" />
 					) : (
 						<>
 							<span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--ink)] text-[1.0625rem] font-[800] leading-none text-white">

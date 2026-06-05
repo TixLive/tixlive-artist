@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
-	addToast,
 	Button,
 	Modal,
 	ModalContent,
@@ -16,6 +15,7 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
+import { showToast } from '@/lib/toast';
 
 import { computeAllSeats, GEOMETRY_VERSION, Seat } from '@/lib/seatingGeometry';
 import {
@@ -306,10 +306,14 @@ export default function SeatSelection({
 	// ── Handlers ─────────────────────────────────────────────────────────────
 	const handleSeatToggle = useCallback(
 		(seat: Seat) => {
-			if (readOnly) return; // auto-allocate preview: seats are fixed
+			if (readOnly) {
+				// auto-allocate preview: seats are fixed — tell the user instead of silently ignoring
+				showToast({ title: t('seating.auto_allocate_locked'), color: 'warning' });
+				return;
+			}
 			const r = toggleSeat(seat.id, selected, seatTier, maxPerOrder);
 			if (r.status === 'order_max') {
-				addToast({ title: t('seating.cap_reached', { max: maxPerOrder }), color: 'warning' });
+				showToast({ title: t('seating.cap_reached', { max: maxPerOrder }), color: 'warning' });
 				return;
 			}
 			if (r.status === 'added' || r.status === 'removed') setSelected(r.next);
@@ -334,7 +338,7 @@ export default function SeatSelection({
 			setShortfall(res.shortfall);
 			openAutopick();
 		} catch {
-			addToast({ title: t('seating.repick_error'), color: 'danger' });
+			showToast({ title: t('seating.repick_error'), color: 'danger' });
 		} finally {
 			setRepicking(false);
 		}

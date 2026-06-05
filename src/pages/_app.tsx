@@ -13,6 +13,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { OrganizerProvider } from '@/contexts/OrganizerContext';
 import { ConsentProvider } from '@/contexts/ConsentContext';
+import SiteHead from '@/components/SiteHead';
 import { LayoutProvider } from '@/contexts/LayoutContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { RecaptchaProvider } from '@/contexts/RecaptchaContext';
@@ -51,11 +52,12 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
 				<OrganizerProvider>
+					<SiteHead />
 					<ConsentProvider>
 						<LayoutProvider>
 							<RecaptchaProvider>
 								<HeroUIProvider navigate={router.push}>
-									<ToastProvider placement="bottom-center" toastOffset={16} />
+									<ToastProvider placement="top-center" toastOffset={16} />
 									<LocaleHydrator />
 									<FacebookPixel />
 									<MicrosoftClarity />

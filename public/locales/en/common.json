@@ -462,6 +462,7 @@
 		"seat_count_sr": "{{count}} {{tier}} selected",
 		"remove_seat": "Remove",
 		"cap_reached": "Max {{max}} tickets per order.",
+		"auto_allocate_locked": "Seats are assigned automatically for this event and can't be changed.",
 		"pick_best": "Pick best seats",
 		"repick_error": "Couldn't auto-pick seats. Tap the map to choose.",
 		"canvas_hint": "Drag to pan · scroll to zoom · tap a seat to select.",

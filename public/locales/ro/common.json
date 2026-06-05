@@ -466,6 +466,7 @@
 		"seat_count_sr": "{{count}} {{tier}} selectate",
 		"remove_seat": "Șterge",
 		"cap_reached": "Maxim {{max}} bilete per comanda.",
+		"auto_allocate_locked": "Locurile sunt atribuite automat pentru acest eveniment si nu pot fi modificate.",
 		"pick_best": "Alege cele mai bune locuri",
 		"repick_error": "Nu am putut alege locuri automat. Atinge harta pentru a alege.",
 		"canvas_hint": "Trage pentru a naviga · deruleaza pentru zoom · atinge un loc pentru a-l selecta.",

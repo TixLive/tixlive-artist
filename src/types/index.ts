@@ -8,6 +8,8 @@ export interface IOrganizer {
 	legal_name?: string | null;
 	slug: string;
 	logo_url: string | null;
+	/** White-label browser-tab icon (besttix favicon upload). */
+	favicon_url: string | null;
 	bio: string | null;
 	social_links: Record<string, string>;
 	/** Legal/info pages with published content + the locales they exist in. */

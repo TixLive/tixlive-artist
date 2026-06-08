@@ -358,6 +358,13 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			}
 		}
 
+		// Selected seats are deferred to a second pass (drawn after every other
+		// seat) so their enlarged accent ring always sits ON TOP of neighbours.
+		// Drawn inline, a later-iterated neighbour paints over the ring and chops
+		// it into "sub-seat" segments — most visible when the marker stays large
+		// (zoomed out, where mr >> r).
+		const selectedSeats: typeof allSeats = [];
+
 		// Seats — single pass
 		for (const seat of allSeats) {
 			const tier = tiers.get(seat.id);
@@ -405,55 +412,67 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			ctx.arc(seat.x, seat.y, r, 0, Math.PI * 2);
 			ctx.fill();
 
-			if (isHovered && !isSelected) {
+			if (isSelected) {
+				// Defer the marker to the second pass below so its enlarged ring
+				// is never overpainted by a neighbouring seat.
+				selectedSeats.push(seat);
+				continue;
+			}
+
+			if (isHovered) {
 				ctx.strokeStyle = '#fff';
 				ctx.lineWidth = Math.max(1.5, 2 / sc);
 				ctx.beginPath();
 				ctx.arc(seat.x, seat.y, r + Math.max(1, 2 / sc), 0, Math.PI * 2);
 				ctx.stroke();
 			}
+		}
 
-			if (isSelected) {
-				// Enforce a minimum on-screen marker size so a selected seat stays
-				// legible at ANY zoom. Zoomed out, the bare seat dot is sub-pixel and
-				// gets lost in the crowd — so grow the marker to a guaranteed screen
-				// radius. Zoomed in (r * sc already large) mr === r, so the close-up
-				// rendering is unchanged.
-				const MIN_SEL_PX = 6;
-				const mr = Math.max(r, MIN_SEL_PX / sc);
+		// Selected seats — second pass, always on top of every other seat.
+		for (const seat of selectedSeats) {
+			const tier = tiers.get(seat.id);
+			const r = getSeatR(sections, seat.sectionKey);
 
-				// Re-fill the tier color at marker size (covers the base dot above)
-				ctx.fillStyle = tier!;
+			// Enforce a minimum on-screen marker size so a selected seat stays
+			// legible at ANY zoom. Zoomed out, the bare seat dot is sub-pixel and
+			// gets lost in the crowd — so grow the marker to a guaranteed screen
+			// radius. Zoomed in (r * sc already large) mr === r, so the close-up
+			// rendering is unchanged.
+			const MIN_SEL_PX = 6;
+			const mr = Math.max(r, MIN_SEL_PX / sc);
+
+			// Re-fill the tier color at marker size (covers the base dot above)
+			ctx.globalAlpha = 1;
+			ctx.fillStyle = tier!;
+			ctx.beginPath();
+			ctx.arc(seat.x, seat.y, mr, 0, Math.PI * 2);
+			ctx.fill();
+
+			// White gap ring (between fill and accent ring — Yandex-style double ring)
+			ctx.strokeStyle = '#fff';
+			ctx.lineWidth = Math.max(1.5, 2 / sc);
+			ctx.beginPath();
+			ctx.arc(seat.x, seat.y, mr + Math.max(1, 1.5 / sc), 0, Math.PI * 2);
+			ctx.stroke();
+
+			// Accent outer ring
+			ctx.strokeStyle = pal.accent;
+			ctx.lineWidth = Math.max(1.5, 2.5 / sc);
+			ctx.beginPath();
+			ctx.arc(seat.x, seat.y, mr + Math.max(3, 4 / sc), 0, Math.PI * 2);
+			ctx.stroke();
+
+			if (mr * sc > 7) {
+				ctx.strokeStyle = pal.onAccent;
+				ctx.lineWidth = Math.max(1, mr * 0.22);
+				ctx.lineCap = 'round';
+				ctx.lineJoin = 'round';
 				ctx.beginPath();
-				ctx.arc(seat.x, seat.y, mr, 0, Math.PI * 2);
-				ctx.fill();
-
-				// White gap ring (between fill and accent ring — Yandex-style double ring)
-				ctx.strokeStyle = '#fff';
-				ctx.lineWidth = Math.max(1.5, 2 / sc);
-				ctx.beginPath();
-				ctx.arc(seat.x, seat.y, mr + Math.max(1, 1.5 / sc), 0, Math.PI * 2);
+				ctx.moveTo(seat.x - mr * 0.42, seat.y + mr * 0.02);
+				ctx.lineTo(seat.x - mr * 0.08, seat.y + mr * 0.38);
+				ctx.lineTo(seat.x + mr * 0.46, seat.y - mr * 0.34);
 				ctx.stroke();
-
-				// Accent outer ring
-				ctx.strokeStyle = pal.accent;
-				ctx.lineWidth = Math.max(1.5, 2.5 / sc);
-				ctx.beginPath();
-				ctx.arc(seat.x, seat.y, mr + Math.max(3, 4 / sc), 0, Math.PI * 2);
-				ctx.stroke();
-
-				if (mr * sc > 7) {
-					ctx.strokeStyle = pal.onAccent;
-					ctx.lineWidth = Math.max(1, mr * 0.22);
-					ctx.lineCap = 'round';
-					ctx.lineJoin = 'round';
-					ctx.beginPath();
-					ctx.moveTo(seat.x - mr * 0.42, seat.y + mr * 0.02);
-					ctx.lineTo(seat.x - mr * 0.08, seat.y + mr * 0.38);
-					ctx.lineTo(seat.x + mr * 0.46, seat.y - mr * 0.34);
-					ctx.stroke();
-					ctx.lineCap = 'butt';
-				}
+				ctx.lineCap = 'butt';
 			}
 		}
 

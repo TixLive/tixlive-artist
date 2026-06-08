@@ -92,7 +92,8 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   // not the interactive seat-picker — seats are auto-allocated + previewed read-only.
   const autoAllocate = !!event?.auto_allocate_seats;
   const showCategorySelector = !isSeated || autoAllocate;
-  const salesOpen = event?.status === 'open';
+  const onSale = event?.is_on_sale !== false;
+  const salesOpen = event?.status === 'open' && onSale;
 
   const isEventSoldOut = useMemo(() => {
     return ticketTypes.length > 0 && ticketTypes.every((tt) => tt.remaining_capacity !== null && tt.remaining_capacity === 0);
@@ -103,9 +104,11 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
       ? 'coming_soon'
       : event?.status === 'closed'
         ? 'closed'
-        : isEventSoldOut
-          ? 'sold_out'
-          : null;
+        : !onSale
+          ? 'closed'
+          : isEventSoldOut
+            ? 'sold_out'
+            : null;
 
   const cartItems: ICartItem[] = useMemo(() => {
     return ticketTypes

@@ -71,7 +71,31 @@
 		"events_count_many": "{{count}} событий",
 		"events_count_other": "{{count}} событий",
 		"show_more": "Показать ещё",
-		"hero_doors": "Двери · {{time}}"
+		"hero_doors": "Двери · {{time}}",
+		"past": {
+			"section_title": "Прошедшие события",
+			"view_archive": "Архив",
+			"ended_chip": "Завершено",
+			"ended_state": "Событие завершено",
+			"sold_out_state": "Распродано",
+			"details": "Подробнее"
+		}
+	},
+	"archive": {
+		"page_title": "Архив концертов — {{name}}",
+		"page_title_fallback": "Архив концертов",
+		"eyebrow": "Архив",
+		"title": "Всё, что было — сохранено.",
+		"lead": "Все прошедшие события, от самых недавних назад во времени.",
+		"stat_events": "события",
+		"stat_cities": "города",
+		"stat_span": "архив",
+		"today": "Сегодня",
+		"most_recent": "Самое недавнее",
+		"view_details": "Подробнее",
+		"back": "Назад к событиям",
+		"load_more": "Загрузить старые",
+		"empty": "В архиве пока нет событий."
 	},
 	"event": {
 		"buy_ticket": "Купить Билет",

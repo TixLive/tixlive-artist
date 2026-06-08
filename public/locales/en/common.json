@@ -69,7 +69,31 @@
 		"events_count_one": "{{count}} event",
 		"events_count_other": "{{count}} events",
 		"show_more": "Show More",
-		"hero_doors": "Doors · {{time}}"
+		"hero_doors": "Doors · {{time}}",
+		"past": {
+			"section_title": "Past events",
+			"view_archive": "View archive",
+			"ended_chip": "Ended",
+			"ended_state": "Event ended",
+			"sold_out_state": "Sold out",
+			"details": "Details"
+		}
+	},
+	"archive": {
+		"page_title": "Concert archive — {{name}}",
+		"page_title_fallback": "Concert archive",
+		"eyebrow": "Archive",
+		"title": "Everything that happened, kept.",
+		"lead": "All past events, from the most recent back through time.",
+		"stat_events": "events",
+		"stat_cities": "cities",
+		"stat_span": "archive",
+		"today": "Today",
+		"most_recent": "Most recent",
+		"view_details": "View details",
+		"back": "Back to events",
+		"load_more": "Load older",
+		"empty": "No events in the archive yet."
 	},
 	"event": {
 		"buy_ticket": "Buy Ticket",

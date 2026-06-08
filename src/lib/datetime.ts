@@ -105,3 +105,36 @@ export function formatEventTimeWithZone(iso: string, timeZone: string | undefine
 	const offset = formatGmtOffset(iso, timeZone);
 	return offset ? `${time} (${offset})` : time;
 }
+
+/**
+ * Whether an event's start instant has already passed. Used to split the
+ * landing list into upcoming vs. finished ("evenimente încheiate"). The
+ * absolute UTC instant is timezone-agnostic for a simple past/future test, so
+ * no venue zone is needed here. Returns false for a missing/invalid date.
+ */
+export function isEventPast(iso: string | undefined | null): boolean {
+	if (!iso) return false;
+	const t = new Date(iso).getTime();
+	return Number.isFinite(t) && t < Date.now();
+}
+
+/**
+ * Coarse "time ago" label for finished events, e.g. "acum 6 luni", "acum 1 an".
+ * Picks the largest sensible unit (year → month → week → day) and defers the
+ * grammar to `Intl.RelativeTimeFormat` so ro/en/ru all read naturally. Only
+ * meaningful for past instants; returns '' for missing/future dates.
+ */
+export function formatTimeAgo(iso: string | undefined | null, locale: string): string {
+	if (!iso) return '';
+	const ms = Date.now() - new Date(iso).getTime();
+	if (!Number.isFinite(ms) || ms <= 0) return '';
+	const days = ms / 86_400_000;
+	const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'always' });
+	const years = Math.floor(days / 365.25);
+	if (years >= 1) return rtf.format(-years, 'year');
+	const months = Math.floor(days / 30.44);
+	if (months >= 1) return rtf.format(-months, 'month');
+	const weeks = Math.floor(days / 7);
+	if (weeks >= 1) return rtf.format(-weeks, 'week');
+	return rtf.format(-Math.max(1, Math.round(days)), 'day');
+}

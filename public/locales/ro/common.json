@@ -69,7 +69,31 @@
 		"events_count_one": "{{count}} eveniment",
 		"events_count_other": "{{count}} evenimente",
 		"show_more": "Arată Mai Mult",
-		"hero_doors": "Porțile · {{time}}"
+		"hero_doors": "Porțile · {{time}}",
+		"past": {
+			"section_title": "Evenimente încheiate",
+			"view_archive": "Vezi arhiva",
+			"ended_chip": "Încheiat",
+			"ended_state": "Eveniment încheiat",
+			"sold_out_state": "S-a epuizat",
+			"details": "Detalii"
+		}
+	},
+	"archive": {
+		"page_title": "Arhivă de concerte — {{name}}",
+		"page_title_fallback": "Arhivă de concerte",
+		"eyebrow": "Arhivă",
+		"title": "Tot ce s-a întâmplat, păstrat.",
+		"lead": "Toate evenimentele trecute, de la cele mai recente înapoi în timp.",
+		"stat_events": "evenimente",
+		"stat_cities": "orașe",
+		"stat_span": "arhivă",
+		"today": "Astăzi",
+		"most_recent": "Cel mai recent",
+		"view_details": "Vezi detalii",
+		"back": "Înapoi la evenimente",
+		"load_more": "Încarcă mai vechi",
+		"empty": "Încă nu există evenimente în arhivă."
 	},
 	"event": {
 		"buy_ticket": "Cumpără Bilet",

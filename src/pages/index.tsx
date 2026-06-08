@@ -8,40 +8,42 @@ import type { NextPageWithLayout } from '@/pages/_app';
 import HeroCarousel from '@/components/landing/HeroCarousel';
 import CategoryFilter, { Category } from '@/components/landing/CategoryFilter';
 import EventGrid from '@/components/landing/EventGrid';
+import PastEventsSection from '@/components/landing/PastEventsSection';
 import HomePageSkeleton from '@/components/landing/HomePageSkeleton';
 
 const Home: NextPageWithLayout = function Home() {
 	const { t } = useTranslation('common');
 	const { organizer } = useOrganizer();
 	const {
-		data,
+		data: upcomingData,
 		isLoading: initialLoading,
 		fetchNextPage,
 		isFetchingNextPage,
 		hasNextPage,
 		isError,
-	} = useGetEvents();
+	} = useGetEvents({ timeframe: 'upcoming' });
+	const { data: pastData } = useGetEvents({ timeframe: 'past' });
 
 	const [category, setCategory] = useState<Category>('All');
 
-	const events = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
-	const total = data?.pages[0]?.total ?? 0;
+	const upcoming = useMemo(() => upcomingData?.pages.flatMap((p) => p.data) ?? [], [upcomingData]);
+	const past = useMemo(() => pastData?.pages.flatMap((p) => p.data) ?? [], [pastData]);
 
 	const availableTypes = useMemo(() => {
 		const seen = new Set<string>();
-		for (const e of events) if (e.event_type) seen.add(e.event_type);
+		for (const e of [...upcoming, ...past]) if (e.event_type) seen.add(e.event_type);
 		return [...seen];
-	}, [events]);
+	}, [upcoming, past]);
 
-	const filteredEvents = useMemo(() => {
-		if (category === 'All') return events;
-		return events.filter((e) => e.event_type?.toLowerCase() === category.toLowerCase());
-	}, [events, category]);
+	const filteredUpcoming = useMemo(() => {
+		if (category === 'All') return upcoming;
+		return upcoming.filter((e) => e.event_type?.toLowerCase() === category.toLowerCase());
+	}, [upcoming, category]);
 
-	const filteredTotal = useMemo(() => {
-		if (category === 'All') return total;
-		return filteredEvents.length;
-	}, [category, total, filteredEvents.length]);
+	const filteredPast = useMemo(() => {
+		if (category === 'All') return past;
+		return past.filter((e) => e.event_type?.toLowerCase() === category.toLowerCase());
+	}, [past, category]);
 
 	const handleLoadMore = async () => {
 		if (hasNextPage && !isFetchingNextPage) await fetchNextPage();
@@ -61,12 +63,12 @@ const Home: NextPageWithLayout = function Home() {
 				<HomePageSkeleton />
 			) : (
 				<>
-					<HeroCarousel events={events} />
+					<HeroCarousel events={upcoming} />
 					<CategoryFilter active={category} onChange={setCategory} availableTypes={availableTypes} />
 					<section className="py-10 md:py-12">
 						<EventGrid
-							events={filteredEvents}
-							total={filteredTotal}
+							events={filteredUpcoming}
+							total={filteredUpcoming.length}
 							onLoadMore={handleLoadMore}
 							hasNextPage={category === 'All' ? hasNextPage : false}
 							loading={isFetchingNextPage}
@@ -74,6 +76,7 @@ const Home: NextPageWithLayout = function Home() {
 							organizerBio={organizer?.bio ?? undefined}
 							categoryLabel={category}
 						/>
+						<PastEventsSection events={filteredPast} />
 					</section>
 				</>
 			)}

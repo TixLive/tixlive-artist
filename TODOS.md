@@ -50,3 +50,13 @@
 - **Why:** Stale references to dead endpoints generate runtime 404s if users somehow trigger them.
 - **Effort:** S (~10min audit)
 - **Depends on:** besttix magic-link cleanup PR landed.
+
+## Past Events & Archive Timeline (besttix BE)
+
+Backend now owns the past-vs-upcoming split (shipped). `GET /api/public/events` takes `?timeframe=upcoming|past|all` (SQL-filtered, default `upcoming`); `past` is returned newest-first over the existing `offset`/`next_offset` pagination. `city` is exposed on the list + detail payloads, and `GET /api/public/archive-stats` returns `{ total_past, distinct_cities, year_min, year_max }` for the timeline header. "Past" = an event whose nearest session has already happened (no upcoming session), so a tour with future dates stays in *upcoming*. Existing indexes (`idx_session_event_datetime`, `idx_event_user_user_role_event`) cover these queries — no new index needed. Only the optional gallery affordance below remains.
+
+**[P3] (Optional) Event gallery/media for "Vezi galeria"**
+- **What:** If we later adopt the gallery affordance (handoff Direction B), expose past-event photo/media on the detail or a dedicated `/events/:slug/gallery` endpoint.
+- **Why:** Direction C (compact log, the one shipped) links to "Vezi detalii"; the alternative "Vezi galeria" CTA needs media to exist. Not required for the current build — captured so it isn't lost.
+- **Effort:** M (depends on whether media storage exists).
+- **Depends on:** product decision to surface galleries.

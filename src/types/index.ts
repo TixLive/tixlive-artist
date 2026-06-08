@@ -42,6 +42,9 @@ export interface IEventListItem {
 	status: 'draft' | 'soon' | 'open' | 'closed';
 	venue_name: string;
 	venue_address: string;
+	/** City label for the archive timeline meta + "orașe" stat. Optional until
+	 *  the besttix list endpoint exposes it (see archive BE task list). */
+	city?: string | null;
 	date_start: string;
 	/** IANA timezone of the event's (nearest) session, e.g. "Europe/Bucharest".
 	 *  Format date_start in this zone so the time shown is always the venue's
@@ -252,6 +255,10 @@ export interface IEventDetail extends IEventListItem {
 	fomo_low_stock?: boolean;
 	/** Resolved public Facebook Pixel id (event override ?? company default). Browser pixel. */
 	facebook_pixel_id?: string | null;
+	/** Admin "on sale / accepts new orders" master switch (besttix). When false, sales are
+	 *  closed regardless of status — disable the buy button and hide ticket selection.
+	 *  Optional for backward-compat: a missing value is treated as on-sale. */
+	is_on_sale?: boolean;
 }
 
 export interface ICartItem {
@@ -392,4 +399,16 @@ export interface IPaginatedResponse<T> {
 	data: T[];
 	total: number;
 	next_offset: number | null;
+}
+
+/**
+ * Aggregate stats for the archive timeline header, computed over the organizer's full
+ * past set on the backend (so the numbers are truthful without paging the whole archive).
+ * year_min/year_max are null when the organizer has no finished events.
+ */
+export interface IArchiveStats {
+	total_past: number;
+	distinct_cities: number;
+	year_min: number | null;
+	year_max: number | null;
 }

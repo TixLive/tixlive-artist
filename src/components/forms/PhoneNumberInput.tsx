@@ -63,7 +63,13 @@ export default function PhoneNumberInput<T extends FieldValues>({
 					control={control as any}
 					defaultCountry={resolvedCountry as Parameters<typeof PhoneInputRHF>[0]['defaultCountry']}
 					international
-					countryCallingCodeEditable={false}
+					// NOTE: do NOT set `countryCallingCodeEditable={false}`. With a locked
+					// calling code, react-phone-number-input discards any value whose
+					// calling code differs from the selected country's — so a browser
+					// autofill (or paste) of a number from another country (e.g. +373
+					// while the input defaulted to +40 from the visitor's timezone) is
+					// treated as invalid and the field is left empty. Keeping the calling
+					// code editable lets such values through and auto-switches the flag.
 					placeholder={placeholder}
 					className="tixlive-phone-input flex-1"
 				/>

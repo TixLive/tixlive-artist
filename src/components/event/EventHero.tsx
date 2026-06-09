@@ -51,7 +51,9 @@ export default function EventHero({ event, onBuy, priceFrom, currency, ctaLabel 
 	const dowShort = weekday.replace('.', '');
 	const time = formatEventTimeWithZone(event.date_start, event.timezone, 'ro-RO');
 
-	const landscapeUrl = event.poster_url ?? event.poster_portrait_url ?? null;
+	// The desktop banner is ~3:1, so prefer the ultra-wide 32:9 poster when uploaded
+	// (fills edge-to-edge); fall back to the 16:9 cover, then the portrait.
+	const landscapeUrl = event.poster_variants?.['32:9'] ?? event.poster_url ?? event.poster_portrait_url ?? null;
 	const portraitUrl = event.poster_portrait_url ?? event.poster_url ?? null;
 	const venueLine = event.venue_name;
 	const portraitAspect = useImageAspect(portraitUrl);

@@ -246,7 +246,9 @@ function BannerHero({
 	time,
 	venueLine,
 }: HeroParts) {
-	const coverUrl = featured.poster_url;
+	// Prefer the ultra-wide 32:9 banner when uploaded; fall back to the 16:9 cover.
+	const wideUrl = featured.poster_variants?.['32:9'];
+	const coverUrl = wideUrl || featured.poster_url;
 
 	return (
 		<Link
@@ -258,7 +260,7 @@ function BannerHero({
 			// nothing to fill and the cover never appears. Force block + full
 			// width.
 			className="hero-banner group relative isolate block w-full overflow-hidden rounded-[22px] bg-[var(--ink)] shadow-[var(--shadow-cinema)] sm:rounded-[28px]"
-			style={{ aspectRatio: '16 / 9' }}
+			style={{ aspectRatio: wideUrl ? '32 / 9' : '16 / 9' }}
 		>
 			<style>{`
 				.hero-banner {

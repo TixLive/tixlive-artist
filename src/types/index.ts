@@ -38,6 +38,9 @@ export interface IEventListItem {
 	poster_url: string | null;
 	/** 2:3 portrait poster (event.poster_image). Drives the landing-hero split layout when present. */
 	poster_portrait_url?: string | null;
+	/** Extra poster aspect-ratios keyed by ratio → URL (e.g. "32:9" wide banner, "9:16", "3:2", "1:1").
+	 *  16:9 = poster_url, 2:3 = poster_portrait_url. */
+	poster_variants?: Record<string, string>;
 	event_type: string;
 	status: 'draft' | 'soon' | 'open' | 'closed';
 	venue_name: string;

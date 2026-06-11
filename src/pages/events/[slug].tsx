@@ -315,35 +315,9 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   if (notFound) return <div className="py-32 text-center text-[var(--theme-muted)]">Event not found.</div>;
   if (!event) return <EventPageSkeleton />;
 
-  // JSON-LD structured data
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Event',
-    name: event.title,
-    startDate: event.date_start,
-    ...(event.poster_url && { image: event.poster_url }),
-    ...(event.description && { description: event.description }),
-    location: {
-      '@type': 'Place',
-      name: event.venue_name || '',
-      ...(event.venue_address && {
-        address: {
-          '@type': 'PostalAddress',
-          streetAddress: event.venue_address,
-        },
-      }),
-    },
-    offers: ticketTypes.map((tt) => ({
-      '@type': 'Offer',
-      name: tt.name,
-      price: tt.price,
-      priceCurrency: tt.currency,
-      availability:
-        tt.remaining_capacity === 0
-          ? 'https://schema.org/SoldOut'
-          : 'https://schema.org/InStock',
-    })),
-  };
+  // Event JSON-LD is injected at the edge for crawlers (functions/events/[slug].ts) —
+  // it's the single source of truth, so we don't emit a client-side copy here (that
+  // would be a duplicate Event entity for JS-rendering crawlers like Googlebot).
 
   const ekey = 'text-[11px] font-[600] uppercase tracking-[0.12em] text-[var(--ink-3)]';
 
@@ -360,10 +334,6 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
         <meta property="og:title" content={event.title} />
         <meta property="og:description" content={event.description || `Get tickets for ${event.title}`} />
         {event.poster_url && <meta property="og:image" content={event.poster_url} />}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
       </Head>
 
       <>

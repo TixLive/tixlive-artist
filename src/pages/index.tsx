@@ -59,6 +59,12 @@ const Home: NextPageWithLayout = function Home() {
 					{organizer.logo_url && <meta property="og:image" content={organizer.logo_url} />}
 				</>}
 			</Head>
+			{/* Semantic top-level heading. sr-only so it adds page structure for
+			    crawlers/screen readers without changing the visual design (the hero
+			    carousel is the visual lead). */}
+			<h1 className="sr-only">
+				{organizer ? t('home.title', { name: organizer.name }) : t('home.title_fallback')}
+			</h1>
 			{initialLoading ? (
 				<HomePageSkeleton />
 			) : (

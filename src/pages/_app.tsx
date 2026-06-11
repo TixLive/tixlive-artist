@@ -37,6 +37,10 @@ function LocaleHydrator() {
 			i18n.changeLanguage(cookieLocale);
 		}
 	}, [i18n]);
+	// Mirror the active locale onto <html lang> (the shell ships the default `ro`).
+	useEffect(() => {
+		if (i18n.language) document.documentElement.lang = i18n.language;
+	}, [i18n.language]);
 	return null;
 }
 

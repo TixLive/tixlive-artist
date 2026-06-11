@@ -363,10 +363,23 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	// ── MAIN DRAW ────────────────────────────────────────────────────────────────
 	const draw = useCallback(() => {
 		const canvas = canvasEl.current;
-		if (!canvas) return;
+		const container = containerRef.current;
+		if (!canvas || !container) return;
 		const ctx = canvas.getContext('2d');
 		if (!ctx) return;
 		const pal = palette.current;
+
+		// Backing store sized inside draw from the live container box — the exact
+		// pipeline of the admin editor, which renders sharp on real iOS where the
+		// effect-driven sizing (+ translateZ compositing layer) came out blurry.
+		const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+		const W = container.clientWidth;
+		const H = container.clientHeight;
+		if (canvas.width !== W * dpr || canvas.height !== H * dpr) {
+			canvas.width = W * dpr;
+			canvas.height = H * dpr;
+		}
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
 		const sc = scale.current;
 		const { x: ox, y: oy } = pos.current;
@@ -377,9 +390,9 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 		const tiers = tierColors.current;
 
 		// Warm canvas background
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.clearRect(0, 0, W, H);
 		ctx.fillStyle = pal.canvas;
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.fillRect(0, 0, W, H);
 
 		ctx.save();
 		ctx.translate(ox, oy);
@@ -760,18 +773,8 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	useEffect(() => {
 		const canvas = canvasEl.current;
 		if (!canvas || !size.w) return;
-		// Use real DPR (no cap) — iOS Safari composes the canvas at native resolution
-		// only when the canvas internal dimensions exactly match physical pixels.
-		const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
-		// Align to exact physical pixels to prevent sub-pixel blur on high-DPR displays
-		const physW = Math.round(size.w * dpr);
-		const physH = Math.round(size.h * dpr);
-		canvas.width = physW;
-		canvas.height = physH;
-		canvas.style.width = `${size.w}px`;
-		canvas.style.height = `${size.h}px`;
-		const ctx = canvas.getContext('2d');
-		if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		// Backing-store sizing + DPR transform live in draw() (editor-parity, see
+		// there). This effect only owns the first-fit and redraw-on-resize.
 		// Fit on first resize so the very first draw uses the correct scale (not scale=1)
 		if (!hasInitialFit.current && contentBounds.w && contentBounds.h) {
 			const s = Math.min((size.w - 48) / contentBounds.w, (size.h - 48) / contentBounds.h, 1);
@@ -1152,15 +1155,15 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			onPointerUp={endPan}
 			onPointerLeave={handleMouseLeave}
 			onPointerCancel={endPan}
-			style={{ cursor: isPanning.current ? 'grabbing' : 'default', touchAction: 'none', transform: 'translateZ(0)' }}
+			style={{ cursor: isPanning.current ? 'grabbing' : 'default', touchAction: 'none' }}
 		>
+			{/* No translateZ / own compositing layer: on real iOS that layer was
+			    composited at reduced scale (blurry map); the admin editor's plain
+			    canvas — same device — renders sharp. Match the editor. */}
 			<canvas
 				ref={canvasEl}
 				className="absolute inset-0 block"
-				// translateZ(0) gives the canvas its own GPU compositing layer,
-				// preventing iOS Safari from downsampling it through the parent's
-				// overflow:hidden + border-radius compositing boundary (blur fix).
-				style={{ transform: 'translateZ(0)' }}
+				style={{ width: '100%', height: '100%' }}
 				aria-hidden="true"
 				onClick={handleClick}
 				onContextMenu={(e) => e.preventDefault()}

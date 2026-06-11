@@ -17,6 +17,7 @@
 'use client';
 
 import { computeAllSeats, Section, Seat } from '@/lib/seatingGeometry';
+import { outlineRadii, SmState } from '@/lib/seatmapModel';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 
@@ -87,6 +88,8 @@ export interface SeatingViewerProps {
 	currency?: string;
 	onSeatToggle?: (seat: Seat) => void;
 	reducedMotion?: boolean;
+	/** Raw v2 chart document — enables the décor layer (stage, contour, shapes). */
+	smDoc?: SmState | null;
 }
 
 function getSeatR(sections: Section[], key: string): number {
@@ -122,6 +125,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	currency,
 	onSeatToggle,
 	reducedMotion = false,
+	smDoc = null,
 }) => {
 	const { t } = useTranslation('common');
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -319,6 +323,72 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 		ctx.translate(ox, oy);
 		ctx.scale(sc, sc);
 
+		// v2 décor: venue contour, stage, decor shapes & labels (drawn beneath seats)
+		if (smDoc) {
+			for (const o of smDoc.outlines) {
+				const [rtl, rtr, rbr, rbl] = outlineRadii(o);
+				ctx.beginPath();
+				ctx.moveTo(o.x + rtl, o.y);
+				ctx.lineTo(o.x + o.w - rtr, o.y);
+				ctx.arcTo(o.x + o.w, o.y, o.x + o.w, o.y + rtr, rtr);
+				ctx.lineTo(o.x + o.w, o.y + o.h - rbr);
+				ctx.arcTo(o.x + o.w, o.y + o.h, o.x + o.w - rbr, o.y + o.h, rbr);
+				ctx.lineTo(o.x + rbl, o.y + o.h);
+				ctx.arcTo(o.x, o.y + o.h, o.x, o.y + o.h - rbl, rbl);
+				ctx.lineTo(o.x, o.y + rtl);
+				ctx.arcTo(o.x, o.y, o.x + rtl, o.y, rtl);
+				ctx.closePath();
+				ctx.setLineDash([8, 7]);
+				ctx.strokeStyle = pal.line;
+				ctx.lineWidth = 1.6 / sc;
+				ctx.stroke();
+				ctx.setLineDash([]);
+			}
+			for (const sh of smDoc.shapes || []) {
+				ctx.save();
+				ctx.translate(sh.x + sh.w / 2, sh.y + sh.h / 2);
+				ctx.rotate(((sh.angle || 0) * Math.PI) / 180);
+				if (sh.kind === 'rect') {
+					if (sh.fill) {
+						ctx.fillStyle = sh.fill;
+						roundRect(ctx, -sh.w / 2, -sh.h / 2, sh.w, sh.h, 6);
+						ctx.fill();
+					} else {
+						ctx.strokeStyle = pal.line;
+						ctx.lineWidth = 1.2 / sc;
+						roundRect(ctx, -sh.w / 2, -sh.h / 2, sh.w, sh.h, 6);
+						ctx.stroke();
+					}
+				}
+				if (sh.text) {
+					ctx.fillStyle = pal.muted;
+					ctx.font = `600 ${sh.fontSize || 16}px 'General Sans', system-ui, sans-serif`;
+					ctx.textAlign = 'center';
+					ctx.textBaseline = 'middle';
+					ctx.fillText(sh.text, 0, 0);
+				}
+				ctx.restore();
+			}
+			if (smDoc.stage) {
+				const st = smDoc.stage;
+				ctx.save();
+				ctx.translate(st.cx, st.cy);
+				ctx.rotate(((st.rot || 0) * Math.PI) / 180);
+				const g = ctx.createLinearGradient(-st.w / 2, 0, st.w / 2, 0);
+				g.addColorStop(0, '#1B1B26');
+				g.addColorStop(1, '#34344A');
+				ctx.fillStyle = g;
+				roundRect(ctx, -st.w / 2, -st.h / 2, st.w, st.h, 12);
+				ctx.fill();
+				ctx.fillStyle = 'rgba(255,255,255,0.92)';
+				ctx.font = `600 16px 'General Sans', system-ui, sans-serif`;
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.fillText(st.label || 'SCENĂ', 0, 0);
+				ctx.restore();
+			}
+		}
+
 		// GA standing zones
 		for (const s of sections) {
 			if (s.type !== 'ga') continue;
@@ -489,7 +559,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 
 		ctx.globalAlpha = 1;
 		ctx.restore();
-	}, [allSeats, sections, sectionLabels, sectionBoundsMap]);
+	}, [allSeats, sections, sectionLabels, sectionBoundsMap, smDoc]);
 
 	const scheduleRedraw = useCallback(() => {
 		if (rafId.current !== null) return;

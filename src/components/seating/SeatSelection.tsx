@@ -17,7 +17,8 @@ import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
 import { showToast } from '@/lib/toast';
 
-import { computeAllSeats, GEOMETRY_VERSION, Seat } from '@/lib/seatingGeometry';
+import { computeAllSeats, GEOMETRY_VERSION, Seat, Section } from '@/lib/seatingGeometry';
+import { isSmState, lowerSmStateToLegacy, SmState } from '@/lib/smLower';
 import {
 	buildSeatTierMap,
 	toggleSeat,
@@ -121,7 +122,18 @@ export default function SeatSelection({
 	const router = useRouter();
 	const reducedMotion = useReducedMotion();
 
-	const versionMismatch = seating.geometry_version !== GEOMETRY_VERSION;
+	// Version gate: 1 = legacy charts (must equal our GEOMETRY_VERSION copy),
+	// 2 = SmState charts rendered via the lowering + décor path below.
+	const smDoc = useMemo<SmState | null>(() => {
+		if (seating.geometry_version !== 2) return null;
+		const first = (seating.sections as unknown[])?.[0];
+		return isSmState(first) ? first : null;
+	}, [seating.geometry_version, seating.sections]);
+	const versionMismatch = seating.geometry_version === 2 ? !smDoc : seating.geometry_version !== GEOMETRY_VERSION;
+	const sections = useMemo<Section[]>(
+		() => (smDoc ? lowerSmStateToLegacy(smDoc) : (seating.sections as Section[])),
+		[smDoc, seating.sections]
+	);
 
 	// ── Derived stable maps ───────────────────────────────────────────────────
 	const tiers = seating.tiers;
@@ -139,9 +151,9 @@ export default function SeatSelection({
 	}, [tiers, seatTier]);
 	const seatById = useMemo(() => {
 		const m = new Map<string, Seat>();
-		for (const s of computeAllSeats(seating.sections)) m.set(s.id, s);
+		for (const s of computeAllSeats(sections)) m.set(s.id, s);
 		return m;
-	}, [seating.sections]);
+	}, [sections]);
 	const bookedSet = useMemo(() => new Set(seating.booked), [seating.booked]);
 	const tierMeta = useMemo(() => {
 		const m = new Map<number, { name: string; index: number }>();
@@ -505,7 +517,8 @@ export default function SeatSelection({
 				{/* Canvas */}
 				<div className="relative min-h-0 flex-1 overflow-hidden md:flex-none">
 					<SeatingViewer
-						sections={seating.sections}
+						sections={sections}
+						smDoc={smDoc}
 						canvasW={seating.canvas_w}
 						canvasH={seating.canvas_h}
 						bookedSeatIds={bookedSet}

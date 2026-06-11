@@ -17,7 +17,7 @@
 'use client';
 
 import { computeAllSeats, Section, Seat } from '@/lib/seatingGeometry';
-import { outlineRadii, SmState } from '@/lib/seatmapModel';
+import { rowCount, rowLabelFor, seatPos, SmState } from '@/lib/seatmapModel';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 
@@ -154,6 +154,9 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	const lastPointerType = useRef<string>('mouse');
 	// Prevents first draw from using scale=1 before fit runs
 	const hasInitialFit = useRef(false);
+	// Zoom-out floor — never above the fit-to-content scale, so a big chart on a
+	// small screen can always zoom back out to the full view
+	const minScaleRef = useRef(MIN_SCALE);
 
 	// Lerp animation
 	const targetScale = useRef(1);
@@ -235,6 +238,47 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			.filter(Boolean) as { key: string; label: string; x: number; y: number }[];
 	}, [sections, allSeats]);
 
+	// v2 charts live on the editor's free plane — content is NOT inside the
+	// canvas_w×canvas_h rect, so fit/reset/minimap use the real content bounds
+	// (seats + GA zones + stage + decor shapes), same as the editor's fitView.
+	// The venue contour is excluded: it's hidden for buyers.
+	const contentBounds = useMemo(() => {
+		if (!smDoc) return { x0: 0, y0: 0, w: canvasW, h: canvasH };
+		let x0 = Infinity,
+			y0 = Infinity,
+			x1 = -Infinity,
+			y1 = -Infinity;
+		const ext = (x: number, y: number) => {
+			if (x < x0) x0 = x;
+			if (y < y0) y0 = y;
+			if (x > x1) x1 = x;
+			if (y > y1) y1 = y;
+		};
+		for (const seat of allSeats) ext(seat.x, seat.y);
+		for (const s of sections) {
+			if (s.type === 'ga') {
+				ext(s.x, s.y);
+				ext(s.x + s.width, s.y + s.height);
+			}
+		}
+		for (const sh of smDoc.shapes || []) {
+			ext(sh.x, sh.y);
+			ext(sh.x + sh.w, sh.y + sh.h);
+		}
+		if (smDoc.stage) {
+			const st = smDoc.stage;
+			ext(st.cx - st.w / 2, st.cy - st.h / 2);
+			ext(st.cx + st.w / 2, st.cy + st.h / 2);
+		}
+		if (x0 > x1) return { x0: 0, y0: 0, w: canvasW, h: canvasH };
+		const pad = 24;
+		return { x0: x0 - pad, y0: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2 };
+	}, [smDoc, allSeats, sections, canvasW, canvasH]);
+
+	// Whether the chart carries its own decor section-name labels (placed in the
+	// editor). If so, the automatic centered section names would double them up.
+	const hasDecorLabels = useMemo(() => !!smDoc?.shapes?.some((sh) => sh.kind === 'label'), [smDoc]);
+
 	const isSelectable = useCallback(
 		(seatId: string) => tierColors.current.has(seatId) && !booked.current.has(seatId),
 		[]
@@ -243,15 +287,16 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	// ── MINIMAP ──────────────────────────────────────────────────────────────────
 	const drawMinimap = useCallback(() => {
 		const mm = minimapEl.current;
-		if (!mm || !canvasW || !canvasH) return;
+		if (!mm || !contentBounds.w || !contentBounds.h) return;
 		const mCtx = mm.getContext('2d');
 		if (!mCtx) return;
 		const pal = palette.current;
 
 		const mmW = mm.width;
 		const mmH = mm.height;
-		const scaleX = mmW / canvasW;
-		const scaleY = mmH / canvasH;
+		const { x0: bx0, y0: by0 } = contentBounds;
+		const scaleX = mmW / contentBounds.w;
+		const scaleY = mmH / contentBounds.h;
 
 		mCtx.clearRect(0, 0, mmW, mmH);
 		mCtx.fillStyle = pal.canvas;
@@ -270,21 +315,21 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 				// Unpriced — draw dimly to show venue shape
 				mCtx.globalAlpha = 0.18;
 				mCtx.fillStyle = pal.muted;
-				mCtx.fillRect(seat.x * scaleX - 0.7, seat.y * scaleY - 0.7, 1.4, 1.4);
+				mCtx.fillRect((seat.x - bx0) * scaleX - 0.7, (seat.y - by0) * scaleY - 0.7, 1.4, 1.4);
 				mCtx.globalAlpha = 1;
 				continue;
 			}
 			mCtx.fillStyle = isSel ? pal.accent : tier;
 			mCtx.globalAlpha = isBooked ? 0.25 : 0.8;
-			mCtx.fillRect(seat.x * scaleX - 0.9, seat.y * scaleY - 0.9, 1.8, 1.8);
+			mCtx.fillRect((seat.x - bx0) * scaleX - 0.9, (seat.y - by0) * scaleY - 0.9, 1.8, 1.8);
 			mCtx.globalAlpha = 1;
 		}
 
 		const { w, h } = sizeRef.current;
 		const sc = scale.current;
 		const { x: ox, y: oy } = pos.current;
-		const vx = (-ox / sc) * scaleX;
-		const vy = (-oy / sc) * scaleY;
+		const vx = (-ox / sc - bx0) * scaleX;
+		const vy = (-oy / sc - by0) * scaleY;
 		const vw = (w / sc) * scaleX;
 		const vh = (h / sc) * scaleY;
 		const clampedX = Math.max(0, vx);
@@ -296,7 +341,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			mCtx.lineWidth = 1.5;
 			mCtx.strokeRect(clampedX, clampedY, clampedW, clampedH);
 		}
-	}, [allSeats, canvasW, canvasH]);
+	}, [allSeats, contentBounds]);
 
 	// ── MAIN DRAW ────────────────────────────────────────────────────────────────
 	const draw = useCallback(() => {
@@ -323,27 +368,10 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 		ctx.translate(ox, oy);
 		ctx.scale(sc, sc);
 
-		// v2 décor: venue contour, stage, decor shapes & labels (drawn beneath seats)
+		// v2 décor: stage, decor shapes & labels (drawn beneath seats).
+		// The venue contour (outlines) is an editor-only construction guide — never
+		// drawn for buyers (it still drives wrapped-section geometry in seatsOf).
 		if (smDoc) {
-			for (const o of smDoc.outlines) {
-				const [rtl, rtr, rbr, rbl] = outlineRadii(o);
-				ctx.beginPath();
-				ctx.moveTo(o.x + rtl, o.y);
-				ctx.lineTo(o.x + o.w - rtr, o.y);
-				ctx.arcTo(o.x + o.w, o.y, o.x + o.w, o.y + rtr, rtr);
-				ctx.lineTo(o.x + o.w, o.y + o.h - rbr);
-				ctx.arcTo(o.x + o.w, o.y + o.h, o.x + o.w - rbr, o.y + o.h, rbr);
-				ctx.lineTo(o.x + rbl, o.y + o.h);
-				ctx.arcTo(o.x, o.y + o.h, o.x, o.y + o.h - rbl, rbl);
-				ctx.lineTo(o.x, o.y + rtl);
-				ctx.arcTo(o.x, o.y, o.x + rtl, o.y, rtl);
-				ctx.closePath();
-				ctx.setLineDash([8, 7]);
-				ctx.strokeStyle = pal.line;
-				ctx.lineWidth = 1.6 / sc;
-				ctx.stroke();
-				ctx.setLineDash([]);
-			}
 			for (const sh of smDoc.shapes || []) {
 				ctx.save();
 				ctx.translate(sh.x + sh.w / 2, sh.y + sh.h / 2);
@@ -546,8 +574,44 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			}
 		}
 
-		// Section labels (zoomed out)
-		if (sc < 0.85) {
+		// Row letters (etichete) — same phantom-seat geometry as the editor: a label
+		// is "one more seat" placed just before the first and just after the last
+		// live seat of each row, so it follows the row's curve/wrap exactly.
+		if (smDoc && sc > 0.55) {
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			for (const sec of smDoc.sections) {
+				if (sec.flat || !sec.labels || sec.labels === 'none') continue;
+				const wrapO = sec.wrap ? smDoc.outlines.find((o) => o.id === sec.wrap!.oid) || smDoc.outlines[0] : undefined;
+				const side = sec.labelSide || 'left';
+				ctx.fillStyle = sec.labelColor || pal.muted;
+				ctx.font = `600 ${sec.labelSize || 10}px 'JetBrains Mono', ui-monospace, monospace`;
+				for (let ri = 0; ri < sec.rows; ri++) {
+					let loCi = -1;
+					let hiCi = -1;
+					const n = rowCount(sec, ri);
+					for (let ci = 0; ci < n; ci++) {
+						if (sec.killed && sec.killed[ri + '-' + ci]) continue;
+						if (loCi < 0) loCi = ci;
+						hiCi = ci;
+					}
+					if (loCi < 0) continue;
+					const lab = rowLabelFor(sec, ri);
+					if (side === 'left' || side === 'both') {
+						const p = seatPos(sec, ri, loCi - 1, sec.nudge && sec.nudge[ri + '-' + loCi], wrapO);
+						ctx.fillText(lab, p.x, p.y);
+					}
+					if (side === 'right' || side === 'both') {
+						const p = seatPos(sec, ri, hiCi + 1, sec.nudge && sec.nudge[ri + '-' + hiCi], wrapO);
+						ctx.fillText(lab, p.x, p.y);
+					}
+				}
+			}
+		}
+
+		// Section labels (zoomed out) — skipped when the chart ships its own decor
+		// name labels, which would otherwise show twice over each section.
+		if (sc < 0.85 && !hasDecorLabels) {
 			const fs = Math.max(7, Math.min(15, 10 / sc));
 			ctx.globalAlpha = 0.7;
 			ctx.fillStyle = pal.text;
@@ -559,7 +623,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 
 		ctx.globalAlpha = 1;
 		ctx.restore();
-	}, [allSeats, sections, sectionLabels, sectionBoundsMap, smDoc]);
+	}, [allSeats, sections, sectionLabels, sectionBoundsMap, smDoc, hasDecorLabels]);
 
 	const scheduleRedraw = useCallback(() => {
 		if (rafId.current !== null) return;
@@ -671,30 +735,38 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 		const ctx = canvas.getContext('2d');
 		if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 		// Fit on first resize so the very first draw uses the correct scale (not scale=1)
-		if (!hasInitialFit.current && canvasW && canvasH) {
-			const s = Math.min((size.w - 48) / canvasW, (size.h - 48) / canvasH, 1);
+		if (!hasInitialFit.current && contentBounds.w && contentBounds.h) {
+			const s = Math.min((size.w - 48) / contentBounds.w, (size.h - 48) / contentBounds.h, 1);
+			minScaleRef.current = Math.min(MIN_SCALE, s);
 			scale.current = s;
 			targetScale.current = s;
-			pos.current = { x: (size.w - canvasW * s) / 2, y: (size.h - canvasH * s) / 2 };
+			pos.current = {
+				x: (size.w - contentBounds.w * s) / 2 - contentBounds.x0 * s,
+				y: (size.h - contentBounds.h * s) / 2 - contentBounds.y0 * s,
+			};
 			targetPos.current = { ...pos.current };
 			setDisplayScale(s);
 			hasInitialFit.current = true;
 		}
 		scheduleRedraw();
-	}, [size, scheduleRedraw, canvasW, canvasH]);
+	}, [size, scheduleRedraw, contentBounds]);
 
 	// Fit chart to viewport on first load
 	useEffect(() => {
-		if (!size.w || !size.h || !canvasW || !canvasH) return;
-		const s = Math.min((size.w - 48) / canvasW, (size.h - 48) / canvasH, 1);
+		if (!size.w || !size.h || !contentBounds.w || !contentBounds.h) return;
+		const s = Math.min((size.w - 48) / contentBounds.w, (size.h - 48) / contentBounds.h, 1);
+		minScaleRef.current = Math.min(MIN_SCALE, s);
 		scale.current = s;
 		targetScale.current = s;
-		pos.current = { x: (size.w - canvasW * s) / 2, y: (size.h - canvasH * s) / 2 };
+		pos.current = {
+			x: (size.w - contentBounds.w * s) / 2 - contentBounds.x0 * s,
+			y: (size.h - contentBounds.h * s) / 2 - contentBounds.y0 * s,
+		};
 		targetPos.current = { ...pos.current };
 		setDisplayScale(s);
 		scheduleRedraw();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [canvasW, canvasH, size.w === 0]);
+	}, [contentBounds, size.w === 0]);
 
 	// Wheel zoom (non-passive)
 	useEffect(() => {
@@ -708,7 +780,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			const cx = e.clientX - rect.left;
 			const cy = e.clientY - rect.top;
 			const prev = scale.current;
-			const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev * factor));
+			const next = Math.min(MAX_SCALE, Math.max(minScaleRef.current, prev * factor));
 			pos.current = {
 				x: cx - (cx - pos.current.x) * (next / prev),
 				y: cy - (cy - pos.current.y) * (next / prev),
@@ -779,7 +851,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 					const midX = (pts[0].x + pts[1].x) / 2 - rect.left;
 					const midY = (pts[0].y + pts[1].y) / 2 - rect.top;
 					const prev = scale.current;
-					const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev * factor));
+					const next = Math.min(MAX_SCALE, Math.max(minScaleRef.current, prev * factor));
 					pos.current = {
 						x: midX - (midX - pos.current.x) * (next / prev),
 						y: midY - (midY - pos.current.y) * (next / prev),
@@ -1014,7 +1086,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			const cx = w / 2,
 				cy = h / 2;
 			const prev = scale.current;
-			const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev * factor));
+			const next = Math.min(MAX_SCALE, Math.max(minScaleRef.current, prev * factor));
 			startAnimation(next, { x: cx - (cx - pos.current.x) * (next / prev), y: cy - (cy - pos.current.y) * (next / prev) });
 		},
 		[startAnimation]
@@ -1022,10 +1094,13 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 
 	const handleReset = useCallback(() => {
 		const { w, h } = sizeRef.current;
-		if (!w || !canvasW || !canvasH) return;
-		const s = Math.min((w - 48) / canvasW, (h - 48) / canvasH, 1);
-		startAnimation(s, { x: (w - canvasW * s) / 2, y: (h - canvasH * s) / 2 });
-	}, [canvasW, canvasH, startAnimation]);
+		if (!w || !contentBounds.w || !contentBounds.h) return;
+		const s = Math.min((w - 48) / contentBounds.w, (h - 48) / contentBounds.h, 1);
+		startAnimation(s, {
+			x: (w - contentBounds.w * s) / 2 - contentBounds.x0 * s,
+			y: (h - contentBounds.h * s) / 2 - contentBounds.y0 * s,
+		});
+	}, [contentBounds, startAnimation]);
 
 	const zoomBtn =
 		'flex h-11 w-11 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-bg)]/90 text-[1.25rem] leading-none text-[var(--theme-text)] shadow-[0_1px_2px_rgba(20,19,18,0.04),0_8px_24px_rgba(20,19,18,0.06)] backdrop-blur transition-colors hover:bg-[var(--theme-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]';

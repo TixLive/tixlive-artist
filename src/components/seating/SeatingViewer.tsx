@@ -17,7 +17,7 @@
 'use client';
 
 import { computeAllSeats, Section, Seat } from '@/lib/seatingGeometry';
-import { rowCount, rowLabelFor, seatPos, SmState } from '@/lib/seatmapModel';
+import { rowCount, rowLabelFor, seatPos, SmSection, SmState } from '@/lib/seatmapModel';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 
@@ -279,6 +279,23 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 	// editor). If so, the automatic centered section names would double them up.
 	const hasDecorLabels = useMemo(() => !!smDoc?.shapes?.some((sh) => sh.kind === 'label'), [smDoc]);
 
+	// Lowered section key → its v2 section, for per-section render flags like
+	// showNums. Walks names with the same dedup-suffix logic as lowerSmStateToLegacy
+	// so keys line up even when two sections share a name.
+	const smSecByKey = useMemo(() => {
+		const m = new Map<string, SmSection>();
+		if (!smDoc) return m;
+		const used = new Set<string>();
+		for (const sec of smDoc.sections) {
+			let key = sec.name;
+			let n = 2;
+			while (used.has(key)) key = `${sec.name}#${n++}`;
+			used.add(key);
+			m.set(key, sec);
+		}
+		return m;
+	}, [smDoc]);
+
 	const isSelectable = useCallback(
 		(seatId: string) => tierColors.current.has(seatId) && !booked.current.has(seatId),
 		[]
@@ -526,6 +543,27 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			}
 		}
 
+		// Seat numbers — sections with "Afișează numerele" on, same legibility gate
+		// as the editor (only when seats are big enough on screen). Drawn before the
+		// selected pass so the selection marker stays on top.
+		if (smDoc) {
+			ctx.fillStyle = 'rgba(255,255,255,0.95)';
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			for (const s of sections) {
+				if (s.type !== 'flat') continue;
+				const sec = smSecByKey.get(s.key);
+				if (!sec || sec.flat || !sec.showNums || sc * s.seatSize < 9) continue;
+				const r = s.seatSize / 2;
+				ctx.font = `600 ${Math.min(r * 1.05, 7)}px 'General Sans', system-ui, sans-serif`;
+				for (const seat of seatsBySection.get(s.key) || []) {
+					if (!tiers.get(seat.id)) continue; // hollow (unpriced) — no fill to write on
+					if (sel.has(seat.id)) continue; // selection marker draws its own glyph
+					ctx.fillText(String(seat.num), seat.x, seat.y);
+				}
+			}
+		}
+
 		// Selected seats — second pass, always on top of every other seat.
 		for (const seat of selectedSeats) {
 			const tier = tiers.get(seat.id);
@@ -623,7 +661,7 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 
 		ctx.globalAlpha = 1;
 		ctx.restore();
-	}, [allSeats, sections, sectionLabels, sectionBoundsMap, smDoc, hasDecorLabels]);
+	}, [allSeats, sections, sectionLabels, sectionBoundsMap, smDoc, hasDecorLabels, smSecByKey, seatsBySection]);
 
 	const scheduleRedraw = useCallback(() => {
 		if (rafId.current !== null) return;

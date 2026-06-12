@@ -429,6 +429,45 @@ function wrapProject(w: SmWrapRef, px: number, py: number): { si: number; u: num
 	return isStageRef(w) ? stageProject(w, px, py) : outlineProject(w, px, py);
 }
 
+// ── Generic wrap-reference helpers (stage OR outline) ────────────────────────
+// Foot of the projection of (px,py) + the seats-side normal, on any wrap ref.
+export function wrapFootAt(ref: SmWrapRef, px: number, py: number): { x: number; y: number; nx: number; ny: number; d: number } {
+	const segs = wrapSegsOf(ref);
+	const pr = wrapProject(ref, px, py);
+	const p = osegPoint(segs, pr.si, pr.u, 0);
+	return { x: p.x, y: p.y, nx: p.nx, ny: p.ny, d: pr.d };
+}
+// Slide (px,py) by `dist` px along the reference path, keeping its depth.
+export function wrapSlideAt(ref: SmWrapRef, px: number, py: number, dist: number): { x: number; y: number } {
+	const segs = wrapSegsOf(ref);
+	const pr = wrapProject(ref, px, py);
+	const at = osegWalk(segs, pr.si, pr.u, pr.d, dist);
+	const p = osegPoint(segs, at.si, at.u, pr.d);
+	return { x: p.x, y: p.y };
+}
+// Signed walk distance (px, measured at depth d) from the projection of A to the
+// projection of B along the reference path. Closed paths (outline loop, bowed
+// stage circle) take the short way around — no 0/2π seam artefacts.
+export function wrapPathDistAt(ref: SmWrapRef, ax: number, ay: number, bx: number, by: number, d: number): number {
+	const segs = wrapSegsOf(ref);
+	const scaleOf = (s: OSeg) => (s.kind === 'line' ? 1 : Math.max(1e-6, s.r + (s.off ?? 1) * d));
+	const coord = (pr: { si: number; u: number }) => {
+		let acc = 0;
+		for (let i = 0; i < pr.si; i++) acc += segs[i].len * scaleOf(segs[i]);
+		return acc + pr.u * scaleOf(segs[pr.si]);
+	};
+	const a = wrapProject(ref, ax, ay);
+	const b = wrapProject(ref, bx, by);
+	let diff = coord(b) - coord(a);
+	const closed = !isStageRef(ref) || Math.abs((ref as SmStage).bow || 0) >= 0.5;
+	if (closed) {
+		const total = segs.reduce((acc, s) => acc + s.len * scaleOf(s), 0);
+		while (diff > total / 2) diff -= total;
+		while (diff < -total / 2) diff += total;
+	}
+	return diff;
+}
+
 // Least-squares straight lines through the cut's row ends (in raw grid lateral units):
 // loFit/hiFit give, per row, where the first/last surviving seat SHOULD sit so that both
 // edges are perfectly straight. Rows are then linearly remapped onto [loFit, hiFit].

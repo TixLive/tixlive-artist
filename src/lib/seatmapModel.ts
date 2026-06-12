@@ -385,6 +385,14 @@ export function stageProject(st: SmStage, px: number, py: number): { si: number;
 	}
 	return best;
 }
+// Foot of the projection of (px,py) on the stage path + the audience-side normal
+// there. Lets callers move a point to an exact depth: pos = foot + n·d.
+export function stageFootAt(st: SmStage, px: number, py: number): { x: number; y: number; nx: number; ny: number; d: number } {
+	const segs = stageSegs(st);
+	const pr = stageProject(st, px, py);
+	const p = osegPoint(segs, pr.si, pr.u, 0);
+	return { x: p.x, y: p.y, nx: p.nx, ny: p.ny, d: pr.d };
+}
 // Sample the stage front line (the visible part only) for rendering.
 export function stageLine(st: SmStage, samples = 40): { x: number; y: number }[] {
 	const segs = stageSegs(st);

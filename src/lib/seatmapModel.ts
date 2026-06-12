@@ -140,6 +140,11 @@ export interface SmShape {
 	text?: string;
 	fontSize?: number;
 	fill?: string; // '' / undefined = outline only
+	radius?: number; // rect corner radius (default 8)
+	// Signed sagitta (px) of the rect's LONG edges: both top and bottom bow by
+	// the same amount → an annular band like the Yandex tier slabs. Positive
+	// bulges toward -y in the shape's local frame (up before rotation).
+	bend?: number;
 }
 // A background image to trace over (the real venue plan). Stored as a data URL in
 // the document; position/size in world coords, opacity 0–1, lock to draw on top.

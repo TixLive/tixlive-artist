@@ -407,14 +407,30 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 				ctx.translate(sh.x + sh.w / 2, sh.y + sh.h / 2);
 				ctx.rotate(((sh.angle || 0) * Math.PI) / 180);
 				if (sh.kind === 'rect') {
+					// rounded band with bowed long edges (Yandex tier slab)
+					const r = Math.min(sh.radius ?? 8, Math.min(sh.w, sh.h) / 2);
+					const b = sh.bend || 0;
+					const bx0 = -sh.w / 2;
+					const by0 = -sh.h / 2;
+					const bx1 = sh.w / 2;
+					const by1 = sh.h / 2;
+					ctx.beginPath();
+					ctx.moveTo(bx0 + r, by0);
+					ctx.quadraticCurveTo(0, by0 - 2 * b, bx1 - r, by0);
+					ctx.arcTo(bx1, by0, bx1, by0 + r, r);
+					ctx.lineTo(bx1, by1 - r);
+					ctx.arcTo(bx1, by1, bx1 - r, by1, r);
+					ctx.quadraticCurveTo(0, by1 - 2 * b, bx0 + r, by1);
+					ctx.arcTo(bx0, by1, bx0, by1 - r, r);
+					ctx.lineTo(bx0, by0 + r);
+					ctx.arcTo(bx0, by0, bx0 + r, by0, r);
+					ctx.closePath();
 					if (sh.fill) {
 						ctx.fillStyle = sh.fill;
-						roundRect(ctx, -sh.w / 2, -sh.h / 2, sh.w, sh.h, 6);
 						ctx.fill();
 					} else {
 						ctx.strokeStyle = pal.line;
 						ctx.lineWidth = 1.2 / sc;
-						roundRect(ctx, -sh.w / 2, -sh.h / 2, sh.w, sh.h, 6);
 						ctx.stroke();
 					}
 				} else if (sh.kind === 'stairs') {

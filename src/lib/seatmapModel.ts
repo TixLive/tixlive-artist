@@ -104,6 +104,9 @@ export interface SmStage {
 	h: number;
 	rot: number;
 	label: string;
+	// Signed sagitta (px) of the stage front line: 0 = straight, positive bulges
+	// TOWARD the audience (the Yandex «Сцена» arc), negative bulges away.
+	bow?: number;
 }
 export interface SmOutline {
 	id: string;
@@ -206,6 +209,8 @@ interface OSeg {
 	cy: number;
 	r: number;
 	a0: number; // start angle
+	sw?: 1 | -1; // arc sweep: angle = a0 + sw·u (default 1)
+	off?: 1 | -1; // arc offset side: radius at depth d = r + off·d (default 1 = outward)
 }
 export function outlineSegs(o: SmOutline): OSeg[] {
 	const [rtl, rtr, rbr, rbl] = outlineRadii(o);
@@ -230,10 +235,11 @@ export function outlineSegs(o: SmOutline): OSeg[] {
 function osegPoint(segs: OSeg[], si: number, u: number, d: number): { x: number; y: number; nx: number; ny: number } {
 	const s = segs[si];
 	if (s.kind === 'line') return { x: s.x0 + s.dx * u + s.nx * d, y: s.y0 + s.dy * u + s.ny * d, nx: s.nx, ny: s.ny };
-	const a = s.a0 + u;
-	const nx = Math.cos(a);
-	const ny = Math.sin(a);
-	return { x: s.cx + nx * (s.r + d), y: s.cy + ny * (s.r + d), nx, ny };
+	const a = s.a0 + (s.sw ?? 1) * u;
+	const off = s.off ?? 1;
+	const rx = Math.cos(a);
+	const ry = Math.sin(a);
+	return { x: s.cx + rx * (s.r + off * d), y: s.cy + ry * (s.r + off * d), nx: rx * off, ny: ry * off };
 }
 // Walk `dist` px along the offset curve at depth d, starting from (si,u). Straights
 // consume 1:1; an arc of base radius r has offset length (r+d)·span, so du = dist/(r+d).
@@ -245,7 +251,9 @@ function osegWalk(segs: OSeg[], si: number, u: number, d: number, dist: number):
 	left = Math.abs(left);
 	for (let guard = 0; guard < 64 && left > 1e-9; guard++) {
 		const s = segs[i];
-		const scale = s.kind === 'line' ? 1 : s.r + d; // offset px per unit of u
+		// offset px per unit of u; a concave arc (off=-1) collapses at d→r, clamp keeps
+		// the walk finite (rows past the focal point pile up instead of exploding).
+		const scale = s.kind === 'line' ? 1 : Math.max(1e-6, s.r + (s.off ?? 1) * d);
 		const room = fwd ? (s.len - cu) * scale : cu * scale;
 		if (left <= room) {
 			cu += ((fwd ? 1 : -1) * left) / scale;
@@ -292,6 +300,118 @@ export function outlineProject(o: SmOutline, px: number, py: number): { si: numb
 		}
 	}
 	return best;
+}
+
+// ── Stage as a wrap reference ────────────────────────────────────────────────
+// The stage front is ONE open curve (vs the outline's closed 4-side loop): a
+// straight chord of length w, or — when `bow` is set — a circular arc with that
+// sagitta, bulging toward the audience (bow>0) or away (bow<0). The path is
+// padded with long tangent lines on both ends so sections wider than the stage
+// extrapolate straight instead of wrapping around.
+const STAGE_EXT = 1e5;
+export function stageSegs(st: SmStage): OSeg[] {
+	const rr = (st.rot || 0) * D2R;
+	const cosR = Math.cos(rr);
+	const sinR = Math.sin(rr);
+	const W = (lx: number, ly: number) => ({ x: st.cx + lx * cosR - ly * sinR, y: st.cy + lx * sinR + ly * cosR });
+	const L = (p0: { x: number; y: number }, p1: { x: number; y: number }, nx: number, ny: number): OSeg => {
+		const len = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+		return { kind: 'line', x0: p0.x, y0: p0.y, dx: len ? (p1.x - p0.x) / len : 1, dy: len ? (p1.y - p0.y) / len : 0, nx, ny, len, cx: 0, cy: 0, r: 0, a0: 0 };
+	};
+	// The front line sits on the audience-facing edge of the stage body (local
+	// y = +h/2, where the old stage rectangle ended) so charts built against the
+	// rect keep their stage→first-row distance.
+	const fy = st.h / 2;
+	const A = W(-st.w / 2, fy);
+	const B = W(st.w / 2, fy);
+	const s = st.bow || 0;
+	if (Math.abs(s) < 0.5) {
+		// straight front: one infinite line split in three so (si=1, u∈[0,w]) is the stage
+		const dx = (B.x - A.x) / st.w;
+		const dy = (B.y - A.y) / st.w;
+		const nx = -sinR; // audience side: local +y
+		const ny = cosR;
+		const pre = { x: A.x - dx * STAGE_EXT, y: A.y - dy * STAGE_EXT };
+		const post = { x: B.x + dx * STAGE_EXT, y: B.y + dy * STAGE_EXT };
+		return [L(pre, A, nx, ny), L(A, B, nx, ny), L(B, post, nx, ny)];
+	}
+	const R = (st.w * st.w) / (8 * Math.abs(s)) + Math.abs(s) / 2;
+	// centre in the stage's local frame: behind the line for bow>0, in front for bow<0
+	const C = W(0, fy + (s > 0 ? s - R : s + R));
+	const off: 1 | -1 = s > 0 ? 1 : -1;
+	const aA = Math.atan2(A.y - C.y, A.x - C.x);
+	const aB = Math.atan2(B.y - C.y, B.x - C.x);
+	// sweep so the path runs A→B as u grows
+	let span = aB - aA;
+	while (span > Math.PI) span -= 2 * Math.PI;
+	while (span < -Math.PI) span += 2 * Math.PI;
+	const sw: 1 | -1 = span >= 0 ? 1 : -1;
+	const arc: OSeg = { kind: 'arc', x0: 0, y0: 0, dx: 0, dy: 0, nx: 0, ny: 0, len: Math.abs(span), cx: C.x, cy: C.y, r: R, a0: aA, sw, off };
+	// tangent extension lines, continuous with the arc ends; their normal must be the
+	// audience-side normal at that end (radial × off)
+	const tang = (a: number, atEnd: boolean) => {
+		const tx = -Math.sin(a) * sw;
+		const ty = Math.cos(a) * sw;
+		const nx = Math.cos(a) * off;
+		const ny = Math.sin(a) * off;
+		const P = atEnd ? B : A;
+		return atEnd
+			? L(P, { x: P.x + tx * STAGE_EXT, y: P.y + ty * STAGE_EXT }, nx, ny)
+			: L({ x: P.x - tx * STAGE_EXT, y: P.y - ty * STAGE_EXT }, P, nx, ny);
+	};
+	return [tang(aA, false), arc, tang(aA + sw * Math.abs(span), true)];
+}
+// Nearest point of the stage path to (px,py): segment address + SIGNED distance
+// (positive on the audience side, where the seats live).
+export function stageProject(st: SmStage, px: number, py: number): { si: number; u: number; d: number } {
+	const segs = stageSegs(st);
+	let best = { si: 0, u: 0, d: Infinity };
+	let bestAbs = Infinity;
+	for (let i = 0; i < segs.length; i++) {
+		const s = segs[i];
+		let u: number;
+		let d: number;
+		if (s.kind === 'line') {
+			u = Math.max(0, Math.min(s.len, (px - s.x0) * s.dx + (py - s.y0) * s.dy));
+			d = (px - s.x0) * s.nx + (py - s.y0) * s.ny;
+		} else {
+			const ang = Math.atan2(py - s.cy, px - s.cx);
+			let rel = (ang - s.a0) * (s.sw ?? 1);
+			while (rel < -Math.PI) rel += 2 * Math.PI;
+			while (rel > Math.PI) rel -= 2 * Math.PI;
+			u = Math.max(0, Math.min(s.len, rel));
+			d = (s.off ?? 1) * (Math.hypot(px - s.cx, py - s.cy) - s.r);
+		}
+		const p = osegPoint(segs, i, u, 0);
+		const abs = Math.hypot(px - p.x, py - p.y);
+		if (abs < bestAbs) {
+			bestAbs = abs;
+			best = { si: i, u, d };
+		}
+	}
+	return best;
+}
+// Sample the stage front line (the visible part only) for rendering.
+export function stageLine(st: SmStage, samples = 40): { x: number; y: number }[] {
+	const segs = stageSegs(st);
+	const mid = segs[1];
+	const pts: { x: number; y: number }[] = [];
+	for (let i = 0; i <= samples; i++) {
+		const p = osegPoint(segs, 1, (mid.len * i) / samples, 0);
+		pts.push({ x: p.x, y: p.y });
+	}
+	return pts;
+}
+// A wrapped section can follow either the venue outline or the stage front.
+export type SmWrapRef = SmOutline | SmStage;
+function isStageRef(w: SmWrapRef): w is SmStage {
+	return (w as SmStage).cx !== undefined;
+}
+function wrapSegsOf(w: SmWrapRef): OSeg[] {
+	return isStageRef(w) ? stageSegs(w) : outlineSegs(w);
+}
+function wrapProject(w: SmWrapRef, px: number, py: number): { si: number; u: number; d: number } {
+	return isStageRef(w) ? stageProject(w, px, py) : outlineProject(w, px, py);
 }
 
 // Least-squares straight lines through the cut's row ends (in raw grid lateral units):
@@ -377,7 +497,7 @@ function wrapPoint(
 // the CONTOUR instead: rows = parallel offsets of the outline (bending exactly where it
 // bends), columns = contour normals ('radial', the Yandex look) or constant-spacing
 // walks per row ('concentric').
-export function seatsOf(sec: SmSection, wrapOutline?: SmOutline): SmSeat[] {
+export function seatsOf(sec: SmSection, wrapOutline?: SmWrapRef): SmSeat[] {
 	const { rows, cols, gapX, gapY, curve, rot, dir } = sec;
 	const rr = rot * D2R;
 	const cosR = Math.cos(rr);
@@ -401,9 +521,10 @@ export function seatsOf(sec: SmSection, wrapOutline?: SmOutline): SmSeat[] {
 	const fh = sec.flipH ? -1 : 1;
 	const fv = sec.flipV ? -1 : 1;
 	const eff = effAlign(sec);
-	// Contour wrap: rows follow the outline's offset curves instead of the parametric arc.
-	const wseg = sec.wrap && wrapOutline ? outlineSegs(wrapOutline) : null;
-	const wanchor = wseg ? outlineProject(wrapOutline!, sec.cx, sec.cy) : null;
+	// Contour/stage wrap: rows follow the reference's offset curves instead of the
+	// parametric arc.
+	const wseg = sec.wrap && wrapOutline ? wrapSegsOf(wrapOutline) : null;
+	const wanchor = wseg ? wrapProject(wrapOutline!, sec.cx, sec.cy) : null;
 	// Wrapped 'radial' = JUSTIFIED edges (the Yandex finish): fit straight lines through
 	// the cut's first/last survivors across rows, then stretch each row linearly so its
 	// end seats land EXACTLY on those lines. Spacing varies a touch per row (the real
@@ -468,7 +589,7 @@ export function seatsOf(sec: SmSection, wrapOutline?: SmOutline): SmSeat[] {
 // rotation and spacing as a real seat. An optional `nudge` ([alongRow, acrossRow]) is
 // applied in the same row frame as seatsOf — labels pass the neighbouring end seat's
 // nudge so they track a hand-spaced row.
-export function seatPos(sec: SmSection, ri: number, ci: number, nudge?: [number, number], wrapOutline?: SmOutline): { x: number; y: number } {
+export function seatPos(sec: SmSection, ri: number, ci: number, nudge?: [number, number], wrapOutline?: SmWrapRef): { x: number; y: number } {
 	const { cols, gapX, gapY, curve, rot, dir } = sec;
 	const rr = rot * D2R;
 	const cosR = Math.cos(rr);
@@ -497,8 +618,8 @@ export function seatPos(sec: SmSection, ri: number, ci: number, nudge?: [number,
 	const ndx = nudge ? nudge[0] : 0;
 	const ndy = nudge ? nudge[1] : 0;
 	if (sec.wrap && wrapOutline) {
-		const segs = outlineSegs(wrapOutline);
-		const anchor = outlineProject(wrapOutline, sec.cx, sec.cy);
+		const segs = wrapSegsOf(wrapOutline);
+		const anchor = wrapProject(wrapOutline, sec.cx, sec.cy);
 		const wjust = sec.fan === 'radial' ? wrapJustify(sec) : null;
 		let we = ei;
 		if (wjust && !wjust.skip.has(ri) && loc >= 0 && hic > loc) {

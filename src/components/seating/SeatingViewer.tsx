@@ -17,7 +17,7 @@
 'use client';
 
 import { computeAllSeats, Section, Seat } from '@/lib/seatingGeometry';
-import { rowCount, rowLabelFor, seatPos, SmSection, SmState } from '@/lib/seatmapModel';
+import { rowCount, rowLabelFor, seatPos, SmSection, SmState, stageLine } from '@/lib/seatmapModel';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 
@@ -428,21 +428,28 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 				ctx.restore();
 			}
 			if (smDoc.stage) {
+				// Yandex-style stage: big muted label + the front line (straight or
+				// bowed by stage.bow) — same rendering as the admin editor.
 				const st = smDoc.stage;
+				const pts = stageLine(st, 48);
+				ctx.beginPath();
+				ctx.moveTo(pts[0].x, pts[0].y);
+				for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+				ctx.strokeStyle = pal.line;
+				ctx.lineWidth = 2.6 / Math.max(sc, 0.4);
+				ctx.lineCap = 'round';
+				ctx.stroke();
+				ctx.lineCap = 'butt';
 				ctx.save();
 				ctx.translate(st.cx, st.cy);
 				ctx.rotate(((st.rot || 0) * Math.PI) / 180);
-				const g = ctx.createLinearGradient(-st.w / 2, 0, st.w / 2, 0);
-				g.addColorStop(0, '#1B1B26');
-				g.addColorStop(1, '#34344A');
-				ctx.fillStyle = g;
-				roundRect(ctx, -st.w / 2, -st.h / 2, st.w, st.h, 12);
-				ctx.fill();
-				ctx.fillStyle = 'rgba(255,255,255,0.92)';
-				ctx.font = `600 16px 'General Sans', system-ui, sans-serif`;
+				ctx.fillStyle = pal.muted;
+				ctx.globalAlpha = 0.75;
+				ctx.font = `600 ${Math.max(18, Math.min(34, st.w * 0.09))}px 'General Sans', system-ui, sans-serif`;
 				ctx.textAlign = 'center';
 				ctx.textBaseline = 'middle';
-				ctx.fillText(st.label || 'SCENĂ', 0, 0);
+				ctx.fillText(st.label || 'Scenă', 0, -4);
+				ctx.globalAlpha = 1;
 				ctx.restore();
 			}
 		}
@@ -633,7 +640,11 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 			ctx.textBaseline = 'middle';
 			for (const sec of smDoc.sections) {
 				if (sec.flat || !sec.labels || sec.labels === 'none') continue;
-				const wrapO = sec.wrap ? smDoc.outlines.find((o) => o.id === sec.wrap!.oid) || smDoc.outlines[0] : undefined;
+				const wrapO = sec.wrap
+					? sec.wrap.oid === '@stage'
+						? smDoc.stage || undefined
+						: smDoc.outlines.find((o) => o.id === sec.wrap!.oid) || smDoc.outlines[0]
+					: undefined;
 				const side = sec.labelSide || 'left';
 				ctx.fillStyle = sec.labelColor || pal.muted;
 				ctx.font = `600 ${sec.labelSize || 10}px 'JetBrains Mono', ui-monospace, monospace`;

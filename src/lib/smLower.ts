@@ -11,13 +11,14 @@
 // from a v1 flat chart — the original row/num carried per seat.
 
 import type { FlatSeat, GaSection, Section } from '@/lib/seatingGeometry';
-import { isSmState, rowLabelFor, seatNumberFor, seatsOf, SmSection, SmState } from '@/lib/seatmapModel';
+import { isSmState, rowLabelFor, seatNumberFor, seatsOf, SmSection, SmState, SmWrapRef } from '@/lib/seatmapModel';
 
 export { isSmState };
 export type { SmState };
 
-function wrapOutlineFor(st: SmState, sec: SmSection) {
+function wrapOutlineFor(st: SmState, sec: SmSection): SmWrapRef | undefined {
 	if (!sec.wrap) return undefined;
+	if (sec.wrap.oid === '@stage') return st.stage || undefined;
 	return st.outlines.find((o) => o.id === sec.wrap!.oid) || st.outlines[0];
 }
 

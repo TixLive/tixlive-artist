@@ -211,6 +211,7 @@ interface OSeg {
 	a0: number; // start angle
 	sw?: 1 | -1; // arc sweep: angle = a0 + sw·u (default 1)
 	off?: 1 | -1; // arc offset side: radius at depth d = r + off·d (default 1 = outward)
+	vis?: number; // visible span (full-circle stage arcs: only [0, vis] is drawn)
 }
 export function outlineSegs(o: SmOutline): OSeg[] {
 	const [rtl, rtr, rbr, rbl] = outlineRadii(o);
@@ -346,20 +347,12 @@ export function stageSegs(st: SmStage): OSeg[] {
 	while (span > Math.PI) span -= 2 * Math.PI;
 	while (span < -Math.PI) span += 2 * Math.PI;
 	const sw: 1 | -1 = span >= 0 ? 1 : -1;
-	const arc: OSeg = { kind: 'arc', x0: 0, y0: 0, dx: 0, dy: 0, nx: 0, ny: 0, len: Math.abs(span), cx: C.x, cy: C.y, r: R, a0: aA, sw, off };
-	// tangent extension lines, continuous with the arc ends; their normal must be the
-	// audience-side normal at that end (radial × off)
-	const tang = (a: number, atEnd: boolean) => {
-		const tx = -Math.sin(a) * sw;
-		const ty = Math.cos(a) * sw;
-		const nx = Math.cos(a) * off;
-		const ny = Math.sin(a) * off;
-		const P = atEnd ? B : A;
-		return atEnd
-			? L(P, { x: P.x + tx * STAGE_EXT, y: P.y + ty * STAGE_EXT }, nx, ny)
-			: L({ x: P.x - tx * STAGE_EXT, y: P.y - ty * STAGE_EXT }, P, nx, ny);
-	};
-	return [tang(aA, false), arc, tang(aA + sw * Math.abs(span), true)];
+	// One FULL-CIRCLE arc: beyond the stage edges the rows keep fanning around the
+	// same curvature centre (amphitheatre), instead of breaking into a straight
+	// tangent slab. (si=0, u∈[0,|span|]) is the visible stage front; the walk wraps
+	// around the circle seamlessly. The straight-stage case above keeps tangent
+	// extension lines — a straight front extends straight.
+	return [{ kind: 'arc', x0: 0, y0: 0, dx: 0, dy: 0, nx: 0, ny: 0, len: 2 * Math.PI, cx: C.x, cy: C.y, r: R, a0: aA, sw, off, vis: Math.abs(span) }];
 }
 // Nearest point of the stage path to (px,py): segment address + SIGNED distance
 // (positive on the audience side, where the seats live).
@@ -377,9 +370,10 @@ export function stageProject(st: SmStage, px: number, py: number): { si: number;
 		} else {
 			const ang = Math.atan2(py - s.cy, px - s.cx);
 			let rel = (ang - s.a0) * (s.sw ?? 1);
-			while (rel < -Math.PI) rel += 2 * Math.PI;
-			while (rel > Math.PI) rel -= 2 * Math.PI;
-			u = Math.max(0, Math.min(s.len, rel));
+			// full circle: any angle is on the path — wrap into [0, 2π) instead of clamping
+			while (rel < 0) rel += 2 * Math.PI;
+			while (rel >= 2 * Math.PI) rel -= 2 * Math.PI;
+			u = Math.min(s.len, rel);
 			d = (s.off ?? 1) * (Math.hypot(px - s.cx, py - s.cy) - s.r);
 		}
 		const p = osegPoint(segs, i, u, 0);
@@ -394,10 +388,11 @@ export function stageProject(st: SmStage, px: number, py: number): { si: number;
 // Sample the stage front line (the visible part only) for rendering.
 export function stageLine(st: SmStage, samples = 40): { x: number; y: number }[] {
 	const segs = stageSegs(st);
-	const mid = segs[1];
+	const si = segs.length === 1 ? 0 : 1; // bowed: single full-circle arc; straight: mid line
+	const span = segs[si].vis ?? segs[si].len;
 	const pts: { x: number; y: number }[] = [];
 	for (let i = 0; i <= samples; i++) {
-		const p = osegPoint(segs, 1, (mid.len * i) / samples, 0);
+		const p = osegPoint(segs, si, (span * i) / samples, 0);
 		pts.push({ x: p.x, y: p.y });
 	}
 	return pts;

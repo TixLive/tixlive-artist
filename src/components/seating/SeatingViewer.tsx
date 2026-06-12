@@ -442,7 +442,10 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 				ctx.lineCap = 'butt';
 				ctx.save();
 				ctx.translate(st.cx, st.cy);
-				ctx.rotate(((st.rot || 0) * Math.PI) / 180);
+				// keep the label readable: flip 180° when the stage rotation would
+				// render the text upside down
+				const rotN = (((st.rot || 0) % 360) + 360) % 360;
+				ctx.rotate((((st.rot || 0) + (rotN > 90 && rotN < 270 ? 180 : 0)) * Math.PI) / 180);
 				ctx.fillStyle = pal.muted;
 				ctx.globalAlpha = 0.75;
 				ctx.font = `600 ${Math.max(18, Math.min(34, st.w * 0.09))}px 'General Sans', system-ui, sans-serif`;

@@ -45,6 +45,10 @@ export interface SmSection {
 	// seat order / row order.
 	wrap?: { oid: string };
 	stretch?: number; // 0–100, 50 = neutral (horizontal stretch of the block)
+	// Lateral offset added per visual row (px): each row starts `shear` further
+	// along than the previous — slanted block edges (real-hall trapezoid cuts,
+	// row continuation across a diagonal aisle). Applied in grid AND wrap layouts.
+	shear?: number;
 	flipH?: boolean;
 	flipV?: boolean;
 	align?: 'left' | 'center' | 'right' | 'none'; // cut-row alignment ('none' = keep grid positions)
@@ -393,6 +397,14 @@ export function stageFootAt(st: SmStage, px: number, py: number): { x: number; y
 	const p = osegPoint(segs, pr.si, pr.u, 0);
 	return { x: p.x, y: p.y, nx: p.nx, ny: p.ny, d: pr.d };
 }
+// Slide (px,py) by `dist` px along the stage path, keeping its depth.
+export function stageSlideAt(st: SmStage, px: number, py: number, dist: number): { x: number; y: number } {
+	const segs = stageSegs(st);
+	const pr = stageProject(st, px, py);
+	const at = osegWalk(segs, pr.si, pr.u, pr.d, dist);
+	const p = osegPoint(segs, at.si, at.u, pr.d);
+	return { x: p.x, y: p.y };
+}
 // Sample the stage front line (the visible part only) for rendering.
 export function stageLine(st: SmStage, samples = 40): { x: number; y: number }[] {
 	const segs = stageSegs(st);
@@ -549,15 +561,18 @@ export function seatsOf(sec: SmSection, wrapOutline?: SmWrapRef): SmSeat[] {
 		if (eff !== 'none' && lo >= 0 && !(lo === 0 && hi === n - 1)) {
 			sh = eff === 'left' ? -lo : eff === 'right' ? n - 1 - hi : (n - 1) / 2 - (lo + hi) / 2;
 		}
+		// per-row lateral shear, in column-index units so it works for straight,
+		// curved and wrapped layouts alike
+		const shAdd = (sec.flipV ? rows - 1 - ri : ri) * (gapX > 0 ? (sec.shear || 0) / gapX : 0);
 		for (let ci = 0; ci < n; ci++) {
-			const ei = ci + sh; // effective column index after alignment
+			const ei = ci + sh + shAdd; // effective column index after alignment + shear
 			// nudge in the row's own frame: nd[0] ALONG the row (arc length), nd[1] ACROSS.
 			const nd = sec.nudge && sec.nudge[ri + '-' + ci];
 			const ndx = nd ? nd[0] : 0;
 			const ndy = nd ? nd[1] : 0;
 			if (wseg && wanchor) {
 				// justified row: remap [first..last survivor] onto the fitted edge lines.
-				const we = wjust && !wjust.skip.has(ri) && lo >= 0 && hi > lo ? wjust.lo(ri) + ((ci - lo) * (wjust.hi(ri) - wjust.lo(ri))) / (hi - lo) : ei;
+				const we = wjust && !wjust.skip.has(ri) && lo >= 0 && hi > lo ? wjust.lo(ri) + ((ci - lo) * (wjust.hi(ri) - wjust.lo(ri))) / (hi - lo) + shAdd : ei;
 				const p = wrapPoint(wseg, wanchor, sec, ri, we, ndx, ndy);
 				out.push({ x: p.x, y: p.y, ri, ci, key: ri + '-' + ci });
 				continue;
@@ -617,7 +632,8 @@ export function seatPos(sec: SmSection, ri: number, ci: number, nudge?: [number,
 	if (eff !== 'none' && loc >= 0 && !(loc === 0 && hic === n - 1)) {
 		sh = eff === 'left' ? -loc : eff === 'right' ? n - 1 - hic : (n - 1) / 2 - (loc + hic) / 2;
 	}
-	const ei = ci + sh;
+	const shAdd = (sec.flipV ? sec.rows - 1 - ri : ri) * (gapX > 0 ? (sec.shear || 0) / gapX : 0);
+	const ei = ci + sh + shAdd;
 	const ndx = nudge ? nudge[0] : 0;
 	const ndy = nudge ? nudge[1] : 0;
 	if (sec.wrap && wrapOutline) {
@@ -631,7 +647,7 @@ export function seatPos(sec: SmSection, ri: number, ci: number, nudge?: [number,
 			// Inside the row: justified interpolation. OUTSIDE (the label phantom at lo-1 /
 			// hi+1): exactly ONE un-stretched seat pitch beyond the fitted edge line, so all
 			// row labels sit on a clean line instead of inheriting each row's stretch.
-			we = ci < loc ? flo + (ci - loc) : ci > hic ? fhi + (ci - hic) : flo + ((ci - loc) * (fhi - flo)) / (hic - loc);
+			we = (ci < loc ? flo + (ci - loc) : ci > hic ? fhi + (ci - hic) : flo + ((ci - loc) * (fhi - flo)) / (hic - loc)) + shAdd;
 		}
 		return wrapPoint(segs, anchor, sec, ri, we, ndx, ndy);
 	}

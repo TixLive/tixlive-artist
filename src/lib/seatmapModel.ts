@@ -192,12 +192,33 @@ export function effAlign(sec: SmSection): 'left' | 'center' | 'right' | 'none' {
 	return sec.align || 'center';
 }
 // Alignment expressed in GRID columns. The stored value is VISUAL («Stânga» =
-// the section's screen-left), so a mirrored section (flipH) swaps the side —
-// otherwise «Dreapta» on a mirrored block aligned its rows to the LEFT.
+// the section's screen-left); dirX is the world-x direction of the +lateral
+// axis (where seat numbers grow): rows reading leftward on screen swap sides.
+// Near-vertical rows (|dirX| small) fall back to the mirror-based mapping so
+// the side doesn't flicker with tiny tangent changes.
+export function alignForDir(sec: SmSection, dirX: number): 'left' | 'center' | 'right' | 'none' {
+	const v = effAlign(sec);
+	if (v === 'center' || v === 'none') return v;
+	if (Math.abs(dirX) < 0.05) return gridAlign(sec);
+	return dirX > 0 ? v : v === 'left' ? 'right' : 'left';
+}
 function gridAlign(sec: SmSection): 'left' | 'center' | 'right' | 'none' {
 	const eff = effAlign(sec);
 	if (!sec.flipH) return eff;
 	return eff === 'left' ? 'right' : eff === 'right' ? 'left' : eff;
+}
+// World-x direction of the +lateral axis for a section laid out by seatsOf:
+// wrapped → the path tangent at its anchor (×flipH); free → its rotation axis.
+export function lateralDirX(sec: SmSection, wrapOutline?: SmWrapRef): number {
+	const fh = sec.flipH ? -1 : 1;
+	if (sec.wrap && wrapOutline) {
+		const segs = wrapSegsOf(wrapOutline);
+		const pr = wrapProject(wrapOutline, sec.cx, sec.cy);
+		const sg = segs[pr.si];
+		const tx = sg.kind === 'line' ? sg.dx : -Math.sin(sg.a0 + (sg.sw ?? 1) * pr.u) * (sg.sw ?? 1);
+		return tx * fh;
+	}
+	return Math.cos(sec.rot * Math.PI / 180) * fh;
 }
 
 
@@ -481,11 +502,11 @@ export function wrapPathDistAt(ref: SmWrapRef, ax: number, ay: number, bx: numbe
 // edges are perfectly straight. Rows are then linearly remapped onto [loFit, hiFit].
 // Robust: rows whose ends sit far off the trend (> 1.5 seats — e.g. a hand-placed stub
 // row) are excluded from the fit AND stay exactly where the user put them.
-export function wrapJustify(sec: SmSection): { lo: (ri: number) => number; hi: (ri: number) => number; skip: Set<number> } | null {
+export function wrapJustify(sec: SmSection, effOverride?: 'left' | 'center' | 'right' | 'none'): { lo: (ri: number) => number; hi: (ri: number) => number; skip: Set<number> } | null {
 	// Fit over the ALIGNED end positions (alignment shift applied) — fitting the raw grid
 	// columns re-introduced the cut's lean (e.g. hi=20 const) that alignment removes, and
 	// wrapped around a corner that lean became a spiral.
-	const eff = gridAlign(sec);
+	const eff = effOverride ?? gridAlign(sec);
 	const pts: { ri: number; lo: number; hi: number }[] = [];
 	for (let ri = 0; ri < sec.rows; ri++) {
 		let lo = -1;
@@ -582,7 +603,7 @@ export function seatsOf(sec: SmSection, wrapOutline?: SmWrapRef): SmSeat[] {
 	const sf = sec.stretch != null ? 0.4 + (sec.stretch / 100) * 1.2 : 1; // 50 → 1.0
 	const fh = sec.flipH ? -1 : 1;
 	const fv = sec.flipV ? -1 : 1;
-	const eff = gridAlign(sec);
+	const eff = alignForDir(sec, lateralDirX(sec, sec.wrap ? wrapOutline : undefined));
 	// Contour/stage wrap: rows follow the reference's offset curves instead of the
 	// parametric arc.
 	const wseg = sec.wrap && wrapOutline ? wrapSegsOf(wrapOutline) : null;
@@ -591,7 +612,7 @@ export function seatsOf(sec: SmSection, wrapOutline?: SmWrapRef): SmSeat[] {
 	// the cut's first/last survivors across rows, then stretch each row linearly so its
 	// end seats land EXACTLY on those lines. Spacing varies a touch per row (the real
 	// A103 measures 18–20px row to row); inner aisles keep their proportions.
-	const wjust = wseg && sec.fan === 'radial' ? wrapJustify(sec) : null;
+	const wjust = wseg && sec.fan === 'radial' ? wrapJustify(sec, eff) : null;
 
 	const out: SmSeat[] = [];
 	for (let ri = 0; ri < rows; ri++) {
@@ -674,7 +695,7 @@ export function seatPos(sec: SmSection, ri: number, ci: number, nudge?: [number,
 		if (loc < 0) loc = c;
 		hic = c;
 	}
-	const eff = gridAlign(sec);
+	const eff = alignForDir(sec, lateralDirX(sec, sec.wrap ? wrapOutline : undefined));
 	let sh = 0;
 	if (eff !== 'none' && loc >= 0 && !(loc === 0 && hic === n - 1)) {
 		sh = eff === 'left' ? -loc : eff === 'right' ? n - 1 - hic : (n - 1) / 2 - (loc + hic) / 2;
@@ -686,7 +707,7 @@ export function seatPos(sec: SmSection, ri: number, ci: number, nudge?: [number,
 	if (sec.wrap && wrapOutline) {
 		const segs = wrapSegsOf(wrapOutline);
 		const anchor = wrapProject(wrapOutline, sec.cx, sec.cy);
-		const wjust = sec.fan === 'radial' ? wrapJustify(sec) : null;
+		const wjust = sec.fan === 'radial' ? wrapJustify(sec, eff) : null;
 		let we = ei;
 		if (wjust && !wjust.skip.has(ri) && loc >= 0 && hic > loc) {
 			const flo = wjust.lo(ri);

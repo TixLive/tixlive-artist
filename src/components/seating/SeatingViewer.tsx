@@ -417,6 +417,39 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 						roundRect(ctx, -sh.w / 2, -sh.h / 2, sh.w, sh.h, 6);
 						ctx.stroke();
 					}
+				} else if (sh.kind === 'stairs') {
+					// top-view stairs: treads across the box (same glyph as the editor)
+					ctx.strokeStyle = pal.line;
+					ctx.lineWidth = 1.6 / Math.max(sc, 0.4);
+					ctx.beginPath();
+					ctx.rect(-sh.w / 2, -sh.h / 2, sh.w, sh.h);
+					const stepPx = Math.max(8, Math.min(16, sh.w / Math.max(2, Math.round(sh.w / 12))));
+					for (let xx = -sh.w / 2 + stepPx; xx < sh.w / 2 - 0.5; xx += stepPx) {
+						ctx.moveTo(xx, -sh.h / 2);
+						ctx.lineTo(xx, sh.h / 2);
+					}
+					ctx.stroke();
+				} else if (sh.kind === 'arrow') {
+					// direction arrow along the box's long axis
+					const L = sh.w / 2;
+					const head = Math.min(Math.max(10, sh.h * 0.45), L);
+					ctx.strokeStyle = pal.muted;
+					ctx.fillStyle = pal.muted;
+					ctx.globalAlpha = 0.8;
+					ctx.lineWidth = Math.max(2.5, sh.h * 0.12);
+					ctx.lineCap = 'round';
+					ctx.beginPath();
+					ctx.moveTo(-L, 0);
+					ctx.lineTo(L - head, 0);
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.moveTo(L, 0);
+					ctx.lineTo(L - head, -head * 0.55);
+					ctx.lineTo(L - head, head * 0.55);
+					ctx.closePath();
+					ctx.fill();
+					ctx.lineCap = 'butt';
+					ctx.globalAlpha = 1;
 				}
 				if (sh.text) {
 					ctx.fillStyle = pal.muted;

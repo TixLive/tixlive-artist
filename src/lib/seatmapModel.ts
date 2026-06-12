@@ -128,10 +128,10 @@ export function outlineRadii(o: SmOutline): [number, number, number, number] {
 	const c = o.corners || [o.rx, o.rx, o.rx, o.rx];
 	return [Math.max(0, Math.min(c[0], cap)), Math.max(0, Math.min(c[1], cap)), Math.max(0, Math.min(c[2], cap)), Math.max(0, Math.min(c[3], cap))];
 }
-// Décor rectangle (stage block, stairs…) or a free text label.
+// Décor: rectangle, free text label, stairs glyph or a direction arrow.
 export interface SmShape {
 	id: string;
-	kind: 'rect' | 'label';
+	kind: 'rect' | 'label' | 'stairs' | 'arrow';
 	x: number;
 	y: number;
 	w: number;

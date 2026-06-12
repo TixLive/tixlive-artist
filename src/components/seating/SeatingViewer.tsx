@@ -433,6 +433,20 @@ export const SeatingViewer: FC<SeatingViewerProps> = ({
 						ctx.lineWidth = 1.2 / sc;
 						ctx.stroke();
 					}
+				} else if (sh.kind === 'poly' && sh.pts && sh.pts.length > 2) {
+					// smart hull around sections (white tier slab)
+					ctx.beginPath();
+					ctx.moveTo(-sh.w / 2 + sh.pts[0][0], -sh.h / 2 + sh.pts[0][1]);
+					for (let i = 1; i < sh.pts.length; i++) ctx.lineTo(-sh.w / 2 + sh.pts[i][0], -sh.h / 2 + sh.pts[i][1]);
+					ctx.closePath();
+					if (sh.fill) {
+						ctx.fillStyle = sh.fill;
+						ctx.fill();
+					} else {
+						ctx.strokeStyle = pal.line;
+						ctx.lineWidth = 1.2 / sc;
+						ctx.stroke();
+					}
 				} else if (sh.kind === 'stairs') {
 					// top-view stairs: treads across the box (same glyph as the editor)
 					ctx.strokeStyle = pal.line;

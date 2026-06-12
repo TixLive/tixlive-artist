@@ -466,6 +466,16 @@ export function wrapFootAt(ref: SmWrapRef, px: number, py: number): { x: number;
 	const p = osegPoint(segs, pr.si, pr.u, 0);
 	return { x: p.x, y: p.y, nx: p.nx, ny: p.ny, d: pr.d };
 }
+// Path tangent + seats-side normal at the projection of (px,py).
+export function wrapTangentAt(ref: SmWrapRef, px: number, py: number): { tx: number; ty: number; nx: number; ny: number } {
+	const segs = wrapSegsOf(ref);
+	const pr = wrapProject(ref, px, py);
+	const s = segs[pr.si];
+	if (s.kind === 'line') return { tx: s.dx, ty: s.dy, nx: s.nx, ny: s.ny };
+	const a = s.a0 + (s.sw ?? 1) * pr.u;
+	const off = s.off ?? 1;
+	return { tx: -Math.sin(a) * (s.sw ?? 1), ty: Math.cos(a) * (s.sw ?? 1), nx: Math.cos(a) * off, ny: Math.sin(a) * off };
+}
 // Slide (px,py) by `dist` px along the reference path, keeping its depth.
 export function wrapSlideAt(ref: SmWrapRef, px: number, py: number, dist: number): { x: number; y: number } {
 	const segs = wrapSegsOf(ref);

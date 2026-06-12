@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -16,6 +15,8 @@ import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
 import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import { useHeaderCart } from '@/contexts/LayoutContext';
 import Layout from '@/components/layout/Layout';
+import Seo from '@/components/seo/Seo';
+import { truncate, eventLd } from '@/lib/seo';
 import type { NextPageWithLayout } from '@/pages/_app';
 import EventHero from '@/components/event/EventHero';
 import StickyCTABar from '@/components/event/StickyCTABar';
@@ -315,9 +316,14 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   if (notFound) return <div className="py-32 text-center text-[var(--theme-muted)]">Event not found.</div>;
   if (!event) return <EventPageSkeleton />;
 
-  // Event JSON-LD is injected at the edge for crawlers (functions/events/[slug].ts) —
-  // it's the single source of truth, so we don't emit a client-side copy here (that
-  // would be a duplicate Event entity for JS-rendering crawlers like Googlebot).
+  // SEO parity: render the same OG/Twitter/canonical + Event JSON-LD that the edge bakes
+  // in for non-JS crawlers (functions/events/[slug].ts), so users and JS-rendering crawlers
+  // build an identical <head>. Googlebot ends up with two identical Event entities (edge +
+  // client) — harmless, Google deduplicates identical structured-data items.
+  const canonical =
+    typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : undefined;
+  const ogDescription = truncate(event.description) || `Get tickets for ${event.title}`;
+  const ogImage = event.poster_url || event.poster_portrait_url || undefined;
 
   const ekey = 'text-[11px] font-[600] uppercase tracking-[0.12em] text-[var(--ink-3)]';
 
@@ -329,12 +335,15 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${event.title}${organizer ? ` — ${organizer.name}` : ''}`}</title>
-        <meta property="og:title" content={event.title} />
-        <meta property="og:description" content={event.description || `Get tickets for ${event.title}`} />
-        {event.poster_url && <meta property="og:image" content={event.poster_url} />}
-      </Head>
+      <Seo
+        title={`${event.title}${organizer ? ` — ${organizer.name}` : ''}`}
+        ogTitle={event.title}
+        description={ogDescription}
+        canonical={canonical}
+        image={ogImage}
+        siteName={organizer?.name}
+        jsonLd={canonical ? eventLd(event, canonical, organizer?.name) : undefined}
+      />
 
       <>
         <EventHero

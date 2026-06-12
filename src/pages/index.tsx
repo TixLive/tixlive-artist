@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import Head from 'next/head';
 import { useTranslation } from 'next-i18next';
 import { useGetEvents } from '@/queries/events/useGetEvents';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import Seo from '@/components/seo/Seo';
+import { truncate, organizationLd } from '@/lib/seo';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import HeroCarousel from '@/components/landing/HeroCarousel';
@@ -49,16 +50,23 @@ const Home: NextPageWithLayout = function Home() {
 		if (hasNextPage && !isFetchingNextPage) await fetchNextPage();
 	};
 
+	// Mirror functions/index.ts so a user's rendered <head> matches the edge-injected one.
+	const canonical = typeof window !== 'undefined' ? `${window.location.origin}/` : undefined;
+	const description = organizer
+		? truncate(organizer.bio) || `Get tickets for ${organizer.name}'s events.`
+		: undefined;
+
 	return (
 		<>
-			<Head>
-				<title>{organizer ? t('home.title', { name: organizer.name }) : t('home.title_fallback')}</title>
-				{organizer && <>
-					<meta property="og:title" content={t('home.title', { name: organizer.name })} />
-					<meta property="og:description" content={organizer.bio || t('home.og_description', { name: organizer.name })} />
-					{organizer.logo_url && <meta property="og:image" content={organizer.logo_url} />}
-				</>}
-			</Head>
+			<Seo
+				title={organizer ? t('home.title', { name: organizer.name }) : t('home.title_fallback')}
+				ogTitle={organizer?.name}
+				description={description}
+				canonical={canonical}
+				image={organizer?.logo_url ?? undefined}
+				siteName={organizer?.name}
+				jsonLd={organizer && canonical ? organizationLd(organizer, canonical) : undefined}
+			/>
 			{/* Semantic top-level heading. sr-only so it adds page structure for
 			    crawlers/screen readers without changing the visual design (the hero
 			    carousel is the visual lead). */}

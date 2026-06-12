@@ -38,7 +38,8 @@ export async function onRequest({ request, env }: Ctx): Promise<Response> {
 	const description = truncate(site.bio) || `Get tickets for ${site.name}'s events.`;
 
 	// Organization entity for the white-label organizer — gives AI engines and the
-	// Knowledge Graph a canonical name/logo/url to attach citations to.
+	// Knowledge Graph a canonical name/logo/url to attach citations to. The client renders
+	// the same entity for users/JS-crawlers (src/lib/seo.ts → organizationLd); keep in sync.
 	const orgLd = {
 		'@context': 'https://schema.org',
 		'@type': 'Organization',

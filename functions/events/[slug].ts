@@ -64,10 +64,11 @@ export async function onRequest({ request, env, params }: Ctx): Promise<Response
 	const description = truncate(event.description) || `Get tickets for ${event.title}`;
 	const image = event.poster_url || event.poster_portrait_url || null;
 
-	// Event JSON-LD. This is the single source of truth for the schema — the client
-	// no longer emits its own (every crawler that consumes structured data is in the
-	// allow-list above and gets it here), so there's no duplicate-entity risk for
-	// JS-rendering crawlers. Mirror keeps parity with the on-page event UI.
+	// Event JSON-LD. Non-JS crawlers (Facebook, AI engines) get it baked in here; the
+	// client renders the same entity (src/lib/seo.ts → eventLd) so users and JS-rendering
+	// crawlers reach an identical <head>. Googlebot therefore sees two identical Event
+	// entities (edge + client) — harmless, Google deduplicates identical structured-data items.
+	// Keep this object in sync with eventLd() in src/lib/seo.ts.
 	const jsonLd = {
 		'@context': 'https://schema.org',
 		'@type': 'Event',

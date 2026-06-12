@@ -191,6 +191,14 @@ export function rowCount(sec: SmSection, _ri: number): number {
 export function effAlign(sec: SmSection): 'left' | 'center' | 'right' | 'none' {
 	return sec.align || 'center';
 }
+// Alignment expressed in GRID columns. The stored value is VISUAL («Stânga» =
+// the section's screen-left), so a mirrored section (flipH) swaps the side —
+// otherwise «Dreapta» on a mirrored block aligned its rows to the LEFT.
+function gridAlign(sec: SmSection): 'left' | 'center' | 'right' | 'none' {
+	const eff = effAlign(sec);
+	if (!sec.flipH) return eff;
+	return eff === 'left' ? 'right' : eff === 'right' ? 'left' : eff;
+}
 
 
 // ── Contour-wrap geometry ───────────────────────────────────────────────────────────
@@ -477,7 +485,7 @@ export function wrapJustify(sec: SmSection): { lo: (ri: number) => number; hi: (
 	// Fit over the ALIGNED end positions (alignment shift applied) — fitting the raw grid
 	// columns re-introduced the cut's lean (e.g. hi=20 const) that alignment removes, and
 	// wrapped around a corner that lean became a spiral.
-	const eff = effAlign(sec);
+	const eff = gridAlign(sec);
 	const pts: { ri: number; lo: number; hi: number }[] = [];
 	for (let ri = 0; ri < sec.rows; ri++) {
 		let lo = -1;
@@ -574,7 +582,7 @@ export function seatsOf(sec: SmSection, wrapOutline?: SmWrapRef): SmSeat[] {
 	const sf = sec.stretch != null ? 0.4 + (sec.stretch / 100) * 1.2 : 1; // 50 → 1.0
 	const fh = sec.flipH ? -1 : 1;
 	const fv = sec.flipV ? -1 : 1;
-	const eff = effAlign(sec);
+	const eff = gridAlign(sec);
 	// Contour/stage wrap: rows follow the reference's offset curves instead of the
 	// parametric arc.
 	const wseg = sec.wrap && wrapOutline ? wrapSegsOf(wrapOutline) : null;
@@ -666,7 +674,7 @@ export function seatPos(sec: SmSection, ri: number, ci: number, nudge?: [number,
 		if (loc < 0) loc = c;
 		hic = c;
 	}
-	const eff = effAlign(sec);
+	const eff = gridAlign(sec);
 	let sh = 0;
 	if (eff !== 'none' && loc >= 0 && !(loc === 0 && hic === n - 1)) {
 		sh = eff === 'left' ? -loc : eff === 'right' ? n - 1 - hic : (n - 1) / 2 - (loc + hic) / 2;

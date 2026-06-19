@@ -6,7 +6,8 @@ import type { ITicketAddon } from '@/types';
 interface AddonSectionProps {
 	addons: ITicketAddon[];
 	quantities: Record<number, number>;
-	/** Total tickets/seats selected — caps per_ticket add-ons and drives their price multiplier. */
+	/** Total tickets/seats selected — drives the price multiplier for per_ticket add-ons.
+	 *  (The per-buyer cap is max_quantity, applied in the stepper regardless of scope.) */
 	ticketCount: number;
 	onQuantityChange: (addonId: number, quantity: number) => void;
 	/** Hide the "Enhance Your Experience" heading + note (e.g. when a modal already titles it). */
@@ -54,7 +55,7 @@ export default function AddonSection({
 						addon={addon}
 						quantity={quantities[addon.id] ?? 0}
 						included={includedQuantities?.[addon.id] ?? 0}
-						max={addon.per_ticket ? ticketCount : addon.max_quantity ?? 4}
+						max={addon.max_quantity ?? 10}
 						onQuantityChange={onQuantityChange}
 					/>
 				))}

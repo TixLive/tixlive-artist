@@ -262,7 +262,11 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
           setSeatConflict(true);
         } else if (code.includes('SOLD_OUT') || code.includes('NO_AVAILABLE_TICKETS')) {
           setSubmitError(t('checkout.error_sold_out'));
-        } else if (code.includes('TICKET_LIMIT_REACHED') || code.includes('BUNDLE_LIMIT_OVERFLOW')) {
+        } else if (
+          code.includes('TICKET_LIMIT_REACHED') ||
+          code.includes('BUNDLE_LIMIT_OVERFLOW') ||
+          code.includes('ADDON_LIMIT_OVERFLOW')
+        ) {
           setSubmitError(t('checkout.error_too_many_tickets'));
         } else if (code.includes('PAYMENT_METHOD')) {
           setSubmitError(t('checkout.error_payment_method'));

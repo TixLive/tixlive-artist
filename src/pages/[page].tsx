@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useTranslation } from 'next-i18next';
 import { useGetPage } from '@/queries/pages/useGetPage';
+import { pickTitle } from '@/lib/pickTitle';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
@@ -45,7 +46,8 @@ const LegalPage: NextPageWithLayout = function LegalPage() {
 	if (notFound) return null;
 	if (!page || !slug || !isPageSlug(slug)) return <div className="py-32" />;
 
-	const title = t(`pages.${I18N_KEY[slug]}.title`);
+	// Heading: the organizer's custom rename (any locale) → default i18n label.
+	const title = pickTitle(page.title, locale, fallback) || t(`pages.${I18N_KEY[slug]}.title`);
 	const content = page.content ?? {};
 	const hasContent = (l: string) => !!content[l] && content[l].trim().length > 0;
 	const usedLocale = hasContent(locale) ? locale : hasContent(fallback) ? fallback : Object.keys(content).find(hasContent);

@@ -12,8 +12,9 @@ export interface IOrganizer {
 	favicon_url: string | null;
 	bio: string | null;
 	social_links: Record<string, string>;
-	/** Legal/info pages with published content + the locales they exist in. */
-	pages?: Array<{ page_type: string; locales: string[] }>;
+	/** Legal/info pages with published content + the locales they exist in.
+	 *  `title` is the organizer's custom per-locale rename (empty → default label). */
+	pages?: Array<{ page_type: string; locales: string[]; title?: Record<string, string> }>;
 	/** Public Facebook Pixel id (company default). Browser pixel only — no token here. */
 	facebook_pixel_id?: string | null;
 	/** ISO 3166-1 alpha-2 country code of the organizer's company (e.g. 'RO').
@@ -28,6 +29,8 @@ export interface IOrganizer {
 export interface IOrganizerPage {
 	page_type: string;
 	content: Record<string, string>;
+	/** Organizer's custom per-locale page title (rename). Empty → default label. */
+	title?: Record<string, string>;
 }
 
 export interface IEventListItem {

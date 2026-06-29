@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { useConsent } from '@/contexts/ConsentContext';
 import { useOrganizer } from '@/contexts/OrganizerContext';
+import { pickTitle } from '@/lib/pickTitle';
 
 /** Fixed legal pages, in display order, mapped to their i18n label key. */
 const LEGAL_PAGES: Array<{ pageType: string; labelKey: string }> = [
@@ -65,8 +67,10 @@ export default function AppFooter() {
 	const organizerBio = organizer?.bio;
 	const logoUrl = organizer?.logo_url;
 
-	const publishedTypes = new Set((organizer?.pages ?? []).map((p) => p.page_type));
-	const legalLinks = LEGAL_PAGES.filter((p) => publishedTypes.has(p.pageType));
+	const router = useRouter();
+	const locale = router.locale ?? 'ro';
+	const pageByType = new Map((organizer?.pages ?? []).map((p) => [p.page_type, p]));
+	const legalLinks = LEGAL_PAGES.filter((p) => pageByType.has(p.pageType));
 
 	const paymentMarks = resolvePaymentMarks(organizer?.payment_methods);
 	const showAnpc = (organizer?.country_code ?? '').toUpperCase() === 'RO';
@@ -99,7 +103,7 @@ export default function AppFooter() {
 							{legalLinks.map((page) => (
 								<li key={page.pageType}>
 									<Link href={`/${page.pageType}`} className={link}>
-										{t(page.labelKey)}
+										{pickTitle(pageByType.get(page.pageType)?.title, locale) || t(page.labelKey)}
 									</Link>
 								</li>
 							))}

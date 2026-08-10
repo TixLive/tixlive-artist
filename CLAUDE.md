@@ -74,6 +74,9 @@ When a page needs to orchestrate several calls inside a single `useEffect` (e.g.
 
 Cookies (`attendee_token`, `attendee_refresh`) are **JS-readable** by design — there is no SSR proxy. This is an explicit XSS trade-off in exchange for the direct-to-API architecture (see commit `db5f4cb`).
 
+### Ticket QR codes (`qr_code_data`)
+`ITicket.qr_code_data` is an **opaque, versioned string owned by besttix** — render it verbatim with `<QRCodeSVG>`, never parse, validate or truncate it. Only the scanner holds the ticket secret, so any check here would be wrong and pointless. The current payload is `v2.<32-hex-signature><id>__<slug>[__<seat_id>]`; unversioned `<8-hex><value>` codes are still in circulation and still scan. A format bump changes only its **length**, which changes the QR version and therefore how coarse the rendered code is — `src/test/qr-payload-parity.test.ts` pins that against `TicketDetailView`'s render size. Format changes land as a **paired PR** with besttix.
+
 ## Design System
 Always read `DESIGN.md` before making any visual or UI decisions.
 All font choices, colors, spacing, and aesthetic direction are defined there.

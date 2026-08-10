@@ -55,9 +55,11 @@ describe('qr_code_data — parity with besttix', () => {
 
 	it('keeps the code coarse enough for a phone camera to read off a screen', () => {
 		// The only real risk of a longer payload: more modules in the same 224px box. A
-		// seated v2 code lands on QR version 5 (37×37) → ~6 px per module. Below ~5 px the
-		// code starts failing on dim or low-resolution screens, so a future format bump
-		// must either stay under this or raise the rendered size.
+		// seated v2 code lands on QR version 5 (37×37) → ~6 CSS px per module, down from
+		// ~7.7 on the unversioned code. This bound is this component's own budget, not a
+		// universal one — a smaller renderer (e.g. the 124px boarding-pass stub in
+		// tixlive-whitelabel's conference app) has a tighter one. A future format bump must
+		// either stay inside this or raise the rendered size.
 		const modules = moduleCount(V2_SEATED);
 		expect(modules).toBeLessThanOrEqual(37);
 		expect(RENDER.size / modules).toBeGreaterThanOrEqual(5);

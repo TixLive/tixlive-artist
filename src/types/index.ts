@@ -308,6 +308,38 @@ export interface IOrderBuyResponse {
 	token: string;
 }
 
+/**
+ * A cart selection parked server-side (besttix `POST /api/public/checkout/session`) so the
+ * checkout page can be reached by url instead of a one-shot sessionStorage handoff.
+ *
+ * Prices are deliberately absent in both directions: besttix re-reads every price and
+ * re-validates the promo code when the order is created, so the server — not this payload —
+ * is the price authority. Never add a price field here.
+ */
+export interface ICheckoutSelection {
+	session_id: number;
+	cart: Array<{ ticket_package_id: number; quantity: number }>;
+	addons?: Array<{ addon_id: number; quantity: number }>;
+	bundles?: Array<{ bundle_id: number; quantity: number }>;
+	promo_code?: string;
+	/** Seated events: the seat ids the buyer picked (a preview for auto-allocate events). */
+	selected_seats?: string[];
+	locale?: string;
+}
+
+export interface ICheckoutSessionCreated {
+	checkout_session_id: string;
+	expires_at: string;
+}
+
+/** What `GET /api/public/checkout/session/:id` returns — the selection, never a price. */
+export interface ICheckoutSessionPublic extends ICheckoutSelection {
+	id: string;
+	/** Set only when the site forwarded an attendee Bearer at park time. */
+	email: string | null;
+	expires_at: string;
+}
+
 export interface IPromoValidateResponse {
 	valid: boolean;
 	discount_percent?: number;

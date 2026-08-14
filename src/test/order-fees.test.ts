@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { computeCheckoutFees, CheckoutFeeInput } from '@/lib/orderFees';
+import { cases, expectedBuyerFees } from './fixtures/fee-parity.fixture';
 
 /**
  * Parity contract with the besttix server (src/utils/fees.ts computeOrderFees).
@@ -49,5 +50,25 @@ describe('computeCheckoutFees (white-label) — parity with besttix', () => {
 	it('rounds each fee independently to 2 decimals', () => {
 		// matches besttix: 33.33 @3.5% -> 1.17 ; @2% -> 0.67 ; total 1.84
 		expect(computeCheckoutFees(base({ afterDiscount: 33.33, providerFeePercent: 2 })).serviceFee).toBe(1.84);
+	});
+
+	// Parity contract (white-label half) — the identical shared fixture backs a matching
+	// assertion in besttix's fees.test.ts. If this repo's fee math drifts from the frozen
+	// expectedBuyerFees this goes red here; if besttix's copy drifts it goes red there.
+	// Both must stay green for the two repos to charge and display the same buyer fee.
+	it('matches the besttix computeOrderFees buyerFee (parity contract)', () => {
+		const buyerFees = cases.map(
+			(c) =>
+				computeCheckoutFees({
+					afterDiscount: c.baseAfterDiscount,
+					platformFeePercent: c.platformFeePercent,
+					platformFeeFixed: c.platformFeeFixed,
+					providerFeePercent: c.providerFeePercent,
+					providerFeeFixed: c.providerFeeFixed,
+					platformFeePayer: c.platformFeePayer,
+					providerFeePayer: c.providerFeePayer,
+				}).serviceFee
+		);
+		expect(buyerFees).toEqual(expectedBuyerFees);
 	});
 });

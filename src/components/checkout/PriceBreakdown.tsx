@@ -46,11 +46,19 @@ export default function PriceBreakdown({
 
 	const subtotal = ticketSubtotal + addonSubtotal + bundleSubtotal;
 
+	// Mirrors besttix's spelling exactly (DiscountCode.Service.applyToOrder):
+	// base * (1 - p/100), not base - base*(p/100) — the two are algebraically
+	// equal but 1 ULP apart in float, which a later round2 can turn into a cent.
 	let discountAmount = 0;
-	if (discount?.percent) discountAmount = subtotal * (discount.percent / 100);
-	else if (discount?.amount) discountAmount = discount.amount;
-
-	const afterDiscount = Math.max(0, subtotal - discountAmount);
+	let afterDiscount = subtotal;
+	if (discount?.percent) {
+		afterDiscount = subtotal * (1 - discount.percent / 100);
+		discountAmount = subtotal - afterDiscount;
+	} else if (discount?.amount) {
+		discountAmount = discount.amount;
+		afterDiscount = subtotal - discountAmount;
+	}
+	afterDiscount = Math.max(0, afterDiscount);
 
 	const { serviceFee } = computeCheckoutFees({
 		afterDiscount,
@@ -63,7 +71,11 @@ export default function PriceBreakdown({
 	});
 	// RO cultural stamp (timbru) — added on top, mirrors besttix computeFiscal exactly.
 	const stamp = afterDiscount > 0 && stampRate > 0 ? Math.round(((afterDiscount * stampRate) / 100) * 100) / 100 : 0;
-	const total = afterDiscount + serviceFee + stamp;
+	// besttix charges round2(afterDiscount + buyerFee + stamp) — toFixed(2) alone reads the
+	// raw double and can print a different cent on a half-cent total (e.g. .705 -> "10.70"
+	// instead of the correctly-rounded 10.71).
+	const round2 = (n: number) => Math.round(n * 100) / 100;
+	const total = round2(afterDiscount + serviceFee + stamp);
 
 	const fmt = (v: number) => v.toFixed(2);
 

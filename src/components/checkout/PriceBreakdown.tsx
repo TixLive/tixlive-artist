@@ -1,6 +1,7 @@
 import { useTranslation } from 'next-i18next';
 import { ICartItem, IAddonCartItem } from '@/types';
 import { computeCheckoutFees } from '@/lib/orderFees';
+import { round2 } from '@/lib/money';
 
 interface PriceBreakdownProps {
 	items: ICartItem[];
@@ -70,11 +71,10 @@ export default function PriceBreakdown({
 		providerFeeFixed,
 	});
 	// RO cultural stamp (timbru) — added on top, mirrors besttix computeFiscal exactly.
-	const stamp = afterDiscount > 0 && stampRate > 0 ? Math.round(((afterDiscount * stampRate) / 100) * 100) / 100 : 0;
+	const stamp = afterDiscount > 0 && stampRate > 0 ? round2((afterDiscount * stampRate) / 100) : 0;
 	// besttix charges round2(afterDiscount + buyerFee + stamp) — toFixed(2) alone reads the
 	// raw double and can print a different cent on a half-cent total (e.g. .705 -> "10.70"
 	// instead of the correctly-rounded 10.71).
-	const round2 = (n: number) => Math.round(n * 100) / 100;
 	const total = round2(afterDiscount + serviceFee + stamp);
 
 	const fmt = (v: number) => v.toFixed(2);

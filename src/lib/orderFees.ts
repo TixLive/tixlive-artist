@@ -3,6 +3,8 @@
 // afterDiscount + serviceFee, so the total shown here must equal what is charged.
 // Cross-repo parity contract — change both sides together and keep the parity tests green.
 
+import { round2 } from './money';
+
 export type FeePayer = 'buyer' | 'organizer';
 
 export interface CheckoutFeeInput {
@@ -23,8 +25,6 @@ export interface CheckoutFees {
 	/** platformFee + providerFee — added to the order total. */
 	serviceFee: number;
 }
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export function computeCheckoutFees(i: CheckoutFeeInput): CheckoutFees {
 	const base = i.afterDiscount;

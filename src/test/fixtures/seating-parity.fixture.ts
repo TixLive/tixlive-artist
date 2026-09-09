@@ -13,7 +13,8 @@
 // different—but-each-internally-consistent—versions.
 //
 // `sections` deliberately exercises every seat-producing section type
-// (rect, rect-rotated, arc, curved, flat) plus a `ga` zone that yields no seats.
+// (rect, rect-rotated, arc, curved, flat, rows-bent [concave + convex], table)
+// plus a `ga` zone that yields no seats.
 
 import type { Section } from '@/lib/seatingGeometry';
 
@@ -112,6 +113,56 @@ export const sections: Section[] = [
 		height: 80,
 		capacity: 50,
 	},
+	{
+		type: 'rows',
+		key: 'tribuna',
+		label: 'Tribuna',
+		category: 'standard',
+		x: 700,
+		y: 100,
+		rows: 2,
+		seatsPerRow: 5,
+		seatSize: 10,
+		rowGap: 10,
+		seatGap: 0,
+		rotation: 0,
+		bend: 60,
+		rowLabel: 'alpha',
+		seatStart: 1,
+	},
+	{
+		type: 'rows',
+		key: 'galerie',
+		label: 'Galerie',
+		category: 'standard',
+		x: 700,
+		y: 350,
+		rows: 2,
+		seatsPerRow: 4,
+		seatSize: 10,
+		rowGap: 10,
+		seatGap: 0,
+		rotation: 0,
+		bend: 45,
+		curveDir: 'convex',
+		rowLabel: 'alpha',
+		seatStart: 1,
+	},
+	{
+		type: 'table',
+		key: 'masa',
+		label: 'Masa',
+		category: 'vip',
+		cx: 900,
+		cy: 100,
+		rx: 30,
+		ry: 30,
+		seats: 4,
+		startAngle: 0,
+		clockwise: true,
+		seatSize: 10,
+		seatStart: 1,
+	},
 ];
 
 // Frozen contract — regenerated only with an intentional GEOMETRY_VERSION bump.
@@ -130,4 +181,9 @@ export const expectedSeatIds: string[] = [
 	'loja-A-1', 'loja-A-2', 'loja-A-3', 'loja-A-4', 'loja-A-5', 'loja-A-6',
 	'loja-B-1', 'loja-B-2', 'loja-B-3', 'loja-B-4', 'loja-B-5', 'loja-B-6',
 	'vip-A-1', 'vip-A-2', 'vip-B-1',
+	'tribuna-A-1', 'tribuna-A-2', 'tribuna-A-3', 'tribuna-A-4', 'tribuna-A-5',
+	'tribuna-B-1', 'tribuna-B-2', 'tribuna-B-3', 'tribuna-B-4', 'tribuna-B-5',
+	'galerie-A-1', 'galerie-A-2', 'galerie-A-3', 'galerie-A-4',
+	'galerie-B-1', 'galerie-B-2', 'galerie-B-3', 'galerie-B-4',
+	'masa-T-1', 'masa-T-2', 'masa-T-3', 'masa-T-4',
 ];

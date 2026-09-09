@@ -96,7 +96,7 @@ function getSeatR(sections: Section[], key: string): number {
 	const s = sections.find((s) => s.key === key);
 	if (!s) return 3.5;
 	if (s.type === 'rect' || s.type === 'arc' || s.type === 'flat') return s.seatSize / 2;
-	if (s.type === 'curved') return s.seatSize / 2;
+	if (s.type === 'curved' || s.type === 'rows' || s.type === 'table') return s.seatSize / 2;
 	return 3.5;
 }
 

@@ -6,6 +6,7 @@ import { useTranslation, type TFunction } from 'next-i18next';
 import { IEventListItem } from '@/types';
 import { usePrefetchEvent } from '@/hooks/usePrefetchEvent';
 import { formatEventDateParts, formatEventTimeWithZone } from '@/lib/datetime';
+import { resolveEventArt } from '@/lib/eventArt';
 
 interface FeaturedHeroProps {
 	events: IEventListItem[];
@@ -55,12 +56,12 @@ function useImageAspect(src: string | null | undefined): number | null {
  * Featured hero. Renders one of two variants based on what artwork the
  * organizer has uploaded:
  *
- * - **Split** (poster_portrait_url present): editorial text card on a
- *   blurred portrait-poster spill, with the sharp portrait on the right.
- * - **Banner** (cover-only fallback): full-width 16:9 cover with a glass
- *   title zone overlaid at the bottom. Used when no portrait poster has
- *   been uploaded — visually closer to the event-detail hero so we don't
- *   force a portrait crop on a landscape image.
+ * - **Split** (a 9:16 portrait was uploaded): editorial text card on a
+ *   blurred spill of the portrait, with the sharp 9:16 on the right.
+ * - **Banner** (no 9:16): full-width 16:9 cover with a glass title zone
+ *   overlaid at the bottom. Used when no portrait was uploaded — visually
+ *   closer to the event-detail hero, so we never force a portrait crop on
+ *   a landscape image.
  */
 export default function HeroCarousel({ events }: FeaturedHeroProps) {
 	const { t } = useTranslation('common');
@@ -92,7 +93,7 @@ export default function HeroCarousel({ events }: FeaturedHeroProps) {
 
 	return (
 		<section className="mx-auto max-w-[1200px] px-4 pt-4 sm:px-5 sm:pt-6 md:px-8">
-			{featured.poster_portrait_url ? (
+			{resolveEventArt(featured).uploaded.portrait ? (
 				<SplitHero {...parts} />
 			) : (
 				<BannerHero {...parts} />
@@ -113,8 +114,8 @@ function SplitHero({
 	time,
 	venueLine,
 }: HeroParts) {
-	// poster_portrait_url is guaranteed by the caller's branch check.
-	const portraitUrl = featured.poster_portrait_url!;
+	// A real 9:16 upload is guaranteed by the caller's branch check.
+	const portraitUrl = resolveEventArt(featured).uploaded.portrait!;
 	// Detect the poster's actual aspect so the slot can hug it edge-to-edge.
 	// Default to a typical 2:3 movie-poster ratio while loading.
 	const detected = useImageAspect(portraitUrl);
@@ -246,9 +247,8 @@ function BannerHero({
 	time,
 	venueLine,
 }: HeroParts) {
-	// Prefer the ultra-wide 32:9 banner when uploaded; fall back to the 16:9 cover.
-	const wideUrl = featured.poster_variants?.['32:9'];
-	const coverUrl = wideUrl || featured.poster_url;
+	// The 16:9 wide artwork, borrowing its nearest neighbour when it was not uploaded.
+	const coverUrl = resolveEventArt(featured).wide;
 
 	return (
 		<Link
@@ -260,7 +260,7 @@ function BannerHero({
 			// nothing to fill and the cover never appears. Force block + full
 			// width.
 			className="hero-banner group relative isolate block w-full overflow-hidden rounded-[22px] bg-[var(--ink)] shadow-[var(--shadow-cinema)] sm:rounded-[28px]"
-			style={{ aspectRatio: wideUrl ? '32 / 9' : '16 / 9' }}
+			style={{ aspectRatio: '16 / 9' }}
 		>
 			<style>{`
 				.hero-banner {

@@ -29,7 +29,8 @@ interface EventDetail {
 	title?: string;
 	description?: string | null;
 	poster_url?: string | null;
-	poster_portrait_url?: string | null;
+	/** The other two shapes: '1:1' square, '9:16' portrait. */
+	poster_variants?: { '1:1'?: string | null; '9:16'?: string | null } | null;
 	date_start?: string;
 	venue_name?: string;
 	venue_address?: string;
@@ -62,7 +63,14 @@ export async function onRequest({ request, env, params }: Ctx): Promise<Response
 	const canonical = `${url.origin}${url.pathname}`;
 	const title = `${event.title}${siteName ? ` — ${siteName}` : ''}`;
 	const description = truncate(event.description) || `Get tickets for ${event.title}`;
-	const image = event.poster_url || event.poster_portrait_url || null;
+	// Mirror of eventShareImage() / eventStructuredImages() in src/lib/eventArt.ts (a Pages
+	// Function cannot import from src): share cards get the wide ladder, the Event entity gets
+	// every uploaded shape, wide first. Keep the three in sync.
+	const wide = event.poster_url || null;
+	const square = event.poster_variants?.['1:1'] || null;
+	const portrait = event.poster_variants?.['9:16'] || null;
+	const image = wide || square || portrait;
+	const images = [wide, square, portrait].filter((u, i, all): u is string => !!u && all.indexOf(u) === i);
 
 	// Event JSON-LD. Non-JS crawlers (Facebook, AI engines) get it baked in here; the
 	// client renders the same entity (src/lib/seo.ts → eventLd) so users and JS-rendering
@@ -74,7 +82,7 @@ export async function onRequest({ request, env, params }: Ctx): Promise<Response
 		'@type': 'Event',
 		name: event.title,
 		...(event.date_start && { startDate: event.date_start }),
-		...(image && { image }),
+		...(images.length > 0 && { image: images }),
 		...(event.description && { description: truncate(event.description, 5000) }),
 		url: canonical,
 		location: {

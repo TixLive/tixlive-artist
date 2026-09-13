@@ -17,6 +17,7 @@ import { useHeaderCart } from '@/contexts/LayoutContext';
 import Layout from '@/components/layout/Layout';
 import Seo from '@/components/seo/Seo';
 import { truncate, eventLd } from '@/lib/seo';
+import { eventShareImage } from '@/lib/eventArt';
 import type { NextPageWithLayout } from '@/pages/_app';
 import EventHero from '@/components/event/EventHero';
 import StickyCTABar from '@/components/event/StickyCTABar';
@@ -323,7 +324,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   const canonical =
     typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : undefined;
   const ogDescription = truncate(event.description) || `Get tickets for ${event.title}`;
-  const ogImage = event.poster_url || event.poster_portrait_url || undefined;
+  const ogImage = eventShareImage(event) ?? undefined;
 
   const ekey = 'text-[11px] font-[600] uppercase tracking-[0.12em] text-[var(--ink-3)]';
 

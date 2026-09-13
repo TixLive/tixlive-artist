@@ -33,17 +33,19 @@ export interface IOrganizerPage {
 	title?: Record<string, string>;
 }
 
+/** The artwork shapes besttix publishes besides the 16:9 on `poster_url`. */
+export type PosterVariantRatio = '1:1' | '9:16';
+
 export interface IEventListItem {
 	id: number;
 	slug: string;
 	title: string;
-	/** 16:9 cover image (event.cover_image). Used as the wide banner. */
+	/** The 16:9 wide artwork (besttix event.cover_image) — the only landscape shape. Pick
+	 *  artwork through `lib/eventArt.ts` (`resolveEventArt`), never by reading this directly. */
 	poster_url: string | null;
-	/** 2:3 portrait poster (event.poster_image). Drives the landing-hero split layout when present. */
-	poster_portrait_url?: string | null;
-	/** Extra poster aspect-ratios keyed by ratio → URL (e.g. "32:9" wide banner, "9:16", "3:2", "1:1").
-	 *  16:9 = poster_url, 2:3 = poster_portrait_url. */
-	poster_variants?: Record<string, string>;
+	/** The other two shapes, keyed by ratio: `'1:1'` square and `'9:16'` portrait. Nothing
+	 *  else is published (16:9 lives on `poster_url`). See `lib/eventArt.ts`. */
+	poster_variants?: Partial<Record<PosterVariantRatio, string>>;
 	event_type: string;
 	status: 'draft' | 'soon' | 'open' | 'closed';
 	venue_name: string;
@@ -230,8 +232,6 @@ export interface IPageContent {
 
 export interface IEventDetail extends IEventListItem {
 	description: string;
-	/** Portrait 2:3 poster (movie-poster style). null when not uploaded. */
-	poster_portrait_url?: string | null;
 	google_place_id: string | null;
 	sessions: IEventSession[];
 	ticket_types: ITicketType[];

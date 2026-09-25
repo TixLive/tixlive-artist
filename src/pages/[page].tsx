@@ -54,7 +54,8 @@ const LegalPage: NextPageWithLayout = function LegalPage() {
 	if (!usedLocale) return null;
 
 	let sanitizedHtml: string;
-	try { sanitizedHtml = sanitizeHtml(content[usedLocale]); } catch { sanitizedHtml = content[usedLocale]; }
+	// Fail closed: if sanitization throws, render nothing rather than raw (unsafe) HTML.
+	try { sanitizedHtml = sanitizeHtml(content[usedLocale]); } catch { sanitizedHtml = ''; }
 
 	return (
 		<>

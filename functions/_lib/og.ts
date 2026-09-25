@@ -11,6 +11,19 @@
 
 const BESTTIX_DEFAULT = 'https://tix.live';
 
+// A Response built by hand (`new Response(body, { headers })`) never goes through
+// Cloudflare Pages' ASSETS pipeline, so it gets none of the security headers that
+// pipeline applies — not the `/*` rule in public/_headers (Strict-Transport-Security),
+// and not the platform's own defaults for asset responses (X-Content-Type-Options,
+// Referrer-Policy). Any function that returns a hand-built Response instead of
+// `env.ASSETS.fetch()` must spread this in, or it silently ships with zero coverage.
+// Referrer-Policy value matches Cloudflare Pages' own default for asset responses.
+export const SECURITY_HEADERS: Record<string, string> = {
+	'Strict-Transport-Security': 'max-age=31536000',
+	'X-Content-Type-Options': 'nosniff',
+	'Referrer-Policy': 'strict-origin-when-cross-origin',
+};
+
 // Conservative allow-list of preview/crawler user agents. Real browsers never match,
 // so they skip the besttix roundtrip and get the untouched static shell.
 // Three groups: social-preview bots, classic search crawlers, and AI/answer-engine

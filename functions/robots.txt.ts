@@ -1,6 +1,8 @@
 // Host-aware robots.txt (`/robots.txt`).
 // A Pages Function rather than a static file so the Sitemap line carries the
 // correct per-tenant absolute URL (each white-label org runs on its own host).
+import { SECURITY_HEADERS } from './_lib/og';
+
 interface Ctx {
 	request: Request;
 }
@@ -21,6 +23,7 @@ export async function onRequest({ request }: Ctx): Promise<Response> {
 
 	return new Response(body, {
 		headers: {
+			...SECURITY_HEADERS,
 			'Content-Type': 'text/plain; charset=utf-8',
 			'Cache-Control': 'public, max-age=86400',
 		},

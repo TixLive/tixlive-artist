@@ -3,7 +3,7 @@
 // edge from besttix rather than baked at build time. Lists the landing page plus
 // every upcoming event. Past events are intentionally excluded (the archive is
 // noindex). Falls back to a home-only sitemap if besttix is unavailable.
-import { besttixBase, fetchBesttix } from './_lib/og';
+import { besttixBase, fetchBesttix, SECURITY_HEADERS } from './_lib/og';
 
 interface Env {
 	BESTTIX_API_URL?: string;
@@ -65,6 +65,7 @@ export async function onRequest({ request, env }: Ctx): Promise<Response> {
 
 	return new Response(body, {
 		headers: {
+			...SECURITY_HEADERS,
 			'Content-Type': 'application/xml; charset=utf-8',
 			'Cache-Control': 'public, max-age=86400',
 		},

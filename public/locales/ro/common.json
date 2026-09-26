@@ -208,7 +208,13 @@
 		"edit_profile_title": "Editeaza datele tale",
 		"profile_incomplete": "Adauga numele tau pentru a continua. Il vom salva in cont.",
 		"me_error_fallback": "Nu am putut incarca datele contului. Te rugam sa le completezi mai jos.",
-		"me_error_fallback_note": "Date cont indisponibile — folosim datele in cache."
+		"me_error_fallback_note": "Date cont indisponibile — folosim datele in cache.",
+		"cart_expired_title": "Coșul tău a expirat",
+		"cart_expired_body": "Ți-am păstrat selecția o vreme, dar a trecut prea mult timp. Alege biletele din nou — durează un moment.",
+		"cart_missing_title": "Acest link de finalizare nu funcționează",
+		"cart_missing_body": "Linkul poate fi greșit sau aparține altui site.",
+		"cart_restart_cta": "Alege biletele din nou",
+		"cart_browse_cta": "Vezi evenimentele"
 	},
 	"success": {
 		"payment_successful": "Plată reușită!",

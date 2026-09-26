@@ -207,7 +207,13 @@
 		"edit_profile_title": "Edit your details",
 		"profile_incomplete": "Add your name to continue. We'll save it to your account.",
 		"me_error_fallback": "We couldn't load your account details. Please fill in below.",
-		"me_error_fallback_note": "Account details unavailable — using cached info."
+		"me_error_fallback_note": "Account details unavailable — using cached info.",
+		"cart_expired_title": "Your cart expired",
+		"cart_expired_body": "We held your selection for a while, but it's been too long. Pick your tickets again — it only takes a moment.",
+		"cart_missing_title": "This checkout link doesn't work",
+		"cart_missing_body": "The link may be mistyped, or it belongs to another site.",
+		"cart_restart_cta": "Choose tickets again",
+		"cart_browse_cta": "Browse events"
 	},
 	"success": {
 		"payment_successful": "Payment Successful!",

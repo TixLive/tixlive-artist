@@ -14,6 +14,7 @@ import Layout from '@/components/layout/Layout';
 import type { NextPageWithLayout } from '@/pages/_app';
 import OrderSummary from '@/components/checkout/OrderSummary';
 import CheckoutSkeleton from '@/components/checkout/CheckoutSkeleton';
+import CartExpiredNotice from '@/components/checkout/CartExpiredNotice';
 import ConsentCheckbox from '@/components/checkout/ConsentCheckbox';
 import PromoCodeInput from '@/components/checkout/PromoCodeInput';
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
@@ -26,6 +27,8 @@ import PhoneNumberInput from '@/components/forms/PhoneNumberInput';
 import ApiService, { ApiError, getAccessToken, getRefreshToken } from '@/services/Api.Service';
 import { normalizeLocale } from '@/lib/staticI18n';
 import { fetchEvent } from '@/queries/events/useGetEvent';
+import { fetchCheckoutSession } from '@/queries/checkout/useGetCheckoutSession';
+import { formatSeatIdLabel, hydrateCheckoutSelection, readCheckoutParams } from '@/lib/checkoutSession';
 import { useCreateOrder } from '@/queries/orders/useCreateOrder';
 import { useOrganizer } from '@/contexts/OrganizerContext';
 import { useConsent } from '@/contexts/ConsentContext';
@@ -34,7 +37,7 @@ import { trackEvent as clarityEvent, setTag as claritySetTag } from '@/lib/clari
 import { CLARITY_EVENTS, CLARITY_TAGS } from '@/lib/clarity.constants';
 import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
-import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
+import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, ICheckoutSessionPublic, IMe } from '@/types';
 
 type CheckoutFormValues = {
   first_name: string;
@@ -44,6 +47,59 @@ type CheckoutFormValues = {
   confirm_email: boolean;
   accept_terms: boolean;
 };
+
+type BundleCartItem = { bundle_id: number; quantity: number; name: string; price: number };
+
+type LegacyHandoff = {
+  slug: string;
+  session: string | null;
+  cart: ICartItem[];
+  addons: IAddonCartItem[];
+  bundles: BundleCartItem[];
+  seats: string[];
+  labels: string[];
+  autoAllocate: boolean;
+};
+
+/**
+ * The pre-checkout-session transport: a one-shot `tixlive:checkout` payload written right
+ * before the redirect. Still read as a fallback — the buy flow keeps writing it, so a park
+ * call that didn't land (offline, besttix 5xx) still ends up on a working checkout page.
+ */
+function readLegacyHandoff(): LegacyHandoff | null {
+  const raw = sessionStorage.getItem('tixlive:checkout');
+  if (!raw) return null;
+
+  let stored: Record<string, string>;
+  try {
+    stored = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+
+  const parseArray = <T,>(json?: string): T[] => {
+    if (!json) return [];
+    try {
+      const parsed = JSON.parse(json);
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  if (!stored.event) return null;
+
+  return {
+    slug: stored.event,
+    session: stored.session ?? null,
+    cart: parseArray<ICartItem>(stored.cart),
+    addons: parseArray<IAddonCartItem>(stored.addons),
+    bundles: parseArray<BundleCartItem>(stored.bundles),
+    seats: parseArray<string>(stored.selected_seats).filter((s): s is string => typeof s === 'string'),
+    labels: parseArray<string>(stored.seat_labels).filter((s): s is string => typeof s === 'string'),
+    autoAllocate: stored.auto_allocate === '1',
+  };
+}
 
 const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const { t, i18n } = useTranslation('common');
@@ -61,10 +117,13 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const [seatLabels, setSeatLabels] = useState<string[]>([]);
   // Auto-allocate: seat_labels are a preview; selected_seats is NOT submitted (server assigns).
   const [autoAllocate, setAutoAllocate] = useState(false);
-  const [bundleCart, setBundleCart] = useState<Array<{ bundle_id: number; quantity: number; name: string; price: number }>>([]);
+  const [bundleCart, setBundleCart] = useState<BundleCartItem[]>([]);
   const [me, setMe] = useState<IMe | null>(null);
   const [meError, setMeError] = useState(false);
   const [ready, setReady] = useState(false);
+  // A parked cart that can't be resumed: 'expired' (410) or 'missing' (404).
+  const [loadError, setLoadError] = useState<'expired' | 'missing' | null>(null);
+  const [returnSlug, setReturnSlug] = useState<string | null>(null);
 
   const [selectedPaymentId, setSelectedPaymentId] = useState<number>(0);
   const [discount, setDiscount] = useState<{ percent?: number; amount?: number } | undefined>();
@@ -86,58 +145,17 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   }
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('tixlive:checkout');
-    if (!raw) {
+    // `/checkout?session=<uuid>&event=<slug>` is the current transport: the selection lives
+    // on besttix, so the page survives a reload or a link reopened later. Static export means
+    // router.query is empty on first render — read the url directly.
+    const { sessionId: parkedId, eventSlug: parkedSlug } = readCheckoutParams(window.location.search);
+    const legacy = parkedId ? null : readLegacyHandoff();
+
+    const eventSlug = parkedId ? parkedSlug : legacy?.slug ?? null;
+    if ((!parkedId && !legacy) || !eventSlug) {
       router.replace('/');
       return;
     }
-
-    let stored: Record<string, string>;
-    try {
-      stored = JSON.parse(raw);
-    } catch {
-      router.replace('/');
-      return;
-    }
-
-    const { event: eventSlug, session: sessionRaw, cart: cartJson, addons: addonsJson, selected_seats: seatsJson, seat_labels: labelsJson, auto_allocate: autoAllocateRaw, bundles: bundlesJson } = stored;
-
-    let parsedBundles: Array<{ bundle_id: number; quantity: number; name: string; price: number }> = [];
-    if (bundlesJson) { try { const p = JSON.parse(bundlesJson); if (Array.isArray(p)) parsedBundles = p; } catch { parsedBundles = []; } }
-
-    if (!eventSlug || (!cartJson && parsedBundles.length === 0)) {
-      router.replace('/');
-      return;
-    }
-
-    let parsedCart: ICartItem[] = [];
-    try {
-      parsedCart = cartJson ? JSON.parse(cartJson) : [];
-      if (!Array.isArray(parsedCart)) parsedCart = [];
-    } catch {
-      parsedCart = [];
-    }
-    // A purchase needs at least a ticket or a bundle.
-    if (parsedCart.length === 0 && parsedBundles.length === 0) {
-      router.replace('/');
-      return;
-    }
-
-    let parsedAddons: IAddonCartItem[] = [];
-    if (addonsJson) { try { parsedAddons = JSON.parse(addonsJson); } catch { parsedAddons = []; } }
-
-    let parsedSeats: string[] = [];
-    if (seatsJson) { try { const p = JSON.parse(seatsJson); if (Array.isArray(p)) parsedSeats = p.filter((s): s is string => typeof s === 'string'); } catch { parsedSeats = []; } }
-
-    let parsedLabels: string[] = [];
-    if (labelsJson) { try { const p = JSON.parse(labelsJson); if (Array.isArray(p)) parsedLabels = p.filter((s): s is string => typeof s === 'string'); } catch { parsedLabels = []; } }
-
-    setCart(parsedCart);
-    setAddonCart(parsedAddons);
-    setSelectedSeats(parsedSeats);
-    setAutoAllocate(autoAllocateRaw === '1');
-    setBundleCart(parsedBundles);
-    setSeatLabels(parsedLabels);
 
     // Fetch event and me in parallel.
     // /api/me returns 401 when the user is a guest — that's expected, not an error.
@@ -149,18 +167,59 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
           .catch(() => ({ kind: 'error' as const }))
       : Promise.resolve({ kind: 'guest' as const });
 
-    Promise.all([fetchEvent(eventSlug), mePromise]).then(([ev, meResult]) => {
+    (async () => {
+      let parked: ICheckoutSessionPublic | null = null;
+      if (parkedId) {
+        try {
+          parked = await fetchCheckoutSession(parkedId);
+        } catch (err) {
+          // 410 = the cart aged out and can be rebuilt; 404 = no such link on this site.
+          setReturnSlug(eventSlug);
+          setLoadError(err instanceof ApiError && err.status === 410 ? 'expired' : 'missing');
+          return;
+        }
+      }
+
+      const [ev, meResult] = await Promise.all([fetchEvent(eventSlug), mePromise]);
       if (!ev) { router.replace('/'); return; }
 
-      // Auto-allocate events don't require a manual seat selection (server assigns),
-      // so only bounce non-auto seated events that arrived without seats.
-      if (ev.is_seated && !ev.auto_allocate_seats && parsedSeats.length === 0) {
+      // Parked sessions carry ids + quantities only (besttix is the price authority), so
+      // names and prices are re-read from the event that just loaded.
+      const selection = parked
+        ? hydrateCheckoutSelection(ev, parked)
+        : { cart: legacy!.cart, addonCart: legacy!.addons, bundleCart: legacy!.bundles };
+      const seats = parked ? parked.selected_seats ?? [] : legacy!.seats;
+
+      // Nothing left to buy — every parked tier/bundle was pulled while the cart sat idle.
+      if (selection.cart.length === 0 && selection.bundleCart.length === 0) {
         router.replace(`/events/${eventSlug}`);
         return;
       }
 
+      // Auto-allocate events don't require a manual seat selection (server assigns),
+      // so only bounce non-auto seated events that arrived without seats.
+      if (ev.is_seated && !ev.auto_allocate_seats && seats.length === 0) {
+        router.replace(`/events/${eventSlug}`);
+        return;
+      }
+
+      const sessionRaw = parked ? String(parked.session_id) : legacy!.session;
       const matchedSession = sessionRaw ? ev.sessions?.find((s: { id: number }) => String(s.id) === sessionRaw) : undefined;
       const resolvedSession = matchedSession ?? ev.sessions?.[0];
+
+      setCart(selection.cart);
+      setAddonCart(selection.addonCart);
+      setBundleCart(selection.bundleCart);
+      setSelectedSeats(seats);
+      // Auto-allocate is a property of the event, so a resumed session doesn't carry a flag.
+      setAutoAllocate(parked ? !!ev.auto_allocate_seats : legacy!.autoAllocate);
+      // The picker builds its labels from the seating chart; a resumed cart has only the
+      // seat ids, so the label is rebuilt from the id itself.
+      setSeatLabels(
+        parked
+          ? seats.map((id) => formatSeatIdLabel(id, { row: t('seating.row'), seat: t('seating.seat') }))
+          : legacy!.labels,
+      );
 
       setEvent(ev);
       setSession(resolvedSession ? { id: resolvedSession.id, date: resolvedSession.date } : { id: 0, date: '' });
@@ -173,7 +232,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
       }
 
       setReady(true);
-    }).catch(() => {
+    })().catch(() => {
       router.replace('/');
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -334,6 +393,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     submitOrder();
   };
 
+  if (loadError) return <CartExpiredNotice kind={loadError} eventSlug={returnSlug} />;
   if (!ready || !event) return <CheckoutSkeleton />;
 
   const isAuthed = me !== null;

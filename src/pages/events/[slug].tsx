@@ -14,6 +14,7 @@ import { formatEventDate, formatEventTimeWithZone } from '@/lib/datetime';
 import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
 import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import { useHeaderCart } from '@/contexts/LayoutContext';
+import { useCheckoutHandoff } from '@/hooks/useCheckoutHandoff';
 import Layout from '@/components/layout/Layout';
 import Seo from '@/components/seo/Seo';
 import { truncate, eventLd } from '@/lib/seo';
@@ -83,6 +84,7 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [addonQuantities, setAddonQuantities] = useState<Record<number, number>>({});
   const [bundleQuantities, setBundleQuantities] = useState<Record<number, number>>({});
+  const { goToCheckout } = useCheckoutHandoff();
 
   // Derived state — safe with null event (empty arrays/false until loaded)
   const ticketTypes = event?.ticket_types ?? [];
@@ -299,10 +301,18 @@ const EventDetailPage: NextPageWithLayout = function EventDetailPage() {
       sessionStorage.setItem('tixlive:seats', JSON.stringify(data));
       router.push(`/events/${event.slug}/seats`);
     } else {
-      sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
-      router.push('/checkout');
+      // GA: park the selection on besttix so checkout is a resumable url, not a one-shot
+      // handoff. The hook falls back to the old sessionStorage transport if parking fails.
+      goToCheckout({
+        eventSlug: event.slug,
+        sessionId: activeSessionId,
+        cart: cartItems,
+        addons: addonItems,
+        bundles: bundleSelections.map((b) => ({ bundle_id: b.bundle_id, quantity: b.quantity })),
+        legacyPayload: data,
+      });
     }
-  }, [salesOpen, event, isSeated, showCategorySelector, cartItems, bundleSelections, activeSessionId, addons, addonQuantities, currency, router]);
+  }, [salesOpen, event, isSeated, showCategorySelector, cartItems, bundleSelections, activeSessionId, addons, addonQuantities, currency, router, goToCheckout]);
 
   const headerCart = useMemo(
     () => (totalQuantity > 0 || bundleSelections.length > 0

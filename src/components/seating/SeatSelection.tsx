@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import {
 	Button,
 	Modal,
@@ -32,6 +31,7 @@ import { buildTierColorById, buildTierColorBySeatId } from '@/lib/tierColors';
 import { trackEvent as clarityEvent } from '@/lib/clarity';
 import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import { suggestSeats } from '@/queries/seating/useSuggestSeats';
+import { useCheckoutHandoff } from '@/hooks/useCheckoutHandoff';
 import AddonSection from '@/components/event/AddonSection';
 import type { IAddonCartItem, ITicketAddon, ICartItem, ISeatingResponse } from '@/types';
 
@@ -119,7 +119,7 @@ export default function SeatSelection({
 	bundleAddonQty,
 }: SeatSelectionProps) {
 	const { t } = useTranslation('common');
-	const router = useRouter();
+	const { goToCheckout } = useCheckoutHandoff();
 	const reducedMotion = useReducedMotion();
 
 	// Version gate: 1 = legacy charts (must equal our GEOMETRY_VERSION copy),
@@ -398,10 +398,21 @@ export default function SeatSelection({
 			...(readOnly && { auto_allocate: '1' }),
 			...(readOnly && bundles && bundles.length > 0 && { bundles: JSON.stringify(bundles) }),
 		};
-		sessionStorage.setItem('tixlive:checkout', JSON.stringify(data));
 		clarityEvent(CLARITY_EVENTS.SEATS_SELECTED);
-		router.push('/checkout');
-	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addons, addonQuantities, router, t, readOnly, originalCart, bundles]);
+		// Park the selection on besttix and address checkout by its uuid; the hook writes the
+		// legacy `tixlive:checkout` payload too and falls back to it if parking fails.
+		goToCheckout({
+			eventSlug: slug,
+			sessionId,
+			cart: readOnly && originalCart ? originalCart : derivedCart,
+			addons: addonItems,
+			bundles: readOnly && bundles ? bundles.map((b) => ({ bundle_id: b.bundle_id, quantity: b.quantity })) : undefined,
+			// Auto-allocate: the seats are a preview, so they are parked for the summary but
+			// checkout still omits them from the buy (the server assigns the real ones).
+			selectedSeats: [...selected],
+			legacyPayload: data,
+		});
+	}, [complete, continuing, selected, seatTier, tiers, currency, selectedItems, slug, sessionId, addons, addonQuantities, t, readOnly, originalCart, bundles, goToCheckout]);
 
 	// Reset continuing when page is restored from bfcache (browser back button)
 	useEffect(() => {

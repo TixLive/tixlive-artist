@@ -324,6 +324,18 @@ export interface IOrderDetail {
 	/** IANA timezone of the session (e.g. "Europe/Bucharest"). Format session_date in this zone. */
 	timezone?: string;
 	items: Array<{ name: string; quantity: number; price: number; seat_id?: string | null }>;
+	/** Tickets + add-ons + bundles at full price, before any discount. */
+	subtotal: number;
+	/** Promo discount amount knocked off the subtotal (>= 0; 0 when no code). */
+	discount: number;
+	/** Discount percentage, only when the applied code was percentage-based (for "(27%)" display). */
+	discount_percent: number | null;
+	/** The promo code that was applied, or null. */
+	promo_code: string | null;
+	/** Buyer-paid service fee. */
+	service_fee: number;
+	/** Buyer-paid RO fiscal stamp (timbru), 0 when the event has no live fiscal config. */
+	fiscal_stamp: number;
 	total: number;
 	currency: string;
 	/** Facebook-safe Purchase value/currency (besttix converts unsupported codes like MDL → USD). */

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -34,6 +34,7 @@ import { trackEvent as clarityEvent, setTag as claritySetTag } from '@/lib/clari
 import { CLARITY_EVENTS, CLARITY_TAGS } from '@/lib/clarity.constants';
 import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
+import { CHECKOUT_STORAGE_KEY, SEATS_STORAGE_KEY, resolveCheckoutIdempotencyKey } from '@/lib/buyFlowStorage';
 import { IEventDetail, ICartItem, IAddonCartItem, IAvailablePaymentMethod, IMe } from '@/types';
 
 type CheckoutFormValues = {
@@ -77,16 +78,8 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const { isOpen: drawerOpen, onOpen: openDrawer, onOpenChange: setDrawerOpen } = useDisclosure();
   const createOrderMutation = useCreateOrder();
 
-  const idempotencyKeyRef = useRef<string>('');
-  if (!idempotencyKeyRef.current) {
-    idempotencyKeyRef.current =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  }
-
   useEffect(() => {
-    const raw = sessionStorage.getItem('tixlive:checkout');
+    const raw = sessionStorage.getItem(CHECKOUT_STORAGE_KEY);
     if (!raw) {
       router.replace('/');
       return;
@@ -178,6 +171,18 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Back-forward cache: a Back gesture out of the payment provider or out of
+  // /checkout/success can restore this page without re-mounting it, so the cart guard in
+  // the effect above never runs again. Re-check it — a cart that already became an order
+  // is cleared by the success page, and must not be buyable a second time.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted && !sessionStorage.getItem(CHECKOUT_STORAGE_KEY)) router.replace('/');
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!drawerOpen && profileIncomplete) {
       setProfileIncomplete(false);
@@ -195,11 +200,21 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
       cart: JSON.stringify(cart),
       ...(addonCart.length > 0 && { addons: JSON.stringify(addonCart) }),
     };
-    sessionStorage.setItem('tixlive:seats', JSON.stringify(data));
+    sessionStorage.setItem(SEATS_STORAGE_KEY, JSON.stringify(data));
     router.push(`/events/${event.slug}/seats`);
   };
 
   const submitOrder = async (values?: CheckoutFormValues) => {
+    // The cart's own key, stable across mounts (see resolveCheckoutIdempotencyKey): besttix
+    // keys the buy route's idempotency on it, so a fresh key per mount would let a Back
+    // gesture after a paid order buy the same tickets again. No key means no pending cart —
+    // it already became an order, so there is nothing left here to buy.
+    const idempotencyKey = resolveCheckoutIdempotencyKey();
+    if (!idempotencyKey) {
+      router.replace('/');
+      return;
+    }
+
     setSubmitting(true);
     setSubmitError('');
     setSeatConflict(false);
@@ -224,7 +239,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
         ...(selectedSeats.length > 0 && !autoAllocate && { selected_seats: selectedSeats }),
         promo_code: promoCode || undefined,
         locale: normalizeLocale(i18n.language),
-        idempotency_key: idempotencyKeyRef.current,
+        idempotency_key: idempotencyKey,
         // Facebook Pixel: forward consent + click identifiers so besttix CAPI can fire a
         // matched, deduped Purchase. Cookies only exist once the pixel loaded (consent given).
         marketing_consent: marketingConsent,

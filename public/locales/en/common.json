@@ -489,6 +489,8 @@
 		"auto_allocate_locked": "Seats are assigned automatically for this event and can't be changed.",
 		"pick_best": "Pick best seats",
 		"repick_error": "Couldn't auto-pick seats. Tap the map to choose.",
+		"seats_taken_revalidated_one": "1 of your selected seats was just taken by another buyer and has been removed. Please review your selection.",
+		"seats_taken_revalidated_other": "{{count}} of your selected seats were just taken by another buyer and have been removed. Please review your selection.",
 		"canvas_hint": "Drag to pan · scroll to zoom · tap a seat to select.",
 		"autopick_title": "We picked the best seats together",
 		"autopick_body": "We selected {{count}} seats next to each other. Tap any seat on the map to change them.",

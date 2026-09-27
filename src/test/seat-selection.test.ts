@@ -7,6 +7,7 @@ import {
 	deriveCart,
 	selectionTotal,
 	sanitizeSeats,
+	findStaleSeats,
 	formatSeatLabel,
 } from '@/lib/seatSelection';
 import type { ISeatingTier } from '@/types';
@@ -107,6 +108,23 @@ describe('seatSelection (seat-first, per-order cap)', () => {
 		it('drops unpriced seats but keeps tiers regardless of any "cart"', () => {
 			const out = sanitizeSeats(['ga-x-1', 'balcon-B-1', 'parter-A-1'], seatTier, new Set(), MAX);
 			expect(out).toEqual(['balcon-B-1', 'parter-A-1']); // ga unpriced dropped; both tiers kept
+		});
+	});
+
+	describe('findStaleSeats (Continue-time revalidation)', () => {
+		it('returns seats the buyer picked that a fresh booked snapshot now claims', () => {
+			const selected = ['parter-A-1', 'parter-A-2', 'balcon-B-1'];
+			const freshBooked = new Set(['parter-A-2', 'ga-x-1']);
+			expect(findStaleSeats(selected, freshBooked)).toEqual(['parter-A-2']);
+		});
+
+		it('returns [] when nothing selected has been booked elsewhere', () => {
+			const selected = ['parter-A-1', 'balcon-B-1'];
+			expect(findStaleSeats(selected, new Set(['parter-A-5']))).toEqual([]);
+		});
+
+		it('returns [] for an empty selection', () => {
+			expect(findStaleSeats([], new Set(['parter-A-1']))).toEqual([]);
 		});
 	});
 

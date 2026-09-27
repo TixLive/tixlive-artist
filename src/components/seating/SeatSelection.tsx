@@ -26,11 +26,13 @@ import {
 	deriveCart,
 	selectionTotal,
 	sanitizeSeats,
+	findStaleSeats,
 	formatSeatLabel,
 } from '@/lib/seatSelection';
 import { buildTierColorById, buildTierColorBySeatId } from '@/lib/tierColors';
 import { trackEvent as clarityEvent } from '@/lib/clarity';
 import { CLARITY_EVENTS } from '@/lib/clarity.constants';
+import { fetchSeating } from '@/queries/seating/useGetSeating';
 import { suggestSeats } from '@/queries/seating/useSuggestSeats';
 import AddonSection from '@/components/event/AddonSection';
 import type { IAddonCartItem, ITicketAddon, ICartItem, ISeatingResponse } from '@/types';
@@ -154,7 +156,11 @@ export default function SeatSelection({
 		for (const s of computeAllSeats(sections)) m.set(s.id, s);
 		return m;
 	}, [sections]);
-	const bookedSet = useMemo(() => new Set(seating.booked), [seating.booked]);
+	// State, not a memo off the `seating` prop: the prop is a one-time snapshot from
+	// when the page loaded, and Continue re-checks availability against the server
+	// right before checkout — a seat sold out from under the buyer must be reflected
+	// here so the canvas and the "seats available" count pick it up immediately.
+	const [bookedSet, setBookedSet] = useState<Set<string>>(() => new Set(seating.booked));
 	const tierMeta = useMemo(() => {
 		const m = new Map<number, { name: string; index: number }>();
 		tiers.forEach((tier, index) =>
@@ -356,9 +362,40 @@ export default function SeatSelection({
 		}
 	}, [seedCart, slug, sessionId, seatTier, bookedSet, maxPerOrder, openAutopick, t]);
 
-	const handleContinue = useCallback(() => {
+	const handleContinue = useCallback(async () => {
 		if (!complete || continuing) return;
 		setContinuing(true);
+
+		// Re-check availability right before handing off to checkout: `seating` is a
+		// snapshot taken when the page loaded, and nothing since then (no hold/lock,
+		// no poll) has kept it fresh — a seat can sell out from under the buyer while
+		// they linger on add-ons. Interactive picks only: a read-only auto-allocate
+		// preview has no buyer-chosen seats to lose, the server assigns at order/buy.
+		if (!readOnly) {
+			try {
+				const fresh = await fetchSeating(slug, sessionId);
+				const freshBooked = new Set(fresh.booked);
+				const stale = findStaleSeats(selected, freshBooked);
+				if (stale.length > 0) {
+					setBookedSet(freshBooked);
+					setSelected((prev) => {
+						const next = new Set(prev);
+						stale.forEach((id) => next.delete(id));
+						return next;
+					});
+					showToast({
+						title: t('seating.seats_taken_revalidated', { count: stale.length }),
+						color: 'danger',
+					});
+					setContinuing(false);
+					return;
+				}
+			} catch {
+				// Revalidation itself failing shouldn't block checkout — order/buy still
+				// rejects a stale selection server-side (SEAT_TAKEN/SEATS_REQUIRED).
+			}
+		}
+
 		const derivedCart = deriveCart(selected, seatTier, tiers, currency);
 		const seatLabels = selectedItems.map((it) => {
 			const hyphen = it.label.indexOf('-');

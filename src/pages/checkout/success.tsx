@@ -12,6 +12,7 @@ import { useGetOrderByToken } from '@/queries/orders/useGetOrderByToken';
 import { useGetEvent } from '@/queries/events/useGetEvent';
 import { useBuyFlowStep } from '@/contexts/LayoutContext';
 import { useClarityEventOnce } from '@/hooks/useClarityEventOnce';
+import { useClearBuyFlow } from '@/hooks/useClearBuyFlow';
 import { CLARITY_EVENTS } from '@/lib/clarity.constants';
 import type { IOrderDetail } from '@/types';
 
@@ -52,6 +53,10 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 	// Clarity: mark the purchase and force the session to be recorded (sampling-proof). Independent
 	// of marketing consent — runs on Clarity's own (cookieless-until-consent) stream.
 	useClarityEventOnce({ name: CLARITY_EVENTS.PURCHASE, when: order?.status === 'paid', upgrade: true });
+
+	// This cart has become an order: drop it, so a Back gesture from here cannot re-enter
+	// /checkout with the same tickets and pay for them twice.
+	useClearBuyFlow(!!order);
 
 	const notFound = (router.isReady && !orderId) || isError;
 	const loading = !notFound && !order;

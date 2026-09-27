@@ -138,6 +138,17 @@ export function sanitizeSeats(
 	return out;
 }
 
+/**
+ * Which of the buyer's selected seats were sold to someone else since the seat
+ * map was fetched — the check re-run right before checkout, against a fresh
+ * `booked` snapshot (there is no hold/lock while the buyer lingers on the page).
+ */
+export function findStaleSeats(selected: Iterable<string>, freshBooked: Set<string>): string[] {
+	const out: string[] = [];
+	for (const id of selected) if (freshBooked.has(id)) out.push(id);
+	return out;
+}
+
 /** Human label for a seat, e.g. "A-12". */
 export function formatSeatLabel(seat: Pick<Seat, 'row' | 'num'>): string {
 	return `${seat.row}-${seat.num}`;

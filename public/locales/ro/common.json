@@ -493,6 +493,8 @@
 		"auto_allocate_locked": "Locurile sunt atribuite automat pentru acest eveniment si nu pot fi modificate.",
 		"pick_best": "Alege cele mai bune locuri",
 		"repick_error": "Nu am putut alege locuri automat. Atinge harta pentru a alege.",
+		"seats_taken_revalidated_one": "1 dintre locurile alese tocmai a fost ocupat de alt cumparator si a fost eliminat. Verifica-ti selectia.",
+		"seats_taken_revalidated_other": "{{count}} dintre locurile alese tocmai au fost ocupate de alt cumparator si au fost eliminate. Verifica-ti selectia.",
 		"canvas_hint": "Trage pentru a naviga · deruleaza pentru zoom · atinge un loc pentru a-l selecta.",
 		"autopick_title": "Am ales cele mai bune locuri impreuna",
 		"autopick_body": "Am selectat {{count}} locuri unul langa altul. Atinge orice loc pe harta pentru a le schimba.",

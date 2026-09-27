@@ -92,8 +92,6 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 
 	const items = order?.items ?? [];
 	const totalQty = items.reduce((s, i) => s + i.quantity, 0);
-	const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
-	const fee = order?.total != null ? order.total - subtotal : 0;
 
 	const calendarUrl = (() => {
 		if (!order || !dateSource) return null;
@@ -283,13 +281,31 @@ const CheckoutSuccessPage: NextPageWithLayout = function CheckoutSuccessPage() {
 											</div>
 										);
 									})}
-									{fee > 0.5 && (
+									{(order.discount > 0 || order.service_fee > 0 || order.fiscal_stamp > 0) && (
 										<>
 											<div className="my-1 h-px bg-[var(--line)]" />
-											<div className="flex items-center justify-between text-[12px] text-[var(--ink-3)]">
-												<span>{t('price_breakdown.service_fee')}</span>
-												<span className="tabular-nums">{Math.round(fee).toLocaleString()} {order.currency}</span>
-											</div>
+											{order.discount > 0 && (
+												<div className="flex items-center justify-between text-[12px] text-[var(--ink-3)]">
+													<span>
+														{t('price_breakdown.discount')}
+														{order.promo_code ? ` (${order.promo_code})` : ''}
+														{order.discount_percent ? ` (${order.discount_percent}%)` : ''}
+													</span>
+													<span className="tabular-nums">−{Math.round(order.discount).toLocaleString()} {order.currency}</span>
+												</div>
+											)}
+											{order.service_fee > 0 && (
+												<div className="flex items-center justify-between text-[12px] text-[var(--ink-3)]">
+													<span>{t('price_breakdown.service_fee')}</span>
+													<span className="tabular-nums">{Math.round(order.service_fee).toLocaleString()} {order.currency}</span>
+												</div>
+											)}
+											{order.fiscal_stamp > 0 && (
+												<div className="flex items-center justify-between text-[12px] text-[var(--ink-3)]">
+													<span>{t('price_breakdown.cultural_stamp', { defaultValue: 'Timbru cultural' })}</span>
+													<span className="tabular-nums">{Math.round(order.fiscal_stamp).toLocaleString()} {order.currency}</span>
+												</div>
+											)}
 										</>
 									)}
 									{order.total != null && (

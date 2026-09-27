@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
+import { Button } from '@heroui/react';
 import { useGetEvents } from '@/queries/events/useGetEvents';
 import { useGetArchiveStats } from '@/queries/events/useGetArchiveStats';
 import { useOrganizer } from '@/contexts/OrganizerContext';
@@ -21,6 +22,7 @@ const Archive: NextPageWithLayout = function Archive() {
 		isFetchingNextPage,
 		hasNextPage,
 		isError,
+		refetch,
 	} = useGetEvents({ timeframe: 'past' });
 	const { data: stats } = useGetArchiveStats();
 
@@ -47,6 +49,25 @@ const Archive: NextPageWithLayout = function Archive() {
 						icon="mdi:loading"
 						className="h-7 w-7 animate-spin text-[var(--ink-4)]"
 					/>
+				</div>
+			) : past.length === 0 && isError ? (
+				<div className="mx-auto flex max-w-[1160px] flex-col items-center justify-center px-4 py-28 text-center">
+					<div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[22px] bg-[var(--bg-2)]">
+						<Icon icon="mdi:alert-circle-outline" className="h-9 w-9 text-[var(--ink-3)]" />
+					</div>
+					<h1 className="text-[28px] font-[800] tracking-[-0.032em] text-[var(--ink)]">
+						{t('events.load_error')}
+					</h1>
+					<Button
+						variant="bordered"
+						radius="full"
+						className="mt-6 border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-8 font-[600] text-[var(--theme-text)]"
+						onPress={() => {
+							void refetch();
+						}}
+					>
+						{t('common.try_again')}
+					</Button>
 				</div>
 			) : past.length === 0 ? (
 				<div className="mx-auto flex max-w-[1160px] flex-col items-center justify-center px-4 py-28 text-center">

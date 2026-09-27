@@ -22,6 +22,7 @@ const Home: NextPageWithLayout = function Home() {
 		isFetchingNextPage,
 		hasNextPage,
 		isError,
+		refetch,
 	} = useGetEvents({ timeframe: 'upcoming' });
 	const { data: pastData } = useGetEvents({ timeframe: 'past' });
 
@@ -87,6 +88,7 @@ const Home: NextPageWithLayout = function Home() {
 							hasNextPage={category === 'All' ? hasNextPage : false}
 							loading={isFetchingNextPage}
 							isError={isError}
+							onRetry={refetch}
 							organizerBio={organizer?.bio ?? undefined}
 							categoryLabel={category}
 						/>

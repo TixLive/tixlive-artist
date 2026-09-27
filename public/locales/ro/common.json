@@ -56,6 +56,7 @@
 	},
 	"events": {
 		"no_upcoming": "Nu sunt evenimente viitoare",
+		"load_error": "Evenimentele nu au putut fi încărcate. Încearcă din nou.",
 		"all_events": "Toate Evenimentele",
 		"category_events": "Eveniment {{category}}",
 		"sold_out": "Epuizat",

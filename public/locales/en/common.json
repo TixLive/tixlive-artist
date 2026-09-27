@@ -56,6 +56,7 @@
 	},
 	"events": {
 		"no_upcoming": "No upcoming events",
+		"load_error": "Couldn't load events. Please try again.",
 		"all_events": "All Events",
 		"category_events": "{{category}} Events",
 		"sold_out": "Sold Out",

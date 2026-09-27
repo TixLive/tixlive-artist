@@ -3,6 +3,7 @@ import LoadMore from '@/components/common/LoadMore';
 import { IEventListItem } from '@/types';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'next-i18next';
+import { Button } from '@heroui/react';
 
 interface EventGridProps {
 	events: IEventListItem[];
@@ -11,12 +12,38 @@ interface EventGridProps {
 	hasNextPage?: boolean;
 	loading?: boolean;
 	isError?: boolean;
+	onRetry?: () => void | Promise<unknown>;
 	organizerBio?: string;
 	categoryLabel?: string;
 }
 
-export default function EventGrid({ events, total, onLoadMore, hasNextPage, loading, isError, organizerBio, categoryLabel }: EventGridProps) {
+export default function EventGrid({ events, total, onLoadMore, hasNextPage, loading, isError, onRetry, organizerBio, categoryLabel }: EventGridProps) {
 	const { t } = useTranslation('common');
+
+	if (events.length === 0 && isError) {
+		return (
+			<div className="flex flex-col items-center justify-center px-4 py-24 text-center">
+				<div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[22px] bg-[var(--bg-2)]">
+					<Icon icon="mdi:alert-circle-outline" className="h-9 w-9 text-[var(--ink-3)]" />
+				</div>
+				<h3 className="text-[28px] font-[800] tracking-[-0.032em] text-[var(--ink)]">
+					{t('events.load_error')}
+				</h3>
+				{onRetry && (
+					<Button
+						variant="bordered"
+						radius="full"
+						className="mt-6 border-[color-mix(in_srgb,var(--theme-text)_8%,transparent)] bg-[var(--theme-surface)] px-8 font-[600] text-[var(--theme-text)]"
+						onPress={() => {
+							void onRetry();
+						}}
+					>
+						{t('common.try_again')}
+					</Button>
+				)}
+			</div>
+		);
+	}
 
 	if (events.length === 0) {
 		return (

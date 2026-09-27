@@ -45,6 +45,12 @@ type CheckoutFormValues = {
   accept_terms: boolean;
 };
 
+function generateIdempotencyKey(): string {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const { t, i18n } = useTranslation('common');
   const router = useRouter();
@@ -73,16 +79,14 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
   const [submitError, setSubmitError] = useState('');
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [seatConflict, setSeatConflict] = useState(false);
+  const [reservationExpired, setReservationExpired] = useState(false);
 
   const { isOpen: drawerOpen, onOpen: openDrawer, onOpenChange: setDrawerOpen } = useDisclosure();
   const createOrderMutation = useCreateOrder();
 
   const idempotencyKeyRef = useRef<string>('');
   if (!idempotencyKeyRef.current) {
-    idempotencyKeyRef.current =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    idempotencyKeyRef.current = generateIdempotencyKey();
   }
 
   useEffect(() => {
@@ -203,6 +207,7 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
     setSubmitting(true);
     setSubmitError('');
     setSeatConflict(false);
+    setReservationExpired(false);
 
     const isAuthed = me !== null;
 
@@ -274,6 +279,17 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
           setSubmitError(t('checkout.error_promo_exhausted'));
         } else if (code.includes('PROMO_CODE_NOT_FOUND')) {
           setSubmitError(t('checkout.error_promo_invalid'));
+        } else if (code.includes('CHECKOUT_NO_LONGER_PAYABLE')) {
+          // besttix T3525: this cart's idempotency key resolves to an order it can no longer
+          // take payment on — CANCELED once the hold sweep gave its seats back, or REFUNDED.
+          // Retrying with the same key earns this exact refusal for the rest of the session, so
+          // mint a fresh key for the same cart and offer a new order instead of resurrecting the
+          // old one — reviving it under a second key is exactly the double charge a stable key
+          // exists to prevent. Must stay before the `status === 400` catch-all: this refusal is
+          // itself a 400.
+          idempotencyKeyRef.current = generateIdempotencyKey();
+          setSubmitError(t('checkout.error_reservation_expired'));
+          setReservationExpired(true);
         } else if (status === 400) {
           setSubmitError(t('checkout.error_invalid_order'));
         } else if (status >= 500) {
@@ -332,6 +348,12 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
       return;
     }
     submitOrder();
+  };
+  // The refusal above already rotated the cart's key, so this is the ordinary submit path: one
+  // new order for the same tickets, one payment session — nothing revives the old order.
+  const retryPurchase = () => {
+    if (me !== null) onAuthedSubmit();
+    else handleSubmit(onSubmit)();
   };
 
   if (!ready || !event) return <CheckoutSkeleton />;
@@ -502,6 +524,15 @@ const CheckoutPage: NextPageWithLayout = function CheckoutPage() {
                           className="mt-3 w-full rounded-full bg-white px-5 py-2.5 text-[13px] font-[600] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-2)]"
                         >
                           {t('checkout.choose_different_seats')}
+                        </button>
+                      )}
+                      {reservationExpired && (
+                        <button
+                          type="button"
+                          onClick={retryPurchase}
+                          className="mt-3 w-full rounded-full bg-white px-5 py-2.5 text-[13px] font-[600] text-[var(--ink)] transition-colors duration-150 hover:bg-[var(--bg-2)]"
+                        >
+                          {t('checkout.retry_purchase')}
                         </button>
                       )}
                     </div>

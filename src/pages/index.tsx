@@ -84,7 +84,7 @@ const Home: NextPageWithLayout = function Home() {
 							events={filteredUpcoming}
 							total={filteredUpcoming.length}
 							onLoadMore={handleLoadMore}
-							hasNextPage={category === 'All' ? hasNextPage : false}
+							hasNextPage={hasNextPage}
 							loading={isFetchingNextPage}
 							isError={isError}
 							organizerBio={organizer?.bio ?? undefined}

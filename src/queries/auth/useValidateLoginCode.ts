@@ -1,6 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRecaptcha } from '@/contexts/RecaptchaContext';
 import ApiService, { setTokens } from '@/services/Api.Service';
+import { clearUserScopedQueries } from '@/queries/userScopedQueries';
 
 interface ValidateResponse {
 	success?: boolean;
@@ -24,6 +25,7 @@ interface ValidateParams {
 
 export const useValidateLoginCode = () => {
 	const { executeRecaptcha } = useRecaptcha();
+	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async ({ email, code }: ValidateParams): Promise<ValidatedSession> => {
 			const recaptchaToken = executeRecaptcha ? await executeRecaptcha() : undefined;
@@ -42,6 +44,12 @@ export const useValidateLoginCode = () => {
 			}
 			setTokens(data.accessToken, data.refreshToken, data.accessExpiresInDays, data.refreshExpiresInDays);
 			return { email: data.email ?? email, organizer_id: data.organizer_id ?? 0 };
+		},
+		onSuccess: () => {
+			// Belt-and-suspenders alongside signOut()'s own clear: a fresh login is the exact
+			// moment identity changes, so any data still cached under a previous buyer's
+			// session (e.g. a tab that was never explicitly signed out) is dropped here too.
+			clearUserScopedQueries(queryClient);
 		},
 	});
 };

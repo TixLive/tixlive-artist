@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useGetMe, GetMeKey } from '@/queries/me/useGetMe';
+import { useGetMe } from '@/queries/me/useGetMe';
+import { clearUserScopedQueries } from '@/queries/userScopedQueries';
 import { clearTokens } from '@/services/Api.Service';
 import type { IMe } from '@/types';
 
@@ -24,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	const signOut = useCallback(() => {
 		clearTokens();
-		queryClient.setQueryData([GetMeKey], null);
+		clearUserScopedQueries(queryClient);
 	}, [queryClient]);
 
 	const refresh = useCallback(async () => {

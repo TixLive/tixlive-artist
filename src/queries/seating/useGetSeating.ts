@@ -8,9 +8,19 @@ type Params = {
 	slug: string | null | undefined;
 	sessionId: number | null | undefined;
 	enabled?: boolean;
+	/** Re-read the hall on a timer (ms) — for screens that outlive one snapshot. */
+	refetchInterval?: number | false;
+	/** A payload the caller already holds — seeds the cache instead of re-fetching it. */
+	initialData?: ISeatingResponse;
 };
 
-export const useGetSeating = ({ slug, sessionId, enabled = true }: Params) => {
+export const useGetSeating = ({
+	slug,
+	sessionId,
+	enabled = true,
+	refetchInterval = false,
+	initialData,
+}: Params) => {
 	return useQuery({
 		queryKey: [GetSeatingKey, slug, sessionId],
 		queryFn: async () =>
@@ -19,6 +29,8 @@ export const useGetSeating = ({ slug, sessionId, enabled = true }: Params) => {
 			),
 		enabled: !!slug && !!sessionId && enabled,
 		staleTime: 30 * 1000,
+		refetchInterval,
+		initialData,
 	});
 };
 

@@ -65,6 +65,10 @@ interface SeatSelectionProps {
 	addonCart: IAddonCartItem[];
 	addons: ITicketAddon[];
 	seating: ISeatingResponse;
+	/** The hall's `booked` list re-read on a beat while this page is open (see
+	 *  `useLiveBookedSeats`). Availability only: the geometry stays the mount snapshot,
+	 *  because re-fitting the chart under a buyer mid-drag is worse than a stale outline. */
+	liveBooked?: string[];
 	initialSelectedSeatIds: string[];
 	initialShortfall: boolean;
 	currency: string;
@@ -109,6 +113,7 @@ export default function SeatSelection({
 	addonCart,
 	addons,
 	seating,
+	liveBooked,
 	initialSelectedSeatIds,
 	initialShortfall,
 	currency,
@@ -154,7 +159,7 @@ export default function SeatSelection({
 		for (const s of computeAllSeats(sections)) m.set(s.id, s);
 		return m;
 	}, [sections]);
-	const bookedSet = useMemo(() => new Set(seating.booked), [seating.booked]);
+	const bookedSet = useMemo(() => new Set(liveBooked ?? seating.booked), [liveBooked, seating.booked]);
 	const tierMeta = useMemo(() => {
 		const m = new Map<number, { name: string; index: number }>();
 		tiers.forEach((tier, index) =>
@@ -190,6 +195,9 @@ export default function SeatSelection({
 	const [shortfall, setShortfall] = useState(initialShortfall);
 	const [repicking, setRepicking] = useState(false);
 	const [continuing, setContinuing] = useState(false);
+	// A seat of the buyer's was sold to someone else while this page was open — raised by
+	// the effect below, cleared as soon as the buyer picks or drops a seat themselves.
+	const [seatsTaken, setSeatsTaken] = useState(false);
 	const [highlightedPrice, setHighlightedPrice] = useState<number | null>(null);
 	// Add-on quantities, seeded from anything pre-picked on the event page (usually empty
 	// for seated events, where extras are chosen here on the seat map).
@@ -311,9 +319,11 @@ export default function SeatSelection({
 		return m;
 	}, [highlightedPrice, tierColorBySeatId, priceBySeatId]);
 
-	const liveMessage = selected.size === 0
+	const selectionMessage = selected.size === 0
 		? t('seating.no_seats_yet')
 		: t('seating.live_complete', { count: selected.size, total: grandTotal, currency });
+	// A seat taken away is announced with what is left of the order, not instead of it.
+	const liveMessage = seatsTaken ? `${t('checkout.error_seat_taken')} ${selectionMessage}` : selectionMessage;
 
 	// ── Handlers ─────────────────────────────────────────────────────────────
 	const handleSeatToggle = useCallback(
@@ -328,7 +338,10 @@ export default function SeatSelection({
 				showToast({ title: t('seating.cap_reached', { max: maxPerOrder }), color: 'warning' });
 				return;
 			}
-			if (r.status === 'added' || r.status === 'removed') setSelected(r.next);
+			if (r.status === 'added' || r.status === 'removed') {
+				setSelected(r.next);
+				setSeatsTaken(false);
+			}
 		},
 		[readOnly, selected, seatTier, maxPerOrder, t]
 	);
@@ -339,7 +352,29 @@ export default function SeatSelection({
 			next.delete(seatId);
 			return next;
 		});
+		setSeatsTaken(false);
 	}, []);
+
+	// The beat that refreshes `liveBooked` repaints a seat sold in the meantime, but the
+	// buyer's own selection has to follow it: Continue would otherwise carry a seat besttix
+	// refuses at order creation, and the buyer would learn that with every field filled in.
+	// Only the taken ids are dropped — every seat still free stays picked, so a beat landing
+	// while the buyer drags the map never costs them a valid selection.
+	useEffect(() => {
+		// Auto-allocate: the selection is a preview of what the server will hand out, not a
+		// claim of the buyer's — besttix allocates the real seats in the order transaction,
+		// so a stale preview is not theirs to fix.
+		if (readOnly) return;
+		const lost = [...selected].filter((id) => bookedSet.has(id));
+		if (lost.length === 0) return;
+		const next = new Set(selected);
+		for (const id of lost) next.delete(id);
+		setSelected(next);
+		setSeatsTaken(true);
+		// Same words checkout uses for the same loss — the seat is already out of the order,
+		// so "choose another" is exactly what is left to do.
+		showToast({ title: t('checkout.error_seat_taken'), color: 'warning' });
+	}, [bookedSet, readOnly, selected, t]);
 
 	const handleRepick = useCallback(async () => {
 		if (seedCart.length === 0) return;

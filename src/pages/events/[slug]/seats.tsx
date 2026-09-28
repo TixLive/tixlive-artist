@@ -6,6 +6,7 @@ import { useTranslation } from 'next-i18next';
 import SeatSelection from '@/components/seating/SeatSelection';
 import { fetchEvent } from '@/queries/events/useGetEvent';
 import { fetchSeating } from '@/queries/seating/useGetSeating';
+import { useLiveBookedSeats } from '@/hooks/useLiveBookedSeats';
 import { suggestSeats } from '@/queries/seating/useSuggestSeats';
 import type { ICartItem, IAddonCartItem, ITicketAddon, ISeatingResponse } from '@/types';
 
@@ -204,6 +205,17 @@ export default function SeatsPage() {
 		})();
 	}, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
+	// The hall keeps selling while the buyer studies it. Nothing holds a seat until the
+	// order row exists, so the single snapshot above shows a chart minutes out of date: a
+	// seat sold in the meantime stays drawn as free and can still be picked, and the
+	// conflict only used to surface at Continue. Availability only — the geometry stays
+	// the mount snapshot, so a beat can't re-fit the chart under the buyer's fingers.
+	const liveBooked = useLiveBookedSeats({
+		slug: state?.slug,
+		sessionId: state?.sessionId,
+		initial: state?.seating,
+	});
+
 	if (notFound) return null;
 	if (!state) return null;
 
@@ -227,6 +239,7 @@ export default function SeatsPage() {
 				addonCart={state.addonCart}
 				addons={state.addons}
 				seating={state.seating}
+				liveBooked={liveBooked}
 				initialSelectedSeatIds={state.initialSelectedSeatIds}
 				initialShortfall={state.initialShortfall}
 				currency={state.currency}

@@ -221,7 +221,23 @@ export default function SeatSelection({
 		[originalCart]
 	);
 	const total = readOnly ? originalTicketsTotal + bundlesTotal : seatTotal;
-	const complete = isSelectionValid(selected.size);
+	// What the buyer actually ordered, straight off the props: the category tickets and the
+	// packages. In auto-allocate mode the chart's selection is only a PREVIEW of the seats
+	// those units will be given, so these two — never the preview — are what may gate the
+	// order. Both are plain sums over a handful of lines; no memo earns its keep.
+	const orderedTickets = (originalCart ?? []).reduce((s, c) => s + c.quantity, 0);
+	const orderedBundles = (bundleLines ?? []).reduce((s, b) => s + b.quantity, 0);
+	// Auto-allocate (readOnly): the preview is NOT the order. `handleContinue` submits the
+	// original category cart + bundles with `auto_allocate: '1'`, checkout omits
+	// `selected_seats`, and the server allocates the seats inside its own transaction — so
+	// the button follows the SOURCE order. Reading `selected.size` here locked a valid
+	// purchase out for good: a `suggestSeats` call that threw (one transient network hiccup)
+	// or legitimately came back empty left `selected` empty, and `handleSeatToggle` refuses
+	// every manual add in this mode, so nothing the buyer could do would ever refill it.
+	const complete = isSelectionValid(readOnly ? orderedTickets + orderedBundles : selected.size);
+	// Ordered, but with no seats to show: the map stays empty through no fault of the buyer,
+	// so it gets a word of its own instead of a dead Continue button.
+	const previewMissing = readOnly && complete && selected.size === 0;
 
 	// Add-on pricing mirrors the GA flow: per_ticket extras multiply by the seat count.
 	const addonTotal = useMemo(() => {
@@ -311,9 +327,11 @@ export default function SeatSelection({
 		return m;
 	}, [highlightedPrice, tierColorBySeatId, priceBySeatId]);
 
-	const liveMessage = selected.size === 0
-		? t('seating.no_seats_yet')
-		: t('seating.live_complete', { count: selected.size, total: grandTotal, currency });
+	const liveMessage = previewMissing
+		? t('seating.preview_unavailable')
+		: selected.size === 0
+			? t('seating.no_seats_yet')
+			: t('seating.live_complete', { count: selected.size, total: grandTotal, currency });
 
 	// ── Handlers ─────────────────────────────────────────────────────────────
 	const handleSeatToggle = useCallback(
@@ -567,6 +585,7 @@ export default function SeatSelection({
 						grandTotal={grandTotal}
 						currency={currency}
 						complete={complete}
+						previewMissing={previewMissing}
 						continuing={continuing}
 						onContinue={handleContinue}
 						onRemove={handleRemove}
@@ -588,11 +607,34 @@ export default function SeatSelection({
 						className="border-t border-[var(--line)] bg-[var(--bg)]"
 						style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
 					>
-						<div className="flex h-[44px] items-center justify-center px-4">
-							<span className="truncate text-[11px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
-								{t('seating.canvas_hint')}
-							</span>
-						</div>
+						{previewMissing ? (
+							<div className="flex items-center gap-3 px-4 py-2.5">
+								<span className="min-w-0 flex-1 text-[11px] font-[700] leading-[1.35] text-[var(--ink-3)]">
+									{t('seating.preview_unavailable')}
+								</span>
+								<button
+									type="button"
+									onClick={handleContinue}
+									disabled={!complete || continuing}
+									className="inline-flex h-[44px] shrink-0 items-center gap-2 rounded-full bg-[var(--ink)] px-5 text-[13px] font-[700] tracking-[-0.005em] text-white transition-transform duration-150 hover:scale-[1.03] disabled:opacity-50"
+								>
+									{continuing ? (
+										<Icon icon="mdi:loading" width={14} className="animate-spin" />
+									) : (
+										<>
+											<span>{t('seating.continue')}</span>
+											<Icon icon="mdi:arrow-right" width={13} />
+										</>
+									)}
+								</button>
+							</div>
+						) : (
+							<div className="flex h-[44px] items-center justify-center px-4">
+								<span className="truncate text-[11px] font-[700] uppercase tracking-[0.12em] text-[var(--ink-3)]">
+									{t('seating.canvas_hint')}
+								</span>
+							</div>
+						)}
 					</div>
 				) : (
 					<div className="bg-[var(--ink)] text-white" style={{ boxShadow: '0 -8px 28px -8px rgba(0,0,0,0.25)' }}>
@@ -1025,6 +1067,7 @@ function OrderSummaryCard({
 	grandTotal,
 	currency,
 	complete,
+	previewMissing,
 	continuing,
 	onContinue,
 	onRemove,
@@ -1043,6 +1086,8 @@ function OrderSummaryCard({
 	grandTotal: number;
 	currency: string;
 	complete: boolean;
+	/** Auto-allocate order whose seat preview came back empty — see SeatSelection. */
+	previewMissing?: boolean;
 	continuing: boolean;
 	onContinue: () => void;
 	onRemove: (seatId: string) => void;
@@ -1052,7 +1097,10 @@ function OrderSummaryCard({
 	addonIncluded?: Record<number, number>;
 	t: TFn;
 }) {
-	if (selectedCount === 0) {
+	const hasBundleLines = (bundleLines?.length ?? 0) > 0;
+	// An order with no seats to list is only "empty" when there is no order behind it: an
+	// auto-allocate order whose preview came back empty still has a total to show.
+	if (selectedCount === 0 && !hasBundleLines && !previewMissing) {
 		return (
 			<div className="rounded-[14px] bg-[var(--bg-2)] px-4 py-5 text-center">
 				<p className="m-0 text-[12.5px] font-[600] leading-[1.5] text-[var(--ink-3)]">
@@ -1079,17 +1127,21 @@ function OrderSummaryCard({
 			</div>
 
 			<div className="mt-3.5 flex flex-col gap-3">
-				{groupedByTier.map((group) => (
-					<SumLine
-						key={group.tierName}
-						group={group}
-						currency={currency}
-						onRemove={onRemove}
-						readOnly={readOnly}
-						hidePrice={hideSeatPrices}
-						t={t}
-					/>
-				))}
+				{groupedByTier.length > 0 ? (
+					groupedByTier.map((group) => (
+						<SumLine
+							key={group.tierName}
+							group={group}
+							currency={currency}
+							onRemove={onRemove}
+							readOnly={readOnly}
+							hidePrice={hideSeatPrices}
+							t={t}
+						/>
+					))
+				) : previewMissing ? (
+					<p className="m-0 text-[13px] leading-[1.45] text-[var(--ink-3)]">{t('seating.preview_unavailable')}</p>
+				) : null}
 			</div>
 
 			{/* Bundle line items: fixed price + included tickets/add-ons. The seats above

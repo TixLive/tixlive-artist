@@ -494,6 +494,7 @@
 		"pick_best": "Alege cele mai bune locuri",
 		"repick_error": "Nu am putut alege locuri automat. Atinge harta pentru a alege.",
 		"canvas_hint": "Trage pentru a naviga · deruleaza pentru zoom · atinge un loc pentru a-l selecta.",
+		"preview_unavailable": "Previzualizarea locurilor nu este disponibila acum. Poti continua cu comanda.",
 		"autopick_title": "Am ales cele mai bune locuri impreuna",
 		"autopick_body": "Am selectat {{count}} locuri unul langa altul. Atinge orice loc pe harta pentru a le schimba.",
 		"autoalloc_title": "Cum funcționează locurile",

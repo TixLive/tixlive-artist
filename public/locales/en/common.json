@@ -490,6 +490,7 @@
 		"pick_best": "Pick best seats",
 		"repick_error": "Couldn't auto-pick seats. Tap the map to choose.",
 		"canvas_hint": "Drag to pan · scroll to zoom · tap a seat to select.",
+		"preview_unavailable": "The seat preview isn't available right now. You can continue with your order.",
 		"autopick_title": "We picked the best seats together",
 		"autopick_body": "We selected {{count}} seats next to each other. Tap any seat on the map to change them.",
 		"autoalloc_title": "How seating works",
